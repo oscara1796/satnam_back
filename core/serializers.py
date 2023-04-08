@@ -21,15 +21,14 @@ class UserSerializer(serializers.ModelSerializer):
         }
         data['password'] = validated_data['password1']
         return self.Meta.model.objects.create_user(**data)
+    
+
     def update(self, instance, validated_data):
         for key, value in validated_data.items():
             if key in ('password1', 'password2'):
                 continue
             setattr(instance, key, value)
-        password1 = validated_data.get('password1')
-        password2 = validated_data.get('password2')
-        if password1 and password2 and password1 == password2:
-            instance.set_password(password1)
+        
         instance.save()
         return instance
     
@@ -37,7 +36,7 @@ class UserSerializer(serializers.ModelSerializer):
         model = get_user_model()
         fields = (
             'id', 'username', 'password1', 'password2',
-            'first_name', 'last_name', 'email', 'telephone'
+            'first_name', 'last_name', 'email', 'telephone', 'active'
         )
         read_only_fields = ('id',)
 
@@ -45,6 +44,7 @@ class LogInSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
         token = super().get_token(user)
+       
         user_data = UserSerializer(user).data
         for key, value in user_data.items():
             if key != 'id':

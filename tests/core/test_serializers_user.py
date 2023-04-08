@@ -15,7 +15,7 @@ def create_user(username='testuser', password=PASSWORD):
         first_name='Test',
         last_name='User',
         email='user@example.com',
-        telephone='3331722789'
+        telephone='3331722789',
     )
 
 
@@ -31,7 +31,6 @@ class AuthenticationTest(APITestCase):
             'password2': PASSWORD
         })
 
-        print("RESPONSE",response.status_code)
 
         user= get_user_model().objects.last()
         self.assertEqual(status.HTTP_201_CREATED, response.status_code)
@@ -44,6 +43,8 @@ class AuthenticationTest(APITestCase):
     
     def test_user_can_log_in(self):
         user = create_user()
+
+        
         response = self.client.post(reverse('log_in'), data={
             'username': user.username,
             'password': PASSWORD
@@ -70,11 +71,16 @@ class UserTestCase(APITestCase):
     
     def setUp(self):
         self.user = create_user()
-        self.client.login(username=self.user.username, password=PASSWORD)
+        response = self.client.post(reverse('log_in'), data={
+            'username': self.user.username,
+            'password': PASSWORD,
+        })
+        self.access = response.data['access']
     
     def test_get_user(self):
         url = reverse('user-detail', args=[self.user.id])
-        response = self.client.get(url, format='json')
+        response = self.client.get(url, 
+            HTTP_AUTHORIZATION=f'Bearer {self.access}', format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['id'], self.user.id)
         self.assertEqual(response.data['username'], self.user.username)
@@ -91,10 +97,10 @@ class UserTestCase(APITestCase):
             'first_name': 'Test2',
             'last_name': 'User2',
             'telephone': '3331722789',
-            'password1': "123",
-            'password2': "123"
+            'password1': "pass",
+            'password2': "pass"
         }
-        response = self.client.put(url, data, format='json')
+        response = self.client.put(url, data, HTTP_AUTHORIZATION=f'Bearer {self.access}',format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         updated_user = get_user_model().objects.get(id=self.user.id)
         self.assertEqual(data['username'], updated_user.username)
@@ -105,7 +111,7 @@ class UserTestCase(APITestCase):
     
     def test_delete_user(self):
         url = reverse('user-detail', args=[self.user.id])
-        response = self.client.delete(url)
+        response = self.client.delete(url, HTTP_AUTHORIZATION=f'Bearer {self.access}')
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        with self.assertRaises(User.DoesNotExist):
-            User.objects.get(id=self.user.id)
+        with self.assertRaises(get_user_model().DoesNotExist):
+            get_user_model().objects.get(id=self.user.id)
