@@ -77,10 +77,9 @@ class VideoDetail(APIView):
 
                 serializer.is_valid(raise_exception=True)
                 video = serializer.save()
-                # Perform any additional actions you need to do here
-                # print(serializer.validated_data)
-                return Response(VideoSerializer(video).data)
+
+                return Response(VideoSerializer(video).data, status=201)
             return Response("Unauthorized", status=status.HTTP_401_UNAUTHORIZED)
         except Exception as e:
-            print("HELLO",e.detail)
+            print("HELLO",e)
             return Response({'errors': e.detail}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

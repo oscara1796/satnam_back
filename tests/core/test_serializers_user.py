@@ -9,6 +9,7 @@ from django.contrib.auth.models import User
 PASSWORD = 'pAssw0rd!'
 
 def create_user(username='testuser', password=PASSWORD):
+    # Create a user with the given username and password
     return get_user_model().objects.create_user(
         username=username,
         password=password,
@@ -21,6 +22,7 @@ def create_user(username='testuser', password=PASSWORD):
 
 class AuthenticationTest(APITestCase):
     def test_user_can_sign_up(self):
+        # Test user sign up endpoint
         response = self.client.post(reverse('sign_up'), data={
             'username':'testuser',
             'email':'user@example.com',
@@ -31,8 +33,10 @@ class AuthenticationTest(APITestCase):
             'password2': PASSWORD
         })
 
-
+        # Retrieve the user object from the database
         user= get_user_model().objects.last()
+
+        # Assertions to check the response data matches the user object
         self.assertEqual(status.HTTP_201_CREATED, response.status_code)
         self.assertEqual(response.data['id'], user.id)
         self.assertEqual(response.data['username'], user.username)
@@ -42,6 +46,7 @@ class AuthenticationTest(APITestCase):
         self.assertEqual(response.data['telephone'], user.telephone)
     
     def test_user_can_log_in(self):
+        # Create a user for login
         user = create_user()
 
         
@@ -57,6 +62,8 @@ class AuthenticationTest(APITestCase):
         decoded_payload= base64.b64decode(f'{payload}==')
         payload_data= json.loads(decoded_payload)
 
+
+        # Assertions to check the response data matches the user object
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertIsNotNone(response.data['refresh'])
         self.assertEqual(payload_data['id'], user.id)
@@ -70,6 +77,7 @@ class AuthenticationTest(APITestCase):
 class UserTestCase(APITestCase):
     
     def setUp(self):
+        # Create a user and authenticate for subsequent tests
         self.user = create_user()
         response = self.client.post(reverse('log_in'), data={
             'username': self.user.username,
@@ -78,6 +86,7 @@ class UserTestCase(APITestCase):
         self.access = response.data['access']
     
     def test_get_user(self):
+        # Test retrieving user details
         url = reverse('user-detail', args=[self.user.id])
         response = self.client.get(url, 
             HTTP_AUTHORIZATION=f'Bearer {self.access}', format='json')
@@ -90,6 +99,7 @@ class UserTestCase(APITestCase):
         self.assertEqual(response.data['telephone'], self.user.telephone)
 
     def test_update_user(self):
+         # Test updating user details
         url = reverse('user-detail', args=[self.user.id])
         data = {
             'username':'testuser2',
@@ -110,6 +120,7 @@ class UserTestCase(APITestCase):
         self.assertEqual(data['telephone'], updated_user.telephone)
     
     def test_delete_user(self):
+        # Test deleting a user
         url = reverse('user-detail', args=[self.user.id])
         response = self.client.delete(url, HTTP_AUTHORIZATION=f'Bearer {self.access}')
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)

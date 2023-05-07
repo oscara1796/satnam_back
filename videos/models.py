@@ -1,6 +1,7 @@
 from django.db import models
 
 class Video(models.Model):
+    # id = models.AutoField(primary_key=True, default=1)
     title = models.CharField(max_length=255)
     image = models.ImageField(upload_to='videos')
     description = models.TextField()

@@ -46,9 +46,9 @@ class UserDetailView(APIView):
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-    def delete(self, request, *args, **kwargs):
+    def delete(self, request, pk):
         try:
-            user = self.request.user
+            user = get_user_model().objects.get(id=pk)
             user.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Exception as e:
