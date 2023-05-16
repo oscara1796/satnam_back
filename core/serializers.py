@@ -1,8 +1,12 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+import stripe
+from dotenv import dotenv_values
 
 
+env_vars = dotenv_values(".env.dev")
+stripe.api_key = env_vars["STRIPE_SECRET_KEY"]
 
 class UserSerializer(serializers.ModelSerializer):
     password1 = serializers.CharField(write_only=True)
@@ -20,6 +24,9 @@ class UserSerializer(serializers.ModelSerializer):
             if key not in ('password1', 'password2')
         }
         data['password'] = validated_data['password1']
+       
+        stripe_response=stripe.Customer.create(name=data["first_name"] + " " + data["last_name"], email=data["email"], phone=data["telephone"], metadata={"username": data["username"]})
+        data['stripe_customer_id'] = stripe_response.id
         return self.Meta.model.objects.create_user(**data)
     
 
@@ -36,7 +43,7 @@ class UserSerializer(serializers.ModelSerializer):
         model = get_user_model()
         fields = (
             'id', 'username', 'password1', 'password2',
-            'first_name', 'last_name', 'email', 'telephone', 'active'
+            'first_name', 'last_name', 'email', 'telephone', 'active', 'stripe_customer_id'
         )
         read_only_fields = ('id',)
 

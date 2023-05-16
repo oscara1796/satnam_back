@@ -5,6 +5,12 @@ from rest_framework.test import APITestCase
 import base64 
 import json 
 from django.contrib.auth.models import User
+import stripe
+from dotenv import dotenv_values
+
+
+env_vars = dotenv_values(".env.dev")
+stripe.api_key = env_vars["STRIPE_SECRET_KEY"]
 
 PASSWORD = 'pAssw0rd!'
 
@@ -35,7 +41,6 @@ class AuthenticationTest(APITestCase):
 
         # Retrieve the user object from the database
         user= get_user_model().objects.last()
-
         # Assertions to check the response data matches the user object
         self.assertEqual(status.HTTP_201_CREATED, response.status_code)
         self.assertEqual(response.data['id'], user.id)
@@ -44,6 +49,9 @@ class AuthenticationTest(APITestCase):
         self.assertEqual(response.data['first_name'], user.first_name)
         self.assertEqual(response.data['last_name'], user.last_name)
         self.assertEqual(response.data['telephone'], user.telephone)
+        self.assertIsNotNone(response.data["stripe_customer_id"])
+        self.assertEqual(response.data["stripe_customer_id"], user.stripe_customer_id)
+        response_stripe=stripe.Customer.delete(user.stripe_customer_id)
     
     def test_user_can_log_in(self):
         # Create a user for login
@@ -121,8 +129,18 @@ class UserTestCase(APITestCase):
     
     def test_delete_user(self):
         # Test deleting a user
-        url = reverse('user-detail', args=[self.user.id])
+        response = self.client.post(reverse('sign_up'), data={
+            'username':'testuser2',
+            'email':'user2@example.com',
+            'first_name': 'Test',
+            'last_name': 'User',
+            'telephone': '3331722789',
+            'password1': PASSWORD,
+            'password2': PASSWORD
+        })
+        user = get_user_model().objects.get(id=response.data["id"])
+        url = reverse('user-detail', args=[user.id])
         response = self.client.delete(url, HTTP_AUTHORIZATION=f'Bearer {self.access}')
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         with self.assertRaises(get_user_model().DoesNotExist):
-            get_user_model().objects.get(id=self.user.id)
+            get_user_model().objects.get(id=user.id)

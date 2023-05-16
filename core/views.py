@@ -7,6 +7,12 @@ from .serializers import  LogInSerializer,UserSerializer
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.exceptions import ValidationError
+import stripe
+from dotenv import dotenv_values
+
+
+env_vars = dotenv_values(".env.dev")
+stripe.api_key = env_vars["STRIPE_SECRET_KEY"]
 
 
 class SignUpView(generics.CreateAPIView):
@@ -49,8 +55,13 @@ class UserDetailView(APIView):
     def delete(self, request, pk):
         try:
             user = get_user_model().objects.get(id=pk)
+            stripe_response =stripe.Customer.delete(user.stripe_customer_id)
+            # print(stripe_response)
+            if stripe_response["deleted"] != True:
+                raise Exception("Stripe couldn´t delete customer")
             user.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Exception as e:
+            print(e)
             return Response(data={'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
