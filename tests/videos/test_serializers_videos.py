@@ -1,9 +1,10 @@
 from rest_framework.test import APITestCase
 from django.urls import reverse
-from videos.models import Video
+from videos.models import Video, Category
 from django.contrib.auth import get_user_model
 from faker import Faker
 from django.utils import timezone
+from rest_framework import status
 
 PASSWORD = 'pAssw0rd!'
 
@@ -410,4 +411,110 @@ class VideoPaginationTest(APITestCase):
         with self.assertRaises(Video.DoesNotExist):
             Video.objects.get(id=21)
         
+
+
+class CategoryAPITestCase(APITestCase):
+    def setUp(self):
+        self.category_data = {
+            'title': 'Test Category',
+            'description': 'Test description'
+        }
+        self.category = Category.objects.create(
+            title='Existing Category',
+            description='Existing description'
+        )
+        self.user = create_user('testuser2', PASSWORD, True, 'testuser2@test.com')
+        self.staff_user = create_user('testuser3', PASSWORD, False, 'testuser3@test.com')
+        self.staff_user.is_staff = True
+        self.staff_user.save()
+
+
+        response1 = self.client.post(reverse('log_in'), data={
+            'username': self.user.username,
+            'password': PASSWORD,
+        })
+
+        response2 = self.client.post(reverse('log_in'), data={
+            'username': self.staff_user.username,
+            'password': PASSWORD,
+        })
+        
+        self.access_free_user_1 = response1.data['access']
+        self.access_staff_user_2 = response2.data['access']
+        self.fake = Faker()
+
+    def test_get_all_categories(self):
+        url = reverse('category-list')
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.access_free_user_1}')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_create_category(self):
+        url = reverse('category-detail')
+        response = self.client.post(url, self.category_data, format='json', HTTP_AUTHORIZATION=f'Bearer {self.access_staff_user_2}')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Category.objects.count(), 2)
+
+    def test_update_category(self):
+        url = reverse('category-detail', args=[self.category.id])
+        updated_data = {
+            'title': 'Updated Category',
+            'description': 'Updated description'
+        }
+        response = self.client.put(url, updated_data, format='json', HTTP_AUTHORIZATION=f'Bearer {self.access_staff_user_2}')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.category.refresh_from_db()
+        self.assertEqual(self.category.title, 'Updated Category')
+
+    def test_delete_category(self):
+        url = reverse('category-detail', args=[self.category.id])
+        response = self.client.delete(url, HTTP_AUTHORIZATION=f'Bearer {self.access_staff_user_2}')
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Category.objects.count(), 0)
+    
+    def test_patch_add_video_to_category(self):
+        import io 
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from PIL import Image
+        import os
+
+        # Generate an in-memory binary stream to save the image data
+        image_data = io.BytesIO()
+
+        # Create a new RGB image with size 50x50
+        image = Image.new('RGB', size=(50, 50))
+
+        # Save the image data to the in-memory stream as JPEG
+        image.save(image_data, 'JPEG')
+        image_data.seek(0)
+
+        # Create a SimpleUploadedFile object from the in-memory image data
+        image_file = SimpleUploadedFile('test_image.jpg', image_data.getvalue(), content_type='image/jpeg')
+
+        # Generate random data for creating a video
+        data = {
+            'title': self.fake.text(max_nb_chars=50),
+            'image': image_file,
+            'description': self.fake.text(max_nb_chars=200),
+            'url': f"https://www.youtube.com/watch?v={self.fake.random_int(min=1000, max=9999)}",
+            'free': True,
+        }
+
+
+        url = reverse('category-detail', args=[self.category.id])
+        response = self.client.patch(url, data, HTTP_AUTHORIZATION=f'Bearer {self.access_staff_user_2}')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(self.category.category_videos.count(), 1)
+
+
+
+        video = Video.objects.first()
+        self.assertEqual(video.title, data["title"])
+        self.assertEqual(video.description, data["description"])
+        self.assertEqual(video.url, data["url"])
+        self.assertEqual(video.free, data["free"])
+
+        os.remove(video.image.name)
        
+
+

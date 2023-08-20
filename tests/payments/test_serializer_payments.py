@@ -44,7 +44,7 @@ class StripeIntegrationTest(APITestCase):
     
   
 
-    def test_create_payment_method(self):
+    def test_create_subscription(self):
         # Make the API request
         
         card_data={
@@ -54,37 +54,23 @@ class StripeIntegrationTest(APITestCase):
             'cvc': '123',
         }
 
-        url = reverse('create_payment_method', args=[self.user.id])
+        url = reverse('create_subscription', args=[self.user.id])
         response = self.client.post(url, card_data,HTTP_AUTHORIZATION=f'Bearer {self.access}', format='json')
-        # print(response.data)
-        response_obj = json.loads(response.data["data"])
+        print(response.data)
         self.assertEqual(response.status_code, 201)
-        self.assertTrue(stripe.PaymentMethod.retrieve(response_obj["id"]))
+        
+        self.assertIn('stripe_customer_id', response.data)
+        self.assertIn('subscription_id', response.data)
+        self.assertIn('status', response.data)
+        user = get_user_model().objects.get(id=self.user.id)
+        self.assertTrue(user.active)
+        # self.assertTrue(stripe.PaymentMethod.retrieve(response_obj["id"]))
+        subscription_id = response.data['subscription_id']
+        self.assertIsNotNone(subscription_id)
 
     
 
-    def test_create_subscription(self):
-        # Make the API request
-        card_data={
-            'number': '4242424242424242',
-            'exp_month': 12,
-            'exp_year': 2024,
-            'cvc': '123',
-        }
 
-        url = reverse('create_payment_method', args=[self.user.id])
-        response = self.client.post(url, card_data,HTTP_AUTHORIZATION=f'Bearer {self.access}', format='json')
-        data = {
-            "price_id": "price_1I0UVAJQ5QjlwW1L7gp17Cpi"
-        }
-        url = reverse('create_subscription', args=[self.user.id])
-        response = self.client.post(url,data,HTTP_AUTHORIZATION=f'Bearer {self.access}', format='json')
-        # print(response.data)
-        response_obj = json.loads(response.data["data"])
-        user= get_user_model().objects.get(id=self.user.id)
-        self.assertEqual(response.status_code, 201)
-        self.assertTrue(stripe.Subscription.retrieve(response_obj["id"]))
-        self.assertEqual(user.stripe_subscription_id, response_obj["id"])
 
     
     def test_get_product_prices(self):
@@ -98,6 +84,52 @@ class StripeIntegrationTest(APITestCase):
             self.assertTrue(product["default_price"].startswith('price_'))
             self.assertTrue(product["id"].startswith('prod_'))
             self.assertIsNotNone(product["name"])
+    
+    def test_delete_subscription(self):
+        card_data={
+            'number': '4242424242424242',
+            'exp_month': 12,
+            'exp_year': 2024,
+            'cvc': '123',
+        }
+
+        url = reverse('create_subscription', args=[self.user.id])
+        response = self.client.post(url, card_data,HTTP_AUTHORIZATION=f'Bearer {self.access}', format='json')
+        user = get_user_model().objects.get(id=self.user.id)
+        self.assertTrue(user.active)
+        self.assertEqual(response.status_code, 201)
+        response = self.client.delete(url, HTTP_AUTHORIZATION=f'Bearer {self.access}', format='json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data, {'success': 'Subscription canceled'})
+        user = get_user_model().objects.get(id=self.user.id)
+        self.assertFalse(user.active)
+
+        with self.assertRaises(stripe.error.StripeError):
+            subscription = stripe.Subscription.retrieve(self.user.stripe_subscription_id )
+
+        
+
+    def test_get_subscription(self):
+        card_data={
+            'number': '4242424242424242',
+            'exp_month': 12,
+            'exp_year': 2024,
+            'cvc': '123',
+        }
+
+        url = reverse('create_subscription', args=[self.user.id])
+        response = self.client.post(url, card_data,HTTP_AUTHORIZATION=f'Bearer {self.access}', format='json')
+        self.assertEqual(response.status_code, 201)
+        user = get_user_model().objects.get(id=self.user.id)
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.access}', format='json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["subscription_id"], user.stripe_subscription_id)
+        self.assertIn('status', response.data)
+        self.assertIn('current_period_end', response.data)
+        self.assertIn('cancel_at_period_end', response.data)
+
+            
+
         
     
     

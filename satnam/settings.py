@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
     'rest_framework', 
     'core',
     'videos',
@@ -52,6 +53,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -146,6 +148,9 @@ AUTH_USER_MODEL = 'core.CustomUser'
 
 #Authentication using session and token auth
 
+AUTHENTICATION_BACKENDS = ['core.backends.CustomBackend']
+
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -158,3 +163,19 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': datetime.timedelta(days=1),
     'USER_ID_CLAIM': 'id',
 }
+
+
+STRIPE_WEBHOOK_SECRET = 'whsec_aea6cc4ba45773f32e82953b195c02843187f9b6ef0c85915b327a1927dfda53'
+STRIPE_SUBSCRIPTION_PRICE_ID='price_1I2kVQJQ5QjlwW1LWRpqDQlC'
+
+
+#frontend
+SUBSCRIPTION_SUCCESS_URL = 'http://localhost:8009/subscription/success/'
+SUBSCRIPTION_FAILED_URL = 'http://localhost:8009/subscription/failed/'
+
+
+
+
+CORS_ORIGIN_WHITELIST = [
+    "http://localhost:3001",
+]

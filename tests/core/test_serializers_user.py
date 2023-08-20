@@ -81,6 +81,35 @@ class AuthenticationTest(APITestCase):
         self.assertEqual(payload_data['last_name'], user.last_name)
         self.assertEqual(payload_data['telephone'], user.telephone)
 
+    
+    def test_user_can_log_in_with_email(self):
+        # Create a user for login
+        user = create_user()
+
+        
+        response = self.client.post(reverse('log_in'), data={
+            'username': user.email,
+            'password': PASSWORD
+            }
+        )
+
+        # Parse payload data from access token
+        access= response.data['access']
+        header, payload, signature = access.split('.')
+        decoded_payload= base64.b64decode(f'{payload}==')
+        payload_data= json.loads(decoded_payload)
+
+
+        # Assertions to check the response data matches the user object
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertIsNotNone(response.data['refresh'])
+        self.assertEqual(payload_data['id'], user.id)
+        self.assertEqual(payload_data['username'], user.username)
+        self.assertEqual(payload_data['email'], user.email)
+        self.assertEqual(payload_data['first_name'], user.first_name)
+        self.assertEqual(payload_data['last_name'], user.last_name)
+        self.assertEqual(payload_data['telephone'], user.telephone)
+
 
 class UserTestCase(APITestCase):
     

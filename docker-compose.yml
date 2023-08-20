@@ -3,6 +3,7 @@ services:
   core:
     build: .
     command: python manage.py runserver 0.0.0.0:8000
+    container_name: core
     volumes:
       - .:/usr/src/app
     ports:
@@ -19,6 +20,21 @@ services:
       - POSTGRES_USER=oscar
       - POSTGRES_PASSWORD=17dejunio
       - POSTGRES_DB=core_dev
+  satnam-client:
+    build:
+      context: ../client
+    command:  yarn start
+    container_name: satnam-client
+    depends_on:
+      - core
+    environment: 
+      - CHOKIDAR_USEPOLLING=true
+      - REACT_APP_BASE_URL=http://localhost:8009 
+    ports:
+      - 3001:3000
+    stdin_open: true
+    volumes: 
+      - ../client:/usr/src/app
 
 volumes:
   postgres_data:

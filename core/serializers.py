@@ -15,10 +15,11 @@ class UserSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         if data['password1'] != data['password2']:
-            raise serializers.ValidationError("Contraseñas deben ser iguales")
+            raise serializers.ValidationError({'password1':"Contraseñas deben ser iguales"})
         return data
     
     def create(self, validated_data):
+
         data = {
             key: value for key, value in validated_data.items()
             if key not in ('password1', 'password2')
@@ -33,7 +34,7 @@ class UserSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         for key, value in validated_data.items():
             if key in ('password1', 'password2'):
-                continue
+                instance.set_password(value)
             setattr(instance, key, value)
         
         instance.save()
@@ -43,17 +44,20 @@ class UserSerializer(serializers.ModelSerializer):
         model = get_user_model()
         fields = (
             'id', 'username', 'password1', 'password2',
-            'first_name', 'last_name', 'email', 'telephone', 'active', 'stripe_customer_id'
+            'first_name', 'last_name', 'email', 'telephone', 'active', 'stripe_customer_id',
         )
         read_only_fields = ('id',)
 
 class LogInSerializer(TokenObtainPairSerializer): 
     @classmethod
     def get_token(cls, user):
+
+        
         token = super().get_token(user)
        
         user_data = UserSerializer(user).data
         for key, value in user_data.items():
             if key != 'id':
                 token[key] = value
+        token['is_staff'] = user.is_staff
         return token
