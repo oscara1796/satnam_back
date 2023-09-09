@@ -13,7 +13,7 @@ wait $CYPRESS_PID
 CYPRESS_EXIT_CODE=$?
 if [ $CYPRESS_EXIT_CODE -eq 0 ]; then
   # Clean up Docker containers and volumes
-  cd ../satnam
+  
   docker-compose down -v
   docker-compose up -d
 else

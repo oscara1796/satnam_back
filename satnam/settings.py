@@ -179,3 +179,13 @@ SUBSCRIPTION_FAILED_URL = 'http://localhost:8009/subscription/failed/'
 CORS_ORIGIN_WHITELIST = [
     "http://localhost:3001",
 ]
+
+
+# EMAIL WITH GMAIL
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = "smtp-mail.outlook.com"
+EMAIL_HOST_USER = "oscara1706cl@hotmail.com"
+EMAIL_HOST_PASSWORD = "3471abraham"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True

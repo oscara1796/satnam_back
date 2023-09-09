@@ -153,8 +153,9 @@ class PaymentDetailView(APIView):
                 # Additional subscription options (e.g., trial period, metadata)
             )
 
-            user.active  = True
-            user.save()
+            if subscription.status != "incomplete":
+                user.active  = True
+                user.save()
             user.stripe_subscription_id = subscription.id
             user.save()
 
@@ -201,21 +202,23 @@ class StripeWebhookView(APIView):
         event = None
 
         try:
+            payload_data = json.loads(payload)
             event = stripe.Event.construct_from(
-                payload, stripe.api_key
+                payload_data, stripe.api_key
             )
         except ValueError as e:
             # Invalid payload
             return JsonResponse({'error': str(e)}, status=400)
 
         # Handle the event based on its type
-        if event.type == 'invoice.paid':
+        if event.type == 'invoice.payment_succeeded':
             invoice = event.data.object
             customer_id = invoice.customer
-
+            print("invoice paid")
             # Retrieve customer's email from your database
             customer_email = self.get_customer_email(customer_id)
             if customer_email:
+                print("mandamos email")
                 self.send_invoice_email(customer_email, invoice)
         
         elif event.type == 'invoice.payment_failed':
@@ -227,6 +230,8 @@ class StripeWebhookView(APIView):
             if customer_email:
                 self.send_payment_failed_email(customer_email, invoice)
 
+            
+
         
         elif event.type == "customer.subscription.updated":
             """
@@ -235,7 +240,12 @@ class StripeWebhookView(APIView):
             pass
         
         elif event.type == "customer.subscription.deleted":
-            pass
+            subscription = event.data.object
+            customer_id = subscription.customer
+            # Retrieve customer's email from your database
+            customer_email = self.get_customer_email(customer_id)
+            if customer_email:
+                self.send_subscription_deleted_email(customer_email)
 
         elif event.type == "customer.subscription.trial_will_end":
             """
@@ -247,23 +257,84 @@ class StripeWebhookView(APIView):
 
     def get_customer_email(self, customer_id):
         # Implement logic to retrieve customer's email from your database
-        # For example:
-        # customer = YourCustomerModel.objects.get(stripe_customer_id=customer_id)
-        # return customer.email
-        pass
+        try:
+            user = get_user_model().objects.get(stripe_customer_id=customer_id)
+            customer_email = user.email
+            return customer_email
+        except Exception as e:
+            print(f"Error: {e}")
+        
+        return None
+        
 
     def send_invoice_email(self, customer_email, invoice):
-        subject = 'Invoice Notification'
-        message = f'Hello,\n\nYour invoice has been paid. Invoice ID: {invoice.id}\nAmount: {invoice.amount_due / 100} {invoice.currency}'
-        from_email = 'your@example.com'  # Replace with your email address
+        subject = 'Pago Sat Nam Yoga Notificación'
+        message = """
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Suscripción pagada</title>
+                <style>
+                    body {{
+                        font-family: Arial, sans-serif;
+                        background-color: #f0f0f0;
+                        margin: 0;
+                        padding: 0;
+                    }}
+
+                    .container {{
+                        max-width: 600px;
+                        margin: 0 auto;
+                        padding: 20px;
+                        background-color: #ffffff;
+                        border-radius: 5px;
+                        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                    }}
+
+                    h1 {{
+                        color: #3165f5;
+                    }}
+
+                    p {{
+                        color: #333333;
+                    }}
+
+                    b {{
+                        font-weight: bold;
+                    }}
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <h1>Suscripción pagada</h1>
+                    <p>Hola,</p>
+                    <p>Has pagado tu suscripción de Sat Nam Yoga.</p>
+                    <p>Pago ID: <b>{}</b></p>
+                    <p>Monto: <b>{:.2f} {}</b></p>
+                    <p>Gracias por tu apoyo.</p>
+                    <p>Saludos,</p>
+                    <p>El equipo de Sat Nam Yoga</p>
+                </div>
+            </body>
+            </html>
+            """.format(invoice.id, invoice.amount_due / 100, invoice.currency)
+        from_email = 'oscara1706cl@hotmail.com'  # Replace with your email address
         recipient_list = [customer_email]
 
-        send_mail(subject, message, from_email, recipient_list)
+        send_mail(subject, message, from_email, recipient_list, fail_silently=False, html_message=message)
         
     def send_payment_failed_email(self, customer_email, invoice):
         subject = 'Payment Failed Notification'
         message = f'Hello,\n\nYour payment for Invoice ID: {invoice.id} has failed.\nPlease update your payment information or contact support.'
-        from_email = 'your@example.com'  # Replace with your email address
+        from_email = 'oscara1706cl@hotmail.com'  # Replace with your email address
+        recipient_list = [customer_email]
+
+        send_mail(subject, message, from_email, recipient_list)
+    
+    def send_subscription_deleted_email(self, customer_email):
+        subject = 'We Are Going to Miss You'
+        message = f'Dear Customer,\n\nWe noticed that your subscription has been deleted. We are going to miss you! If you have any feedback or need assistance, please feel free to contact us.'
+        from_email = 'oscara1706cl@hotmail.com'  # Replace with your email address
         recipient_list = [customer_email]
 
         send_mail(subject, message, from_email, recipient_list)
