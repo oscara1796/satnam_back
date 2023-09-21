@@ -99,7 +99,7 @@ class PaymentDetailView(APIView):
     def get(self, request, pk):
         try:
             user = get_user_model().objects.get(id=pk)
-            
+            print("user.stripe_subscription_id ", user.stripe_subscription_id)
             # Retrieve the customer's Stripe subscription
             subscription = stripe.Subscription.retrieve(user.stripe_subscription_id)
 
@@ -118,6 +118,7 @@ class PaymentDetailView(APIView):
         except get_user_model().DoesNotExist:
             return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
         except StripeError as e:
+            print("error ", e)
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     

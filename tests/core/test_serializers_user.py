@@ -127,12 +127,16 @@ class UserTestCase(APITestCase):
         url = reverse('user-detail', args=[self.user.id])
         response = self.client.get(url, 
             HTTP_AUTHORIZATION=f'Bearer {self.access}', format='json')
+        
+        print("response data", response.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['id'], self.user.id)
         self.assertEqual(response.data['username'], self.user.username)
         self.assertEqual(response.data['email'], self.user.email)
         self.assertEqual(response.data['first_name'], self.user.first_name)
         self.assertEqual(response.data['last_name'], self.user.last_name)
+        self.assertEqual(response.data['active'], self.user.active)
+        self.assertEqual(response.data['stripe_customer_id'], self.user.stripe_customer_id)
         self.assertEqual(response.data['telephone'], self.user.telephone)
 
     def test_update_user(self):
