@@ -145,19 +145,31 @@ class PaymentDetailView(APIView):
                     'default_payment_method': payment_method.id,
                 },
             )
-            # Create a subscription for the customer
-            subscription = stripe.Subscription.create(
-                customer=user.stripe_customer_id,
-                items=[
-                    {'price': settings.STRIPE_SUBSCRIPTION_PRICE_ID}  # Stripe subscription price identifier
-                ],
-                # Additional subscription options (e.g., trial period, metadata)
-            )
+            subscription = None
+             # Check if the user has an incomplete subscription
+            if user.stripe_subscription_id and not user.active:
+                # Attempt to pay the incomplete subscription
+                subscription = stripe.Subscription.modify(
+                    user.stripe_subscription_id,
+                    payment_behavior='default_incomplete',
+                    items=[
+                        {'price': settings.STRIPE_SUBSCRIPTION_PRICE_ID}
+                    ],
+                )
+            else:
+                # Create a subscription for the customer
+                subscription = stripe.Subscription.create(
+                    customer=user.stripe_customer_id,
+                    items=[
+                        {'price': settings.STRIPE_SUBSCRIPTION_PRICE_ID}
+                    ],
+                    # Additional subscription options (e.g., trial period, metadata)
+                )
 
-            if subscription.status != "incomplete":
-                user.active  = True
-                user.save()
-            user.stripe_subscription_id = subscription.id
+                user.stripe_subscription_id = subscription.id
+
+             # Update the user's active status based on the subscription status
+            user.active = subscription.status in ("active", "trialing")
             user.save()
 
             # Return the customer's Stripe customer ID and subscription details
@@ -167,9 +179,10 @@ class PaymentDetailView(APIView):
                 'status': subscription.status,
                 'is_active': user.active
             }, status=status.HTTP_201_CREATED)
+        except stripe.error.StripeError as e:
+            return Response({'errors': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            print("HELLO",e)
-            return Response({'errors': e.detail}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({'errors': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
     def delete(self, request, pk):
         try:
