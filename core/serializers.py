@@ -45,6 +45,7 @@ class UserSerializer(serializers.ModelSerializer):
         fields = (
             'id', 'username', 'password1', 'password2',
             'first_name', 'last_name', 'email', 'telephone', 'active', 'stripe_customer_id',
+            'stripe_subscription_id',
         )
         read_only_fields = ('id',)
 
