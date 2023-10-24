@@ -79,6 +79,7 @@ class VideoDetail(APIView):
         
         try:
             if self.request.user.is_staff:
+                print(request.data)
                 serializer = VideoSerializer(data=request.data) 
 
                 serializer.is_valid(raise_exception=True)
@@ -127,12 +128,22 @@ class CategoryAPIView(APIView):
     
     def patch(self, request, pk):
         category = self.get_object(pk)
-        serializer = VideoSerializer(data=request.data)
-
+        
+        # Check if the request data is a list of videos or a single video
+        is_many = isinstance(request.data, list)
+        print(request.data)
+        serializer = VideoSerializer(data=request.data, many=is_many)
+        
         if serializer.is_valid():
-            video = serializer.save()
-            category.category_videos.add(video)
+            if is_many:
+                videos = serializer.save()
+                category.category_videos.add(*videos)  # Add multiple videos to the category
+            else:
+                video = serializer.save()
+                category.category_videos.add(video)  # Add a single video to the category
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        print(serializer.errors)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

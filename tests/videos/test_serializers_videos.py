@@ -503,7 +503,7 @@ class CategoryAPITestCase(APITestCase):
 
         url = reverse('category-detail', args=[self.category.id])
         response = self.client.patch(url, data, HTTP_AUTHORIZATION=f'Bearer {self.access_staff_user_2}')
-
+        print(response.data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(self.category.category_videos.count(), 1)
 
@@ -516,6 +516,8 @@ class CategoryAPITestCase(APITestCase):
         self.assertEqual(video.free, data["free"])
 
         os.remove(video.image.name)
+    
+    
        
 
 
