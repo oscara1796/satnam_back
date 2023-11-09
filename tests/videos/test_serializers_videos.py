@@ -363,6 +363,64 @@ class VideoPaginationTest(APITestCase):
 
         # Assert that the response status code is 401 (Unauthorized)
         self.assertEqual(response.status_code, 401)
+    
+    def test_create_video_with_category(self):
+
+        url = reverse('category-detail')
+        response = self.client.post(url, self.category_data, format='json', HTTP_AUTHORIZATION=f'Bearer {self.access_staff_user_3}')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        create_random_videos()
+        import io 
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from PIL import Image
+        import os
+
+        # Generate an in-memory binary stream to save the image data
+        image_data = io.BytesIO()
+
+        # Create a new RGB image with size 50x50
+        image = Image.new('RGB', size=(50, 50))
+
+        # Save the image data to the in-memory stream as JPEG
+        image.save(image_data, 'JPEG')
+        image_data.seek(0)
+
+        # Create a SimpleUploadedFile object from the in-memory image data
+        image_file = SimpleUploadedFile('test_image.jpg', image_data.getvalue(), content_type='image/jpeg')
+
+        # Generate random data for creating a video
+        data = {
+            'title': self.fake.text(max_nb_chars=50),
+            'image': image_file,
+            'description': self.fake.text(max_nb_chars=200),
+            'url': f"https://www.youtube.com/watch?v={self.fake.random_int(min=1000, max=9999)}",
+            'free': True,
+        }
+
+        # Generate the URL for the video detail endpoint
+        url = reverse('video-detail')
+
+        # Send a POST request to create the video using the generated URL and data payload
+        # with the authorization token of the staff user
+        response = self.client.post(url, data, HTTP_AUTHORIZATION=f'Bearer {self.access_staff_user_3}', format='multipart')
+
+        # Retrieve the last created video object from the database
+        video = Video.objects.last()
+
+        # Assert that the response status code is 201 (Created)
+        self.assertEqual(response.status_code, 201)
+
+        # Assert that the response data matches the created video attributes
+        self.assertEqual(response.data['id'], video.id)
+        self.assertEqual(response.data['title'], video.title)
+        self.assertEqual(response.data['description'], video.description)
+        self.assertEqual(response.data['url'], video.url)
+        self.assertEqual(response.data['free'], video.free)
+        self.assertTrue(video.image.name in response.data['image'])
+        self.assertEqual(response.data['date_of_creation'], video.date_of_creation.strftime('%Y-%m-%dT%H:%M:%S.%fZ'))
+        self.assertEqual(response.data['date_of_modification'], video.date_of_modification.strftime('%Y-%m-%dT%H:%M:%S.%fZ'))
+        
 
     def test_delete_video(self):
         # Set the ID of the video to be created

@@ -20,8 +20,6 @@ class VideoSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         # Check if 'image' field contains base64-encoded data
-        
-
         return data
 
     def create(self, validated_data):

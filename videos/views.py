@@ -79,17 +79,35 @@ class VideoDetail(APIView):
         
         try:
             if self.request.user.is_staff:
-                print(request.data)
-                serializer = VideoSerializer(data=request.data) 
+                # Check if 'categories' data is present in the request
+                category_data = request.data.get('categories', [])
+                if category_data:
+                    # Validate and create categories
+                    category_serializer = CategorySerializer(data=category_data, many=True)
+                    category_serializer.is_valid(raise_exception=True)
+                    categories = category_serializer.save()
+                else:
+                    # If no category data provided, create an empty list
+                    categories = []
 
-                serializer.is_valid(raise_exception=True)
-                video = serializer.save()
+                # Create a video with associated categories
+                video_data = request.data.copy()
+                video_data.pop('categories', None)  # Remove 'categories' from video data
+                video_serializer = VideoSerializer(data=video_data)
+                video_serializer.is_valid(raise_exception=True)
+                video = video_serializer.save()
 
-                return Response(VideoSerializer(video).data, status=201)
+                # Add the categories to the video
+                video.video_categories.set(categories)
+
+                return Response(VideoSerializer(video).data, status=status.HTTP_201_CREATED)
             return Response("Unauthorized", status=status.HTTP_401_UNAUTHORIZED)
         except Exception as e:
-            print("HELLO",e)
-            return Response({'errors': e.detail}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({'errors': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+    def patch(self, rerquest, pk):
+        video = Video.objects.get(id=pk)
+
         
 
 class CategoryAPIView(APIView):
