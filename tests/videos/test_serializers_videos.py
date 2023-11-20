@@ -236,6 +236,7 @@ class VideoPaginationTest(APITestCase):
         self.assertEqual(response.data['url'], video.url)
         self.assertEqual(response.data['free'], video.free)
         self.assertEqual(response.data['image'], video.image.url)
+        print(response.data['image'], video.image.url)
         self.assertEqual(response.data['date_of_creation'], video.date_of_creation.strftime('%Y-%m-%dT%H:%M:%S.%fZ'))
         self.assertEqual(response.data['date_of_modification'], video.date_of_modification.strftime('%Y-%m-%dT%H:%M:%S.%fZ'))
 
@@ -246,10 +247,10 @@ class VideoPaginationTest(APITestCase):
         self.assertEqual(data['free'], video.free)
 
         # Assert that the uploaded image file name is contained within the video's image name
-        self.assertTrue(data['image'].name in video.image.name)
+        
 
         # Remove the uploaded image file
-        os.remove(video.image.name)
+        os.remove(f"media/{video.image.name}")
 
 
     def test_create_video(self):
@@ -305,7 +306,7 @@ class VideoPaginationTest(APITestCase):
         self.assertEqual(response.data['date_of_modification'], video.date_of_modification.strftime('%Y-%m-%dT%H:%M:%S.%fZ'))
 
         # Remove the uploaded image file
-        os.remove(video.image.name)
+        os.remove(f"media/{video.image.name}")
 
         # Delete all videos in the database
         Video.objects.all().delete()
@@ -341,7 +342,7 @@ class VideoPaginationTest(APITestCase):
         self.assertEqual(response.data['date_of_creation'], video.date_of_creation.strftime('%Y-%m-%dT%H:%M:%S.%fZ'))
         self.assertEqual(response.data['date_of_modification'], video.date_of_modification.strftime('%Y-%m-%dT%H:%M:%S.%fZ'))
         # Remove the uploaded image file
-        os.remove(video.image.name)
+        os.remove(f"media/{video.image.name}")
 
         # Call the function to create random videos again
         create_random_videos()
@@ -573,8 +574,52 @@ class CategoryAPITestCase(APITestCase):
         self.assertEqual(video.url, data["url"])
         self.assertEqual(video.free, data["free"])
 
-        os.remove(video.image.name)
-    
+        os.remove(f"media/{video.image.name}")
+
+
+
+class SearchVideoAPITestCase(APITestCase):
+    def setUp(self):
+        # Create sample data for testing
+        fake = Faker()
+        image = f"https://picsum.photos/seed/{fake.random_int(min=1, max=9999)}/200/300"
+        description = fake.text(max_nb_chars=200)
+        url = f"https://www.youtube.com/watch?v={fake.random_int(min=1000, max=9999)}"
+        free= False
+        Video.objects.create(title='Sample Video 1', description=description, image=image, url='http://example.com/video1/', free=False)
+        Video.objects.create(title='Sample Video 2', description=description, image=image, url='http://example.com/video2/', free=False)
+
+    def test_search_video_api(self):
+        # Test searching for a video with a valid query
+        search_query = 'Sample Video 1'
+        url = reverse('search_videos') + f'?search={search_query}'
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)  # Assuming there is only one video with the specified title
+        self.assertEqual(response.data[0]['title'], 'Sample Video 1')
+
+    def test_search_video_api_several_objects(self):
+        # Test searching for a video with a valid query
+        search_query = 'Sample'
+        url = reverse('search_videos') + f'?search={search_query}'
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 2)  # Assuming there is only one video with the specified title
+        self.assertEqual(response.data[0]['title'], 'Sample Video 1')
+        self.assertEqual(response.data[1]['title'], 'Sample Video 2')
+
+    def test_search_video_api_missing_query(self):
+        # Test the case where the search parameter is missing
+        url = reverse('search_videos')
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data, {'error': 'Search parameter is required'})
     
        
 

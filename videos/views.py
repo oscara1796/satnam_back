@@ -42,6 +42,27 @@ class VideoList(APIView):
         })
     
 
+class SearchVideoAPIView(APIView):
+    def get(self, request, *args, **kwargs):
+        try:
+            # Get the query parameter from the request
+            search_query = request.query_params.get('search', None)
+
+            if not search_query:
+                return Response({'error': 'Search parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Perform case-insensitive search in the title field
+            videos = Video.objects.filter(title__icontains=search_query)
+
+            # Serialize the queryset
+            serializer = VideoSerializer(videos, many=True)
+
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(data={'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    
+
 class VideoDetail(APIView):
     permission_classes = [permissions.IsAuthenticated]
     def get(self, request, pk):
