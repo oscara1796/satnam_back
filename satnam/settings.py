@@ -169,6 +169,7 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': datetime.timedelta(days=1),
     'USER_ID_CLAIM': 'id',
     'SLIDING_TOKEN_REFRESH_RESET': True,
+    'BLACKLIST_AFTER_ROTATION': False,
 }
 
 

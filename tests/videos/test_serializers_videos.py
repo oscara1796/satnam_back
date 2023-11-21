@@ -366,9 +366,14 @@ class VideoPaginationTest(APITestCase):
         self.assertEqual(response.status_code, 401)
     
     def test_create_video_with_category(self):
+        category_data = {
+            'title': 'Test Category',
+            'description': 'Test description'
+        }
 
         url = reverse('category-detail')
-        response = self.client.post(url, self.category_data, format='json', HTTP_AUTHORIZATION=f'Bearer {self.access_staff_user_3}')
+        response = self.client.post(url, category_data, format='json', HTTP_AUTHORIZATION=f'Bearer {self.access_staff_user_3}')
+        category = response.data
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         create_random_videos()
@@ -391,12 +396,14 @@ class VideoPaginationTest(APITestCase):
         image_file = SimpleUploadedFile('test_image.jpg', image_data.getvalue(), content_type='image/jpeg')
 
         # Generate random data for creating a video
+        import json
         data = {
             'title': self.fake.text(max_nb_chars=50),
             'image': image_file,
             'description': self.fake.text(max_nb_chars=200),
             'url': f"https://www.youtube.com/watch?v={self.fake.random_int(min=1000, max=9999)}",
             'free': True,
+            'categories': json.dumps( {"data_key": response.data["id"]})
         }
 
         # Generate the URL for the video detail endpoint
@@ -419,6 +426,8 @@ class VideoPaginationTest(APITestCase):
         self.assertEqual(response.data['url'], video.url)
         self.assertEqual(response.data['free'], video.free)
         self.assertTrue(video.image.name in response.data['image'])
+        self.assertEqual(response.data["categories"][0]["id"], category["id"])
+        self.assertEqual(response.data["categories"][0]["description"], category["description"])
         self.assertEqual(response.data['date_of_creation'], video.date_of_creation.strftime('%Y-%m-%dT%H:%M:%S.%fZ'))
         self.assertEqual(response.data['date_of_modification'], video.date_of_modification.strftime('%Y-%m-%dT%H:%M:%S.%fZ'))
         

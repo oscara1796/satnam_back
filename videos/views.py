@@ -57,7 +57,11 @@ class SearchVideoAPIView(APIView):
             # Serialize the queryset
             serializer = VideoSerializer(videos, many=True)
 
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response({
+                'total_count': Video.objects.all().count(),
+                'count': len(videos),
+                'results': serializer.data,
+            }, status=status.HTTP_200_OK)
         except Exception as e:
             return Response(data={'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
