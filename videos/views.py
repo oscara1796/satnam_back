@@ -45,14 +45,19 @@ class VideoList(APIView):
 class SearchVideoAPIView(APIView):
     def get(self, request, *args, **kwargs):
         try:
-            # Get the query parameter from the request
+            # Get the query parameters from the request
             search_query = request.query_params.get('search', None)
+            category_id = request.query_params.get('category', None)
 
-            if not search_query:
-                return Response({'error': 'Search parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+            if not search_query and not category_id:
+                return Response({'error': 'Search parameter or category parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Perform case-insensitive search in the title field
-            videos = Video.objects.filter(title__icontains=search_query)
+            if search_query:
+                # Perform case-insensitive search in the title field
+                videos = Video.objects.filter(title__icontains=search_query)
+            elif category_id:
+                # Perform filter by category name
+                videos = Video.objects.filter(categories__id=category_id)
 
             # Serialize the queryset
             serializer = VideoSerializer(videos, many=True)
