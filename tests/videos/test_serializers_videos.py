@@ -605,9 +605,11 @@ class SearchVideoAPITestCase(APITestCase):
 
         response = self.client.get(url)
 
+        print("RESPONSE DATA", response.data)
+
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)  # Assuming there is only one video with the specified title
-        self.assertEqual(response.data[0]['title'], 'Sample Video 1')
+        self.assertEqual(len(response.data['results']), 1)  # Assuming there is only one video with the specified title
+        self.assertEqual(response.data['results'][0]['title'], 'Sample Video 1')
 
     def test_search_video_api_several_objects(self):
         # Test searching for a video with a valid query
@@ -617,9 +619,9 @@ class SearchVideoAPITestCase(APITestCase):
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 2)  # Assuming there is only one video with the specified title
-        self.assertEqual(response.data[0]['title'], 'Sample Video 1')
-        self.assertEqual(response.data[1]['title'], 'Sample Video 2')
+        self.assertEqual(len(response.data['results']), 2)  # Assuming there is only one video with the specified title
+        self.assertEqual(response.data['results'][0]['title'], 'Sample Video 1')
+        self.assertEqual(response.data['results'][1]['title'], 'Sample Video 2')
 
     def test_search_video_api_missing_query(self):
         # Test the case where the search parameter is missing
@@ -628,7 +630,7 @@ class SearchVideoAPITestCase(APITestCase):
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data, {'error': 'Search parameter is required'})
+        self.assertEqual(response.data, {'error': 'Search parameter or category parameter is required'})
     
        
 
