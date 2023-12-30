@@ -1,5 +1,11 @@
 #!/bin/bash
 
+
+# Run the Django createsuperuser command
+docker-compose exec core python manage.py create_superuser
+
+
+
 # Run Cypress in interactive mode
 cd ../client && yarn run cypress open &
 

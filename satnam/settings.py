@@ -184,9 +184,17 @@ SUBSCRIPTION_FAILED_URL = 'http://localhost:8009/subscription/failed/'
 
 
 
-CORS_ORIGIN_WHITELIST = [
-    "http://localhost:3001",
-]
+# CORS_ORIGIN_WHITELIST = [
+#     "http://localhost:3001",
+#     "http://192.168.100.162:3001",
+# ]
+
+# CORS_ALLOWED_ORIGINS = [
+#     "http://192.168.100.162:3001",  # The origin of your React app
+#     "http://localhost:3001",  # The origin of your React app
+# ]
+
+CORS_ALLOW_ALL_ORIGINS = True
 
 
 # EMAIL WITH GMAIL

@@ -29,7 +29,7 @@ services:
       - core
     environment: 
       - CHOKIDAR_USEPOLLING=true
-      - REACT_APP_BASE_URL=http://localhost:8009 
+      - REACT_APP_BASE_URL=http://192.168.100.162:8009 
     ports:
       - 3001:3000
     stdin_open: true

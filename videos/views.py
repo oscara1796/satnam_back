@@ -5,6 +5,23 @@ from .models import Video, Category
 from .serializers import VideoSerializer, CategorySerializer
 import json
 
+
+
+def paginate_queryset(queryset, request):
+    # Extract pagination parameters from query params
+    page = int(request.query_params.get('page', 1))
+    page_size = int(request.query_params.get('page_size', 10))
+
+    # Calculate start and end indices based on pagination parameters
+    start_index = (page - 1) * page_size
+    end_index = start_index + page_size
+
+    # Slice the queryset based on start and end indices
+    paginated_queryset = queryset[start_index:end_index]
+
+    return paginated_queryset
+
+
 class IsStaffOrReadOnly(permissions.BasePermission):
     def has_permission(self, request, view):
         if request.method in permissions.SAFE_METHODS:  # Allow GET, HEAD, OPTIONS requests
@@ -13,62 +30,60 @@ class IsStaffOrReadOnly(permissions.BasePermission):
 
 class VideoList(APIView):
     permission_classes = [permissions.IsAuthenticated]
-    def get(self, request):
-        # extract pagination parameters from query params
-        page = int(request.query_params.get('page', 1))
-        page_size = int(request.query_params.get('page_size', 10))
 
-       
-        
-        # calculate start and end indices based on pagination parameters
-        start_index = (page - 1) * page_size
-        end_index = start_index + page_size
-        videos = None
-        # query the database for videos
-        if self.request.user.active or self.request.user.is_staff:
-            # print("active", self.request.user.username)
-            videos = Video.objects.all()[start_index:end_index]
-        else:
-            # print("inactive", self.request.user.username)
-            videos = Video.objects.filter(free=True)[start_index:end_index]
-        
-        # serialize the videos and return them as a response
-        serializer = VideoSerializer(videos, many=True)
-        
-        return Response({
-            'total_count': Video.objects.all().count(),
-            'count': len(videos),
-            'results': serializer.data,
-        })
-    
+    def get(self, request):
+        try:
+            search_query = request.query_params.get('search', None)
+            category_id = request.query_params.get('category', None)
+            print("search_query",search_query)
+            queryset = Video.objects.all()
+
+            if search_query:
+                queryset = queryset.filter(title__icontains=search_query)
+
+            if category_id:
+                queryset = queryset.filter(categories__id=category_id)
+
+            paginated_queryset = paginate_queryset(queryset, request)
+            serializer = VideoSerializer(paginated_queryset, many=True)
+
+            return Response({
+                'total_count': queryset.count(),
+                'count': len(paginated_queryset),
+                'results': serializer.data,
+            })
+
+        except Exception as e:
+            return Response(data={'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 class SearchVideoAPIView(APIView):
     def get(self, request, *args, **kwargs):
         try:
-            # Get the query parameters from the request
             search_query = request.query_params.get('search', None)
             category_id = request.query_params.get('category', None)
 
             if not search_query and not category_id:
                 return Response({'error': 'Search parameter or category parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
 
+            queryset = None
             if search_query:
-                # Perform case-insensitive search in the title field
-                videos = Video.objects.filter(title__icontains=search_query)
+                queryset = Video.objects.filter(title__icontains=search_query)
             elif category_id:
-                # Perform filter by category name
-                videos = Video.objects.filter(categories__id=category_id)
+                queryset = Video.objects.filter(categories__id=category_id)
 
-            # Serialize the queryset
-            serializer = VideoSerializer(videos, many=True)
+            paginated_queryset = paginate_queryset(queryset, request)
+
+            serializer = VideoSerializer(paginated_queryset, many=True)
 
             return Response({
-                'total_count': Video.objects.all().count(),
-                'count': len(videos),
+                'total_count': queryset.count(),
+                'count': len(paginated_queryset),
                 'results': serializer.data,
             }, status=status.HTTP_200_OK)
         except Exception as e:
             return Response(data={'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
     
 
