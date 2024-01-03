@@ -2,7 +2,7 @@
 
 
 # Run the Django createsuperuser command
-docker-compose exec core python manage.py create_superuser
+docker-compose exec core python manage.py createstaffuser
 
 
 

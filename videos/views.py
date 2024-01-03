@@ -101,7 +101,8 @@ class VideoDetail(APIView):
     
     def put(self, request, pk):
         video = Video.objects.get(id=pk)
-        serializer = VideoSerializer(video, data=request.data)
+        
+        serializer = VideoSerializer(video, data=request.data, )
 
        
         if self.request.user.is_staff and serializer.is_valid():
@@ -157,10 +158,49 @@ class VideoDetail(APIView):
                 return Response("Unauthorized", status=status.HTTP_401_UNAUTHORIZED)
         except Exception as e:
             return Response({'errors': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
         
-    def patch(self, rerquest, pk):
-        video = Video.objects.get(id=pk)
+    def patch(self, request, pk):
+        try:
+            video = Video.objects.get(id=pk)
+        except Video.DoesNotExist:
+            return Response({'error': 'Video not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        if not request.user.is_staff:
+            return Response("Unauthorized", status=status.HTTP_401_UNAUTHORIZED)
+
+        data = request.data.copy()
+
+        # Extract and handle category data
+        category_data = data.get('categories', None)
+        if category_data:
+            data.pop('categories', None)
+
+            # Deserialize video data without category
+            serializer = VideoSerializer(video, data=data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+
+                # Parse category_ids and update video categories
+                try:
+                    # Assuming category_data is a string in JSON format
+                    category_json = json.loads(category_data)
+                    category_id = int(category_json.get('data_key'))  # Extract the category ID
+                    category = Category.objects.filter(id=category_id)
+                    video.categories.set(category)
+                except (ValueError, TypeError) as e:
+                    return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            serializer = VideoSerializer(video, data=data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(VideoSerializer(video).data)
+        
+    
 
         
 
