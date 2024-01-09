@@ -2,10 +2,11 @@ version: '3.8'
 services:
   core:
     build: .
-    command: python manage.py runserver 0.0.0.0:8000
+    command: python manage.py runsslserver --certificate ./ssl_certs/cert.pem --key ./ssl_certs/key.pem 0.0.0.0:8000
     container_name: core
     volumes:
       - .:/usr/src/app
+      - ./ssl_certs:/ssl_certs
     ports:
       - 8009:8000
     env_file:
@@ -23,13 +24,14 @@ services:
   satnam-client:
     build:
       context: ../client
-    command:  yarn start
+    command:   yarn start
     container_name: satnam-client
     depends_on:
       - core
     environment: 
       - CHOKIDAR_USEPOLLING=true
-      - REACT_APP_BASE_URL=http://192.168.100.162:8009 
+      - REACT_APP_BASE_URL=https://127.0.0.1:8009 
+      - HTTPS=true
     ports:
       - 3001:3000
     stdin_open: true

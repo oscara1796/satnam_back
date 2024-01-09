@@ -45,11 +45,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'corsheaders',
+    'sslserver',
     'rest_framework', 
+    'corsheaders',
     'core',
     'videos',
     'payments',
+    'contact',
+    'captcha_app',
+     
 ]
 
 MIDDLEWARE = [
@@ -157,6 +161,10 @@ AUTH_USER_MODEL = 'core.CustomUser'
 AUTHENTICATION_BACKENDS = ['core.backends.CustomBackend']
 
 
+
+
+
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -189,12 +197,21 @@ SUBSCRIPTION_FAILED_URL = 'http://localhost:8009/subscription/failed/'
 #     "http://192.168.100.162:3001",
 # ]
 
-# CORS_ALLOWED_ORIGINS = [
-#     "http://192.168.100.162:3001",  # The origin of your React app
-#     "http://localhost:3001",  # The origin of your React app
-# ]
+CORS_ALLOWED_ORIGINS = [
+    "https://192.168.100.162:3001",  # The origin of your React app
+    "https://localhost:3001",  # The origin of your React app
+    "https://127.0.0.1:3001",  # The origin of your React app
+]
 
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ORIGIN_ALLOW_ALL = True
+
+CORS_ALLOW_CREDENTIALS = True
+
+SESSION_ENGINE = "django.contrib.sessions.backends.db"
+
+
+SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_HTTPONLY = True
 
 
 # EMAIL WITH GMAIL
