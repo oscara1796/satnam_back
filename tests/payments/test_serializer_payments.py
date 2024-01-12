@@ -86,26 +86,29 @@ class StripeIntegrationTest(APITestCase):
             self.assertIsNotNone(product["name"])
     
     def test_delete_subscription(self):
-        card_data={
+        # Card data remains the same
+        card_data = {
             'number': '4242424242424242',
             'exp_month': 12,
             'exp_year': 2024,
             'cvc': '123',
         }
 
+        # Creating the subscription
         url = reverse('create_subscription', args=[self.user.id])
-        response = self.client.post(url, card_data,HTTP_AUTHORIZATION=f'Bearer {self.access}', format='json')
+        response = self.client.post(url, card_data, HTTP_AUTHORIZATION=f'Bearer {self.access}', format='json')
         user = get_user_model().objects.get(id=self.user.id)
         self.assertTrue(user.active)
         self.assertEqual(response.status_code, 201)
+
+        # Deleting (actually updating) the subscription
         response = self.client.delete(url, HTTP_AUTHORIZATION=f'Bearer {self.access}', format='json')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data, {'success': 'Subscription canceled'})
-        user = get_user_model().objects.get(id=self.user.id)
-        self.assertFalse(user.active)
+        self.assertEqual(response.data, {'success': 'Subscription set to cancel at period end'})
 
-        with self.assertRaises(stripe.error.StripeError):
-            subscription = stripe.Subscription.retrieve(self.user.stripe_subscription_id )
+        # Retrieve the subscription from Stripe to verify it's set to cancel at period end
+        subscription = stripe.Subscription.retrieve(user.stripe_subscription_id)
+        self.assertTrue(subscription.cancel_at_period_end)
 
         
 

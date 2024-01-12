@@ -11,6 +11,7 @@ from stripe.error import StripeError
 from dotenv import dotenv_values
 import json
 from django.conf import settings
+from core.models import CustomUser
 
 
 env_vars = dotenv_values(".env.dev")
@@ -157,14 +158,19 @@ class PaymentDetailView(APIView):
                     ],
                 )
             else:
-                # Create a subscription for the customer
-                subscription = stripe.Subscription.create(
-                    customer=user.stripe_customer_id,
-                    items=[
-                        {'price': settings.STRIPE_SUBSCRIPTION_PRICE_ID}
-                    ],
-                    # Additional subscription options (e.g., trial period, metadata)
-                )
+                 # Check for trial period
+                trial_days = request.data.get('trial')
+                trial_period_days = None if trial_days is None else int(trial_days)
+
+                # Create a subscription with or without trial period
+                subscription_args = {
+                    'customer': user.stripe_customer_id,
+                    'items': [{'price': settings.STRIPE_SUBSCRIPTION_PRICE_ID}],
+                }
+                if trial_period_days is not None:
+                    subscription_args['trial_period_days'] = trial_period_days
+
+                subscription = stripe.Subscription.create(**subscription_args)
 
                 user.stripe_subscription_id = subscription.id
 
@@ -192,16 +198,13 @@ class PaymentDetailView(APIView):
             if not subscription_id:
                 return Response({'error': 'Missing subscription_id in request data'}, status=status.HTTP_400_BAD_REQUEST)
 
-            stripe.Subscription.delete(subscription_id)
+            stripe.Subscription.modify(
+                subscription_id,
+                cancel_at_period_end=True
+            )
 
-            user.active  = False 
-
-            user.save()
-
-            # Additional cleanup or updates if needed
-            # ...
-
-            return Response({'success': 'Subscription canceled'}, status=status.HTTP_200_OK)
+            
+            return Response({'success': 'Subscription set to cancel at period end'}, status=status.HTTP_200_OK)
         except get_user_model().DoesNotExist:
             return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
         except StripeError as e:
@@ -244,6 +247,15 @@ class StripeWebhookView(APIView):
             if customer_email:
                 self.send_payment_failed_email(customer_email, invoice)
 
+        
+        elif event.type == "customer.subscription.created":
+            subscription = event.data.object
+            if subscription.trial_end:
+                customer_id = subscription.customer
+                customer_email = self.get_customer_email(customer_id)
+                if customer_email:
+                    self.send_trial_start_email(customer_email, subscription)
+
             
 
         
@@ -260,12 +272,21 @@ class StripeWebhookView(APIView):
             customer_email = self.get_customer_email(customer_id)
             if customer_email:
                 self.send_subscription_deleted_email(customer_email)
+            
+            try:
+                user = CustomUser.objects.get(stripe_customer_id=customer_id)
+                user.active = False
+                user.stripe_subscription_id = None
+                user.save()
+            except CustomUser.DoesNotExist:
+                return JsonResponse({'status': 'user not found'}, status=404)
 
         elif event.type == "customer.subscription.trial_will_end":
-            """
-            Occurs three days before a subscription’s trial period is scheduled to end, or when a trial is ended immediately (using trial_end=now).
-            """
-            pass
+            subscription = event.data.object
+            customer_id = subscription.customer
+            customer_email = self.get_customer_email(customer_id)
+            if customer_email:
+                self.send_trial_will_end_email(customer_email, subscription)
 
         return Response(status=200)
 
@@ -336,7 +357,15 @@ class StripeWebhookView(APIView):
         recipient_list = [customer_email]
 
         send_mail(subject, message, from_email, recipient_list, fail_silently=False, html_message=message)
-        
+
+    def send_trial_start_email(self, customer_email, subscription):
+        subject = 'Welcome to Your Trial Period!'
+        message = f'Dear Customer,\n\nThank you for starting a trial with us! We hope you enjoy everything we have to offer. Your trial ends on {subscription.trial_end}.'
+        from_email = 'oscara1706cl@hotmail.com'
+        recipient_list = [customer_email]
+
+        send_mail(subject, message, from_email, recipient_list) 
+
     def send_payment_failed_email(self, customer_email, invoice):
         subject = 'Payment Failed Notification'
         message = f'Hello,\n\nYour payment for Invoice ID: {invoice.id} has failed.\nPlease update your payment information or contact support.'
@@ -349,6 +378,14 @@ class StripeWebhookView(APIView):
         subject = 'We Are Going to Miss You'
         message = f'Dear Customer,\n\nWe noticed that your subscription has been deleted. We are going to miss you! If you have any feedback or need assistance, please feel free to contact us.'
         from_email = 'oscara1706cl@hotmail.com'  # Replace with your email address
+        recipient_list = [customer_email]
+
+        send_mail(subject, message, from_email, recipient_list)
+    
+    def send_trial_will_end_email(self, customer_email, subscription):
+        subject = 'Your Trial Period is Ending Soon'
+        message = f'Dear Customer,\n\nJust a heads-up that your trial period is ending soon. You will be charged after {subscription.trial_end}. We hope you enjoyed your trial!'
+        from_email = 'oscara1706cl@hotmail.com'
         recipient_list = [customer_email]
 
         send_mail(subject, message, from_email, recipient_list)

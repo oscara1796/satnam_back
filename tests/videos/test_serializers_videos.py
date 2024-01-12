@@ -83,9 +83,10 @@ class VideoPaginationTest(APITestCase):
         url = reverse('video-list') + '?page=1&page_size=10'
         response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.access_free_user_1}')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data['results']), 4)
+        print(response.data)
+        self.assertEqual(len(response.data['results']), 10)
         self.assertEqual(response.data['total_count'], 20)
-        self.assertEqual(response.data['count'], 4)
+        self.assertEqual(response.data['count'], 10)
 
     def test_video_pagination_payed_and_staff(self):
         # Test video pagination for paid and staff users

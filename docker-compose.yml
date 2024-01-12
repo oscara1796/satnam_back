@@ -23,7 +23,7 @@ services:
       - POSTGRES_DB=core_dev
   satnam-client:
     build:
-      context: ../client
+      context: ../satnam_front
     command:   yarn start
     container_name: satnam-client
     depends_on:
@@ -36,7 +36,7 @@ services:
       - 3001:3000
     stdin_open: true
     volumes: 
-      - ../client:/usr/src/app
+      - ../satnam_front:/usr/src/app
 
 volumes:
   postgres_data:
