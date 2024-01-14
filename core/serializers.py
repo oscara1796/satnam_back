@@ -3,6 +3,7 @@ from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 import stripe
 from dotenv import dotenv_values
+from .models import TrialDays
 
 
 env_vars = dotenv_values(".env.dev")
@@ -62,3 +63,8 @@ class LogInSerializer(TokenObtainPairSerializer):
                 token[key] = value
         token['is_staff'] = user.is_staff
         return token
+
+class TrialDaysSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TrialDays
+        fields = ['id', 'days']

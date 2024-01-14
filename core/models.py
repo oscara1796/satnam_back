@@ -12,4 +12,13 @@ class CustomUser(AbstractUser):
 
     def __str__(self):
         return self.username
+    
+
+
+class TrialDays(models.Model):
+    days = models.IntegerField(default=0) 
+
+    def __str__(self):
+        return str(self.days)  
+
 
