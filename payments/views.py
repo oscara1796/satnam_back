@@ -63,8 +63,7 @@ class PricesListView(APIView):
             data = stripe.Product.list()
             json_str = json.dumps(data.data)
             return Response(json_str, status=200)
-        except:
-            print("HELLO",e)
+        except Exception as e:
             return Response({'errors': e}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 
@@ -91,6 +90,85 @@ class SubscriptionDetailView(APIView):
             return Response({'errors': err}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+class PaymentMethodView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, pk):
+        try:
+            user = get_user_model().objects.get(id=pk)
+            print(user)
+            customer = stripe.Customer.retrieve(user.stripe_customer_id)
+
+            # Retrieve the default payment method
+            default_payment_method_id = customer.invoice_settings.default_payment_method
+            default_payment_method = stripe.PaymentMethod.retrieve(default_payment_method_id) if default_payment_method_id else None
+
+            # Retrieve all payment methods
+            payment_methods = stripe.PaymentMethod.list(
+                customer=user.stripe_customer_id,
+                type="card"
+            )
+
+            return Response({
+                'default_payment_method': default_payment_method,
+                'all_payment_methods': payment_methods.data,
+            }, status=status.HTTP_200_OK)
+        except get_user_model().DoesNotExist:
+            return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+        except StripeError as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def post(self, request, pk):
+        try:
+            user = get_user_model().objects.get(id=pk)
+            serializer = PaymentMethodSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            validated_data = serializer.validated_data
+            payment_method = stripe.PaymentMethod.create(
+                type='card',
+                card=validated_data,
+            )
+            stripe.PaymentMethod.attach(
+                payment_method.id,
+                customer=user.stripe_customer_id,
+            )
+
+            return Response({
+                'payment_method_id': payment_method.id
+            }, status=status.HTTP_201_CREATED)
+        except StripeError as e:
+            print(e)
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request, pk):
+        try:
+            user = get_user_model().objects.get(id=pk)
+            stripe.Customer.modify(
+                user.stripe_customer_id,
+                invoice_settings={
+                    'default_payment_method': request.data.get('payment_method_id'),
+                },
+            )
+
+            return Response({'success': 'Default payment method updated'}, status=status.HTTP_200_OK)
+        except StripeError as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        try:
+            payment_method_id = request.data.get('payment_method_id')
+            if not payment_method_id:
+                return Response({'error': 'Missing payment_method_id'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Detach the payment method from the customer
+            stripe.PaymentMethod.detach(payment_method_id)
+
+            # Delete the payment method from Stripe
+            stripe.PaymentMethod.delete(payment_method_id)
+
+            return Response({'success': 'Payment method detached and deleted'}, status=status.HTTP_200_OK)
+        except StripeError as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 
@@ -100,22 +178,29 @@ class PaymentDetailView(APIView):
     def get(self, request, pk):
         try:
             user = get_user_model().objects.get(id=pk)
-            print("user.stripe_subscription_id ", user.stripe_subscription_id)
             # Retrieve the customer's Stripe subscription
             subscription = stripe.Subscription.retrieve(user.stripe_subscription_id)
 
+
+
             product = stripe.Product.retrieve(subscription.plan.product)
 
-            # print(subscription)
-            # Return the subscription details
-            return Response({
+            response = {
                 'subscription_id': subscription.id,
                 'status': subscription.status,
                 'current_period_end': subscription.current_period_end,
                 'product_price': subscription.plan.amount,
                 'product_name': product.name,
                 'cancel_at_period_end': subscription.cancel_at_period_end,
-            }, status=status.HTTP_200_OK)
+            }
+
+            if subscription.status == "trialing":
+                response["trial_start"] = subscription.trial_start
+                response["trial_end"] = subscription.trial_end
+
+            # print(subscription)
+            # Return the subscription details
+            return Response(response, status=status.HTTP_200_OK)
         except get_user_model().DoesNotExist:
             return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
         except StripeError as e:
@@ -125,66 +210,48 @@ class PaymentDetailView(APIView):
     
     def post(self, request, pk):
         try:
-            serializer = PaymentMethodSerializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            validated_data = serializer.validated_data
-            
-            payment_method = stripe.PaymentMethod.create(
-                type='card',
-                card=validated_data,
-            )
             user = get_user_model().objects.get(id=pk)
 
-            stripe.PaymentMethod.attach(
-                payment_method.id,
-                customer=user.stripe_customer_id,
-            )
-
-            stripe.Customer.modify(
-                user.stripe_customer_id,
-                invoice_settings={
-                    'default_payment_method': payment_method.id,
-                },
-            )
-            subscription = None
-             # Check if the user has an incomplete subscription
-            if user.stripe_subscription_id and not user.active:
-                # Attempt to pay the incomplete subscription
-                subscription = stripe.Subscription.modify(
-                    user.stripe_subscription_id,
-                    payment_behavior='default_incomplete',
-                    items=[
-                        {'price': settings.STRIPE_SUBSCRIPTION_PRICE_ID}
-                    ],
-                )
+            payment_method_id = request.data.get('payment_method_id')
+            if payment_method_id:
+                # Attach the provided payment method and set as default
+                stripe.PaymentMethod.attach(payment_method_id, customer=user.stripe_customer_id)
+                stripe.Customer.modify(user.stripe_customer_id, invoice_settings={'default_payment_method': payment_method_id})
             else:
-                 # Check for trial period
-                trial_days = request.data.get('trial')
-                trial_period_days = None if trial_days is None else int(trial_days)
+                # Create and attach a new payment method as per the existing flow
+                serializer = PaymentMethodSerializer(data=request.data)
+                serializer.is_valid(raise_exception=True)
+                validated_data = serializer.validated_data
+                payment_method = stripe.PaymentMethod.create(type='card', card=validated_data)
+                stripe.PaymentMethod.attach(payment_method.id, customer=user.stripe_customer_id)
+                stripe.Customer.modify(user.stripe_customer_id, invoice_settings={'default_payment_method': payment_method.id})
 
-                # Create a subscription with or without trial period
-                subscription_args = {
-                    'customer': user.stripe_customer_id,
-                    'items': [{'price': settings.STRIPE_SUBSCRIPTION_PRICE_ID}],
-                }
-                if trial_period_days is not None:
-                    subscription_args['trial_period_days'] = trial_period_days
+            # Subscription creation logic remains the same
+            trial_days = request.data.get('trial')
+            trial_period_days = None if trial_days is None else int(trial_days)
+            subscription_args = {
+                'customer': user.stripe_customer_id,
+                'items': [{'price': settings.STRIPE_SUBSCRIPTION_PRICE_ID}],
+            }
+            if trial_period_days is not None:
+                subscription_args['trial_period_days'] = trial_period_days
+            subscription = stripe.Subscription.create(**subscription_args)
 
-                subscription = stripe.Subscription.create(**subscription_args)
-
-                user.stripe_subscription_id = subscription.id
-
-             # Update the user's active status based on the subscription status
+            user.stripe_subscription_id = subscription.id
             user.active = subscription.status in ("active", "trialing")
             user.save()
 
-            # Return the customer's Stripe customer ID and subscription details
-            return Response({
+            response = {
                 'stripe_customer_id': user.stripe_customer_id,
                 'subscription_id': subscription.id,
                 'status': subscription.status,
                 'is_active': user.active
-            }, status=status.HTTP_201_CREATED)
+            }
+            if subscription.status == "trialing":
+                response["trial_start"] = subscription.trial_start
+                response["trial_end"] = subscription.trial_end
+
+            return Response(response, status=status.HTTP_201_CREATED)
         except stripe.error.StripeError as e:
             return Response({'errors': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
@@ -210,6 +277,30 @@ class PaymentDetailView(APIView):
         except StripeError as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+    def patch(self, request, pk):
+        try:
+            user = get_user_model().objects.get(id=pk)
+            subscription_id = user.stripe_subscription_id
+
+            if not subscription_id:
+                return Response({'error': 'Missing subscription_id'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Update the subscription to not cancel at the period end
+            updated_subscription = stripe.Subscription.modify(
+                subscription_id,
+                cancel_at_period_end=False
+            )
+
+            # Prepare and return the response
+            response = {
+                'subscription_id': updated_subscription.id,
+                'cancel_at_period_end': updated_subscription.cancel_at_period_end
+            }
+            return Response(response, status=status.HTTP_200_OK)
+        except get_user_model().DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        except StripeError as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 
