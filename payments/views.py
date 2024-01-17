@@ -163,8 +163,6 @@ class PaymentMethodView(APIView):
             # Detach the payment method from the customer
             stripe.PaymentMethod.detach(payment_method_id)
 
-            # Delete the payment method from Stripe
-            stripe.PaymentMethod.delete(payment_method_id)
 
             return Response({'success': 'Payment method detached and deleted'}, status=status.HTTP_200_OK)
         except StripeError as e:
