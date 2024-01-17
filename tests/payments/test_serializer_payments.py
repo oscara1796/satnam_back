@@ -4,12 +4,22 @@ import stripe
 from dotenv import dotenv_values
 import  json
 from django.contrib.auth import get_user_model
+from datetime import datetime
+import random
 
 
 
 # Load the environment variables from .env.dev file
 env_vars = dotenv_values(".env.dev")
 PASSWORD = 'pAssw0rd!'
+
+def generate_random_card_number():
+    """
+    Generates a random card number and returns it as a string.
+    The generated number is a 16-digit string starting with 4 (like a Visa card).
+    """
+    card_number = random.randint(4000000000000000, 4999999999999999)
+    return str(card_number)
 
 
 class StripeIntegrationTest(APITestCase):
@@ -130,17 +140,171 @@ class StripeIntegrationTest(APITestCase):
         self.assertIn('status', response.data)
         self.assertIn('current_period_end', response.data)
         self.assertIn('cancel_at_period_end', response.data)
-
-            
-
-        
     
+    def test_create_subscription_with_trial(self):
+        # Add trial period data
+        trial_period_days = 14  # for example, a 14-day trial
+
+        card_data = {
+            'number': '4242424242424242',
+            'exp_month': 12,
+            'exp_year': 2024,
+            'cvc': '123',
+            'trial': trial_period_days,  # Add trial period to the request data
+        }
+
+        url = reverse('create_subscription', args=[self.user.id])
+        response = self.client.post(url, card_data, HTTP_AUTHORIZATION=f'Bearer {self.access}', format='json')
+        self.assertEqual(response.status_code, 201)
+        self.assertIn('status', response.data)
+        self.assertEqual(response.data["status"], 'trialing')
+        self.assertTrue(response.data["is_active"])
+        user = get_user_model().objects.get(id=self.user.id)
+        self.assertTrue(user.active)
+        self.assertEqual(response.data["subscription_id"], user.stripe_subscription_id)
+        trial_end = response.data["trial_end"]
+        trial_start = response.data["trial_start"]
+
+        # Convert Unix timestamps to datetime objects
+        end_date = datetime.fromtimestamp(trial_end)
+        start_date = datetime.fromtimestamp(trial_start)
+
+        # Calculate the difference in days
+        difference_in_days = (end_date - start_date).days
+        self.assertEqual(difference_in_days, trial_period_days)
+
     
-        
-        
+    def test_patch_reactivate_subscription(self):
+        # Card data remains the same
+        card_data = {
+            'number': '4242424242424242',
+            'exp_month': 12,
+            'exp_year': 2024,
+            'cvc': '123',
+        }
+
+        # Creating the subscription
+        url = reverse('create_subscription', args=[self.user.id])
+        response = self.client.post(url, card_data, HTTP_AUTHORIZATION=f'Bearer {self.access}', format='json')
+        user = get_user_model().objects.get(id=self.user.id)
+        self.assertTrue(user.active)
+        self.assertEqual(response.status_code, 201)
+
+        # Deleting (actually updating) the subscription
+        response = self.client.delete(url, HTTP_AUTHORIZATION=f'Bearer {self.access}', format='json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data, {'success': 'Subscription set to cancel at period end'})
+
+        subscription = stripe.Subscription.retrieve(user.stripe_subscription_id)
+        self.assertTrue(subscription.cancel_at_period_end)
+
+        response = self.client.patch(url, HTTP_AUTHORIZATION=f'Bearer {self.access}', format='json')
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.data['cancel_at_period_end'])
+
+        subscription = stripe.Subscription.retrieve(user.stripe_subscription_id)
+        self.assertFalse(subscription.cancel_at_period_end)
+
+        # Retrieve the subscription from Stripe to verify it's set to cancel at period end
+    
 
 
+class PaymentMethodViewTests(APITestCase):
+
+    def setUp(self):
+        # Initialize the Stripe API client with your API key
+        stripe.api_key = env_vars["STRIPE_SECRET_KEY"]
+        # self.subscription_url = reverse('subscription')
+        response = self.client.post(reverse('sign_up'), data={
+            'username':'testuser2',
+            'email':'user2@example.com',
+            'first_name': 'Test',
+            'last_name': 'User',
+            'telephone': '3331722789',
+            'password1': PASSWORD,
+            'password2': PASSWORD
+        })
+        # Retrieve the user object from the database
+        self.user= get_user_model().objects.last()
+        response = self.client.post(reverse('log_in'), data={
+            'username': self.user.username,
+            'password': PASSWORD,
+        })
+        self.access = response.data['access']
+
+        print(self.access)
+
+        self.url = reverse('payment_method', kwargs={'pk': self.user.pk})
+
     
+    def test_post_payment_method(self):
+        # Prepare test payment method data
+        card_data = {
+            'number': '4242424242424242',  
+            'exp_month': 12,
+            'exp_year': 2024,
+            'cvc': '123',
+        }
+        response = self.client.post(self.url, card_data, HTTP_AUTHORIZATION=f'Bearer {self.access}', format='json')
+        self.assertEqual(response.status_code, 201)
+        self.assertIn("payment_method_id", response.data)
+
+    
+    def test_put_update_default_payment_method(self):
+
+        card_data = {
+            'number': '4242424242424242',  
+            'exp_month': 12,
+            'exp_year': 2024,
+            'cvc': '123',
+        }
+        response = self.client.post(self.url, card_data, HTTP_AUTHORIZATION=f'Bearer {self.access}', format='json')
+        self.assertEqual(response.status_code, 201)
+        self.assertIn("payment_method_id", response.data)
+
+        payment_method_id = response.data
+
+        response = self.client.put(self.url, {'payment_method_id': payment_method_id}, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+
+    def test_get_payment_methods(self):
+
+        payment_ids = []
+
+        number_of_payment_methods = 3
+
+        for i in range(number_of_payment_methods):
+
+            card_data = {
+                'number': '4242424242424242',  
+                'exp_month': 12,
+                'exp_year': 2024,
+                'cvc': '123',
+            }
+            response = self.client.post(self.url, card_data, HTTP_AUTHORIZATION=f'Bearer {self.access}', format='json')
+            print(response)
+            self.assertEqual(response.status_code, 201)
+            self.assertIn("payment_method_id", response.data)
+            payment_ids.append(response.data)
+
+
+
+        response = self.client.get(self.url, HTTP_AUTHORIZATION=f'Bearer {self.access}', format='json')
+        self.assertEqual(response.status_code, 200)
+
+        print(response.data)
+        # Verify the response contains the expected keys
+        # Note: This assumes you have set up test payment methods in Stripe
+
+    
+        # Verify the response contains the new payment method ID
+
+    
+
+    def test_delete_payment_method(self):
+        # Assume 'pm_test_delete' is a valid payment method ID in your Stripe test account
+        response = self.client.delete(self.url, {'payment_method_id': 'pm_test_delete'}, content_type='application/json')
+        self.assertEqual(response.status_id, 200)
 #     def test_create_payment_intent(self):
 #         # Make a request to your Django API endpoint that creates a payment intent
 #         response = self.client.post('/api/payment/create-intent/', data={'amount': 1000, 'currency': 'usd'})
