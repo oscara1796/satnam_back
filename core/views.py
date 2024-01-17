@@ -7,7 +7,7 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import  LogInSerializer,UserSerializer
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status,permissions
 from rest_framework.views import APIView
 from rest_framework.exceptions import ValidationError
 import stripe
@@ -102,9 +102,17 @@ class UserDetailView(APIView):
         except Exception as e:
             print(e)
             return Response(data={'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
+
+
+class IsStaffOrReadOnly(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.method in permissions.SAFE_METHODS:  # Allow GET, HEAD, OPTIONS requests
+            return True
+        return request.user.is_staff
 
 class TrialDaysDetail(APIView):
+    permission_classes = [IsStaffOrReadOnly]
+
     def get_object(self, pk):
         try:
             return TrialDays.objects.get(pk=pk)
