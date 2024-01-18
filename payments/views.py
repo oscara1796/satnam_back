@@ -55,13 +55,19 @@ class PaymentList(APIView):
 
 
 class PricesListView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
 
 
     def get(self, request):
         # extract pagination parameters from query params
         try:
             data = stripe.Product.list()
-            json_str = json.dumps(data.data)
+
+            products = data.data
+            for product in products:
+                product["price"] = stripe.Price.retrieve(product.default_price).unit_amount
+            json_str = json.dumps(products)
+
             return Response(json_str, status=200)
         except Exception as e:
             return Response({'errors': e}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
