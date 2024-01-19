@@ -64,8 +64,11 @@ class PricesListView(APIView):
             data = stripe.Product.list()
 
             products = data.data
+            
             for product in products:
-                product["price"] = stripe.Price.retrieve(product.default_price).unit_amount
+                data_json_product = stripe.Price.retrieve(product.default_price)
+                product["price"] = data_json_product.unit_amount
+                product["currency"] = data_json_product.currency
             json_str = json.dumps(products)
 
             return Response(json_str, status=200)
@@ -235,7 +238,7 @@ class PaymentDetailView(APIView):
             trial_period_days = None if trial_days is None else int(trial_days)
             subscription_args = {
                 'customer': user.stripe_customer_id,
-                'items': [{'price': settings.STRIPE_SUBSCRIPTION_PRICE_ID}],
+                'items': [{'price': request.data.get('price_id')}],
             }
             if trial_period_days is not None:
                 subscription_args['trial_period_days'] = trial_period_days
@@ -289,6 +292,8 @@ class PaymentDetailView(APIView):
             if not subscription_id:
                 return Response({'error': 'Missing subscription_id'}, status=status.HTTP_400_BAD_REQUEST)
 
+
+            print("hola")
             # Update the subscription to not cancel at the period end
             updated_subscription = stripe.Subscription.modify(
                 subscription_id,
