@@ -220,14 +220,19 @@ class PaymentDetailView(APIView):
             user = get_user_model().objects.get(id=pk)
 
             payment_method_id = request.data.get('payment_method_id')
+            subscription_args = {
+                    'customer': user.stripe_customer_id,
+                    'items': [{'price': request.data.get('price_id')}],
+            }
+
+            
             if payment_method_id:
                 # Attach the provided payment method and set as default
-                stripe.PaymentMethod.attach(payment_method_id, customer=user.stripe_customer_id)
-                stripe.Customer.modify(user.stripe_customer_id, invoice_settings={'default_payment_method': payment_method_id})
+                subscription_args["default_payment_method"] = payment_method_id
             else:
-                # Create and attach a new payment method as per the existing flow
                 serializer = PaymentMethodSerializer(data=request.data)
                 serializer.is_valid(raise_exception=True)
+                # Create and attach a new payment method as per the existing flow
                 validated_data = serializer.validated_data
                 payment_method = stripe.PaymentMethod.create(type='card', card=validated_data)
                 stripe.PaymentMethod.attach(payment_method.id, customer=user.stripe_customer_id)
@@ -236,10 +241,7 @@ class PaymentDetailView(APIView):
             # Subscription creation logic remains the same
             trial_days = request.data.get('trial')
             trial_period_days = None if trial_days is None else int(trial_days)
-            subscription_args = {
-                'customer': user.stripe_customer_id,
-                'items': [{'price': request.data.get('price_id')}],
-            }
+            
             if trial_period_days is not None:
                 subscription_args['trial_period_days'] = trial_period_days
             subscription = stripe.Subscription.create(**subscription_args)
@@ -252,7 +254,7 @@ class PaymentDetailView(APIView):
                 'stripe_customer_id': user.stripe_customer_id,
                 'subscription_id': subscription.id,
                 'status': subscription.status,
-                'is_active': user.active
+                'user_is_active': user.active
             }
             if subscription.status == "trialing":
                 response["trial_start"] = subscription.trial_start

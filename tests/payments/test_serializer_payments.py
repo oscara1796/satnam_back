@@ -6,6 +6,7 @@ import  json
 from django.contrib.auth import get_user_model
 from datetime import datetime
 import random
+from django.conf import settings
 
 
 
@@ -13,13 +14,6 @@ import random
 env_vars = dotenv_values(".env.dev")
 PASSWORD = 'pAssw0rd!'
 
-def generate_random_card_number():
-    """
-    Generates a random card number and returns it as a string.
-    The generated number is a 16-digit string starting with 4 (like a Visa card).
-    """
-    card_number = random.randint(4000000000000000, 4999999999999999)
-    return str(card_number)
 
 
 class StripeIntegrationTest(APITestCase):
@@ -62,6 +56,7 @@ class StripeIntegrationTest(APITestCase):
             'exp_month': 12,
             'exp_year': 2024,
             'cvc': '123',
+            'price_id': settings.STRIPE_SUBSCRIPTION_PRICE_ID
         }
 
         url = reverse('create_subscription', args=[self.user.id])
@@ -79,15 +74,70 @@ class StripeIntegrationTest(APITestCase):
         self.assertIsNotNone(subscription_id)
 
     
+    def test_create_subscription_with_payment_method(self):
+        # Make the API request
+        
+        card_data={
+            'number': '4242424242424242',
+            'exp_month': 12,
+            'exp_year': 2024,
+            'cvc': '123',
+        }
+
+        url= reverse('payment_method', kwargs={'pk': self.user.pk})
+
+        response = self.client.post(url, card_data, HTTP_AUTHORIZATION=f'Bearer {self.access}', format='json')
+        self.assertEqual(response.status_code, 201)
+
+        # Verify the payment method ID is returned in the response
+        self.assertIn("payment_method_id", response.data)
+        created_payment_method_id = response.data["payment_method_id"]
+        
+        card_data={
+            "payment_method_id": created_payment_method_id,
+            "price_id": settings.STRIPE_SUBSCRIPTION_PRICE_ID
+        }
+
+        url = reverse('create_subscription', args=[self.user.id])
+        response = self.client.post(url, card_data,HTTP_AUTHORIZATION=f'Bearer {self.access}', format='json')
+        print(response.data)
+        self.assertEqual(response.status_code, 201)
+        
+        self.assertIn('stripe_customer_id', response.data)
+        self.assertIn('subscription_id', response.data)
+        self.assertIn('status', response.data)
+        user = get_user_model().objects.get(id=self.user.id)
+        self.assertTrue(user.active)
+        # self.assertTrue(stripe.PaymentMethod.retrieve(response_obj["id"]))
+        subscription_id = response.data['subscription_id']
+        self.assertIsNotNone(subscription_id)
+
+
+    
+    def test_create_subscription_without_price_Error(self):
+        # Make the API request
+        
+        card_data={
+            'number': '4242424242424242',
+            'exp_month': 12,
+            'exp_year': 2024,
+            'cvc': '123',
+        }
+
+        url = reverse('create_subscription', args=[self.user.id])
+        response = self.client.post(url, card_data,HTTP_AUTHORIZATION=f'Bearer {self.access}', format='json')
+        self.assertEqual(response.status_code, 400)
+        
+
+    
 
 
 
     
     def test_get_product_prices(self):
         url = reverse('get_product_prices')
-        response = self.client.get(url, format='json')
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.access}',format='json')
         response_obj = json.loads(response.data)
-        # print(response_obj)
         self.assertEqual(response.status_code, 200)
         for product in response_obj:
             # print(product)
@@ -102,6 +152,7 @@ class StripeIntegrationTest(APITestCase):
             'exp_month': 12,
             'exp_year': 2024,
             'cvc': '123',
+            'price_id': settings.STRIPE_SUBSCRIPTION_PRICE_ID
         }
 
         # Creating the subscription
@@ -128,6 +179,8 @@ class StripeIntegrationTest(APITestCase):
             'exp_month': 12,
             'exp_year': 2024,
             'cvc': '123',
+            'price_id': settings.STRIPE_SUBSCRIPTION_PRICE_ID,
+
         }
 
         url = reverse('create_subscription', args=[self.user.id])
@@ -150,6 +203,7 @@ class StripeIntegrationTest(APITestCase):
             'exp_month': 12,
             'exp_year': 2024,
             'cvc': '123',
+            'price_id': settings.STRIPE_SUBSCRIPTION_PRICE_ID,
             'trial': trial_period_days,  # Add trial period to the request data
         }
 
@@ -158,7 +212,7 @@ class StripeIntegrationTest(APITestCase):
         self.assertEqual(response.status_code, 201)
         self.assertIn('status', response.data)
         self.assertEqual(response.data["status"], 'trialing')
-        self.assertTrue(response.data["is_active"])
+        self.assertTrue(response.data["user_is_active"])
         user = get_user_model().objects.get(id=self.user.id)
         self.assertTrue(user.active)
         self.assertEqual(response.data["subscription_id"], user.stripe_subscription_id)
@@ -181,6 +235,7 @@ class StripeIntegrationTest(APITestCase):
             'exp_month': 12,
             'exp_year': 2024,
             'cvc': '123',
+            'price_id': settings.STRIPE_SUBSCRIPTION_PRICE_ID,
         }
 
         # Creating the subscription
