@@ -24,7 +24,8 @@ urlpatterns = [
     path('', include('videos.urls')),
     path('', include('payments.urls')),
     path('', include('contact.urls')),
-    path('', include('captcha_app.urls'))
+    path('', include('captcha_app.urls')),
+    path('', include('scheduler.urls'))
 ]
 
 if settings.DEBUG:

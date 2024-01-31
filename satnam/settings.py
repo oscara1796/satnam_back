@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'payments',
     'contact',
     'captcha_app',
+    'scheduler',
      
 ]
 
