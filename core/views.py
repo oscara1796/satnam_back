@@ -2,6 +2,9 @@
 from django.contrib.auth import get_user_model
 from rest_framework import generics, permissions, viewsets, status
 # Create your views here.
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import send_mail
+from satnam.settings import DEFAULT_FROM_EMAIL
 from rest_framework_simplejwt.views import TokenObtainPairView 
 from rest_framework_simplejwt.views import TokenRefreshView
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -15,6 +18,11 @@ from dotenv import dotenv_values
 from .models import TrialDays
 from .serializers import TrialDaysSerializer
 from django.http import Http404
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_text
+from django_ratelimit.decorators import ratelimit
+from django.utils.decorators import method_decorator
+from django.urls import reverse
 
 
 
@@ -22,9 +30,28 @@ env_vars = dotenv_values(".env.dev")
 stripe.api_key = env_vars["STRIPE_SECRET_KEY"]
 
 
+
+
+@ratelimit(key='ip', rate='5/m', method='POST', block=True)
+def rate_limit_check(request):
+    pass
+
+@method_decorator(ratelimit(key='ip', rate='5/m', method='POST', block=True), name='dispatch')
 class SignUpView(generics.CreateAPIView):
     queryset = get_user_model().objects.all()
     serializer_class = UserSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if not serializer.is_valid():
+            # Here you can customize the error response
+            errors = {'message': serializer.errors}
+            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        # If the serializer is valid, proceed as normal
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
 class LogInView(TokenObtainPairView):
@@ -32,6 +59,9 @@ class LogInView(TokenObtainPairView):
     
 
     def post(self, request, *args, **kwargs):
+
+        # Perform rate limit check
+        rate_limit_check(request)
         serializer = self.get_serializer(data=request.data)
         
         try:
@@ -40,7 +70,7 @@ class LogInView(TokenObtainPairView):
             return Response(serializer.validated_data)
         except Exception as e:
             print("HELLO",e.detail)
-            return Response({'errors': "No se encontró una cuenta activa con las credenciales proporcionadas."}, status=401)
+            return Response({'message': "No se encontró una cuenta activa con las credenciales proporcionadas."}, status=401)
         
 
 class CustomTokenRefreshView(TokenRefreshView):
@@ -71,6 +101,30 @@ class CustomTokenRefreshView(TokenRefreshView):
                 
         
         return response
+    
+class PasswordResetRequestView(views.APIView):
+    def post(self, request, *args, **kwargs):
+        email = request.data.get("email")
+        user_model = get_user_model()
+        try:
+            user = user_model.objects.get(email=email)
+            # Generate a one-time use token and UID
+            token = default_token_generator.make_token(user)
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            reset_link = request.build_absolute_uri(reverse('password-reset-confirm', kwargs={'uidb64': uid, 'token': token}))
+            
+            # Send email to user with password reset link
+            send_mail(
+                'Password Reset Request',
+                f'Please go to the following link to reset your password: {reset_link}',
+                DEFAULT_FROM_EMAIL,
+                [email],
+                fail_silently=False,
+            )
+            return Response({"message": "If an account with the email exists, a password reset link has been sent."}, status=status.HTTP_200_OK)
+        except user_model.DoesNotExist:
+            # For privacy reasons, do not reveal whether or not the email exists in the system
+            return Response({"message": "If an account with the email exists, a password reset link has been sent."}, status=status.HTTP_200_OK)
 
 class UserDetailView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -87,8 +141,8 @@ class UserDetailView(APIView):
             serializer.save()
             return Response(serializer.data)
         
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        errors = {'message': serializer.errors}
+        return Response(errors, status=status.HTTP_400_BAD_REQUEST)
     
     def delete(self, request, pk):
         try:
@@ -101,7 +155,7 @@ class UserDetailView(APIView):
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Exception as e:
             print(e)
-            return Response(data={'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(data={'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class IsStaffOrReadOnly(permissions.BasePermission):
