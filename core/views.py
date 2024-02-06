@@ -2,6 +2,9 @@
 from django.contrib.auth import get_user_model
 from rest_framework import generics, permissions, viewsets, status
 # Create your views here.
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import send_mail
+from satnam.settings import EMAIL_HOST_USER
 from rest_framework_simplejwt.views import TokenObtainPairView 
 from rest_framework_simplejwt.views import TokenRefreshView
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -15,16 +18,45 @@ from dotenv import dotenv_values
 from .models import TrialDays
 from .serializers import TrialDaysSerializer
 from django.http import Http404
-
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django_ratelimit.decorators import ratelimit
+from django.utils.decorators import method_decorator
+from django.urls import reverse
+from django.conf import settings
 
 
 env_vars = dotenv_values(".env.dev")
 stripe.api_key = env_vars["STRIPE_SECRET_KEY"]
 
+def conditional_ratelimit(*args, **kwargs):
+    def decorator(func):
+        if settings.TESTING:
+            return func
+        return ratelimit(*args, **kwargs)(func)
+    return decorator
 
+
+@conditional_ratelimit(key='ip', rate='5/m', method='POST', block=True)
+def rate_limit_check(request):
+    pass
+
+@method_decorator(conditional_ratelimit(key='ip', rate='5/m', method='POST', block=True), name='dispatch')
 class SignUpView(generics.CreateAPIView):
     queryset = get_user_model().objects.all()
     serializer_class = UserSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if not serializer.is_valid():
+            # Here you can customize the error response
+            errors = {'message': serializer.errors}
+            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        # If the serializer is valid, proceed as normal
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
 class LogInView(TokenObtainPairView):
@@ -32,6 +64,9 @@ class LogInView(TokenObtainPairView):
     
 
     def post(self, request, *args, **kwargs):
+
+        # Perform rate limit check
+        rate_limit_check(request)
         serializer = self.get_serializer(data=request.data)
         
         try:
@@ -40,7 +75,7 @@ class LogInView(TokenObtainPairView):
             return Response(serializer.validated_data)
         except Exception as e:
             print("HELLO",e.detail)
-            return Response({'errors': "No se encontró una cuenta activa con las credenciales proporcionadas."}, status=401)
+            return Response({'message': "No se encontró una cuenta activa con las credenciales proporcionadas."}, status=401)
         
 
 class CustomTokenRefreshView(TokenRefreshView):
@@ -71,6 +106,45 @@ class CustomTokenRefreshView(TokenRefreshView):
                 
         
         return response
+    
+class PasswordResetRequestView(APIView):
+    def post(self, request, *args, **kwargs):
+        email = request.data.get("email")
+        user_model = get_user_model()
+        try:
+            user = user_model.objects.get(email=email)
+            # Generate a one-time use token and UID
+            token = default_token_generator.make_token(user)
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            reset_link = f'http://192.168.100.162:3001/#/reset-password/{uid}/{token}'
+            
+            # Send email to user with password reset link
+            send_mail(
+                '[Sat Nam Yoga] Solicitud de restablecimiento de contraseña',
+                f'Por favor vaya al siguiente enlace para restablecer su contraseña: {reset_link}',
+                EMAIL_HOST_USER,
+                [email],
+                fail_silently=False,
+            )
+            return Response({"message": "Si existe una cuenta con el correo electrónico, se ha enviado un enlace para restablecer la contraseña"}, status=status.HTTP_200_OK)
+        except user_model.DoesNotExist:
+            # For privacy reasons, do not reveal whether or not the email exists in the system
+            return Response({"message": "Si existe una cuenta con el correo electrónico, se ha enviado un enlace para restablecer la contraseña"}, status=status.HTTP_200_OK)
+
+class PasswordResetConfirmView(APIView):
+    def post(self, request, uidb64, token, *args, **kwargs):
+        try:
+            uid = urlsafe_base64_decode(uidb64).decode()
+            user = get_user_model().objects.get(pk=uid)
+            
+            if default_token_generator.check_token(user, token):
+                user.set_password(request.data.get("password"))
+                user.save()
+                return Response({"message": "Your password has been reset successfully."}, status=status.HTTP_200_OK)
+            else:
+                return Response({"message": "Invalid token or user ID."}, status=status.HTTP_400_BAD_REQUEST)
+        except:
+            return Response({"message": "Invalid token or user ID."}, status=status.HTTP_400_BAD_REQUEST)
 
 class UserDetailView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -87,8 +161,8 @@ class UserDetailView(APIView):
             serializer.save()
             return Response(serializer.data)
         
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        errors = {'message': serializer.errors}
+        return Response(errors, status=status.HTTP_400_BAD_REQUEST)
     
     def delete(self, request, pk):
         try:
@@ -101,7 +175,7 @@ class UserDetailView(APIView):
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Exception as e:
             print(e)
-            return Response(data={'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(data={'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class IsStaffOrReadOnly(permissions.BasePermission):
