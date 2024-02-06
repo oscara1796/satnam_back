@@ -4,7 +4,7 @@ from rest_framework import generics, permissions, viewsets, status
 # Create your views here.
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
-from satnam.settings import DEFAULT_FROM_EMAIL
+from satnam.settings import EMAIL_HOST_USER
 from rest_framework_simplejwt.views import TokenObtainPairView 
 from rest_framework_simplejwt.views import TokenRefreshView
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -19,24 +19,29 @@ from .models import TrialDays
 from .serializers import TrialDaysSerializer
 from django.http import Http404
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.utils.encoding import force_bytes, force_text
+from django.utils.encoding import force_bytes, force_str
 from django_ratelimit.decorators import ratelimit
 from django.utils.decorators import method_decorator
 from django.urls import reverse
-
+from django.conf import settings
 
 
 env_vars = dotenv_values(".env.dev")
 stripe.api_key = env_vars["STRIPE_SECRET_KEY"]
 
+def conditional_ratelimit(*args, **kwargs):
+    def decorator(func):
+        if settings.TESTING:
+            return func
+        return ratelimit(*args, **kwargs)(func)
+    return decorator
 
 
-
-@ratelimit(key='ip', rate='5/m', method='POST', block=True)
+@conditional_ratelimit(key='ip', rate='5/m', method='POST', block=True)
 def rate_limit_check(request):
     pass
 
-@method_decorator(ratelimit(key='ip', rate='5/m', method='POST', block=True), name='dispatch')
+@method_decorator(conditional_ratelimit(key='ip', rate='5/m', method='POST', block=True), name='dispatch')
 class SignUpView(generics.CreateAPIView):
     queryset = get_user_model().objects.all()
     serializer_class = UserSerializer
@@ -102,7 +107,7 @@ class CustomTokenRefreshView(TokenRefreshView):
         
         return response
     
-class PasswordResetRequestView(views.APIView):
+class PasswordResetRequestView(APIView):
     def post(self, request, *args, **kwargs):
         email = request.data.get("email")
         user_model = get_user_model()
@@ -111,20 +116,35 @@ class PasswordResetRequestView(views.APIView):
             # Generate a one-time use token and UID
             token = default_token_generator.make_token(user)
             uid = urlsafe_base64_encode(force_bytes(user.pk))
-            reset_link = request.build_absolute_uri(reverse('password-reset-confirm', kwargs={'uidb64': uid, 'token': token}))
+            reset_link = f'http://192.168.100.162:3001/#/reset-password/{uid}/{token}'
             
             # Send email to user with password reset link
             send_mail(
-                'Password Reset Request',
-                f'Please go to the following link to reset your password: {reset_link}',
-                DEFAULT_FROM_EMAIL,
+                '[Sat Nam Yoga] Solicitud de restablecimiento de contraseña',
+                f'Por favor vaya al siguiente enlace para restablecer su contraseña: {reset_link}',
+                EMAIL_HOST_USER,
                 [email],
                 fail_silently=False,
             )
-            return Response({"message": "If an account with the email exists, a password reset link has been sent."}, status=status.HTTP_200_OK)
+            return Response({"message": "Si existe una cuenta con el correo electrónico, se ha enviado un enlace para restablecer la contraseña"}, status=status.HTTP_200_OK)
         except user_model.DoesNotExist:
             # For privacy reasons, do not reveal whether or not the email exists in the system
-            return Response({"message": "If an account with the email exists, a password reset link has been sent."}, status=status.HTTP_200_OK)
+            return Response({"message": "Si existe una cuenta con el correo electrónico, se ha enviado un enlace para restablecer la contraseña"}, status=status.HTTP_200_OK)
+
+class PasswordResetConfirmView(APIView):
+    def post(self, request, uidb64, token, *args, **kwargs):
+        try:
+            uid = urlsafe_base64_decode(uidb64).decode()
+            user = get_user_model().objects.get(pk=uid)
+            
+            if default_token_generator.check_token(user, token):
+                user.set_password(request.data.get("password"))
+                user.save()
+                return Response({"message": "Your password has been reset successfully."}, status=status.HTTP_200_OK)
+            else:
+                return Response({"message": "Invalid token or user ID."}, status=status.HTTP_400_BAD_REQUEST)
+        except:
+            return Response({"message": "Invalid token or user ID."}, status=status.HTTP_400_BAD_REQUEST)
 
 class UserDetailView(APIView):
     permission_classes = [permissions.IsAuthenticated]

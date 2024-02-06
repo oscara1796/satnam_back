@@ -123,9 +123,9 @@ class PaymentMethodView(APIView):
                 'all_payment_methods': payment_methods.data,
             }, status=status.HTTP_200_OK)
         except get_user_model().DoesNotExist:
-            return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'message': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
         except StripeError as e:
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def post(self, request, pk):
         try:
@@ -147,7 +147,7 @@ class PaymentMethodView(APIView):
             }, status=status.HTTP_201_CREATED)
         except StripeError as e:
             print(e)
-            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request, pk):
         try:
@@ -161,13 +161,13 @@ class PaymentMethodView(APIView):
 
             return Response({'success': 'Default payment method updated'}, status=status.HTTP_200_OK)
         except StripeError as e:
-            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk):
         try:
             payment_method_id = request.data.get('payment_method_id')
             if not payment_method_id:
-                return Response({'error': 'Missing payment_method_id'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'message': 'No se proporciono un payment method'}, status=status.HTTP_400_BAD_REQUEST)
 
             # Detach the payment method from the customer
             stripe.PaymentMethod.detach(payment_method_id)
@@ -175,7 +175,7 @@ class PaymentMethodView(APIView):
 
             return Response({'success': 'Payment method detached and deleted'}, status=status.HTTP_200_OK)
         except StripeError as e:
-            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 
@@ -209,10 +209,10 @@ class PaymentDetailView(APIView):
             # Return the subscription details
             return Response(response, status=status.HTTP_200_OK)
         except get_user_model().DoesNotExist:
-            return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'message': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
         except StripeError as e:
             print("error ", e)
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     
     def post(self, request, pk):
@@ -262,9 +262,9 @@ class PaymentDetailView(APIView):
 
             return Response(response, status=status.HTTP_201_CREATED)
         except stripe.error.StripeError as e:
-            return Response({'errors': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            return Response({'errors': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
     def delete(self, request, pk):
         try:

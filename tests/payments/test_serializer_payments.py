@@ -61,7 +61,6 @@ class StripeIntegrationTest(APITestCase):
 
         url = reverse('create_subscription', args=[self.user.id])
         response = self.client.post(url, card_data,HTTP_AUTHORIZATION=f'Bearer {self.access}', format='json')
-        print(response.data)
         self.assertEqual(response.status_code, 201)
         
         self.assertIn('stripe_customer_id', response.data)
@@ -100,7 +99,6 @@ class StripeIntegrationTest(APITestCase):
 
         url = reverse('create_subscription', args=[self.user.id])
         response = self.client.post(url, card_data,HTTP_AUTHORIZATION=f'Bearer {self.access}', format='json')
-        print(response.data)
         self.assertEqual(response.status_code, 201)
         
         self.assertIn('stripe_customer_id', response.data)

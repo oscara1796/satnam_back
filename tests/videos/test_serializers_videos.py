@@ -83,7 +83,6 @@ class VideoPaginationTest(APITestCase):
         url = reverse('video-list') + '?page=1&page_size=10'
         response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.access_free_user_1}')
         self.assertEqual(response.status_code, 200)
-        print(response.data)
         self.assertEqual(len(response.data['results']), 10)
         self.assertEqual(response.data['total_count'], 20)
         self.assertEqual(response.data['count'], 10)
@@ -111,7 +110,6 @@ class VideoPaginationTest(APITestCase):
         # Not free video should return 401 
         # Retrieve the ID of a random video
         video_id=Video.objects.filter(free=False).order_by('?').first().id
-        print("video id", video_id)
         url = reverse('video-detail', args=[video_id])
         video = Video.objects.get(id=video_id)
         response = self.client.get(url, 
@@ -135,8 +133,23 @@ class VideoPaginationTest(APITestCase):
         self.assertEqual(response.data['url'], video.url)
         self.assertEqual(response.data['free'], video.free)
         self.assertEqual(response.data['image'], video.image.url)
-        self.assertEqual(response.data['date_of_creation'], video.date_of_creation.strftime('%Y-%m-%dT%H:%M:%S.%fZ'))
-        self.assertEqual(response.data['date_of_modification'], video.date_of_modification.strftime('%Y-%m-%dT%H:%M:%S.%fZ'))
+         # Convert actual value to datetime object in UTC
+        actual_date = timezone.datetime.strptime(response.data['date_of_creation'], '%Y-%m-%dT%H:%M:%S.%f%z').astimezone(timezone.utc)
+
+        # Ensure expected value is also in UTC
+        expected_date = video.date_of_creation.astimezone(timezone.utc)
+
+        # Now compare the two datetime objects directly
+        self.assertEqual(actual_date, expected_date)
+
+         # Convert actual value to datetime object in UTC
+        actual_date = timezone.datetime.strptime(response.data['date_of_modification'], '%Y-%m-%dT%H:%M:%S.%f%z').astimezone(timezone.utc)
+
+        # Ensure expected value is also in UTC
+        expected_date = video.date_of_modification.astimezone(timezone.utc)
+
+        # Now compare the two datetime objects directly
+        self.assertEqual(actual_date, expected_date)
 
         # Paid user should be allowed to see any video
         # Choose a random non-free video
@@ -154,8 +167,23 @@ class VideoPaginationTest(APITestCase):
         self.assertEqual(response.data['url'], video.url)
         self.assertEqual(response.data['free'], video.free)
         self.assertEqual(response.data['image'], video.image.url)
-        self.assertEqual(response.data['date_of_creation'], video.date_of_creation.strftime('%Y-%m-%dT%H:%M:%S.%fZ'))
-        self.assertEqual(response.data['date_of_modification'], video.date_of_modification.strftime('%Y-%m-%dT%H:%M:%S.%fZ'))
+         # Convert actual value to datetime object in UTC
+        actual_date = timezone.datetime.strptime(response.data['date_of_creation'], '%Y-%m-%dT%H:%M:%S.%f%z').astimezone(timezone.utc)
+
+        # Ensure expected value is also in UTC
+        expected_date = video.date_of_creation.astimezone(timezone.utc)
+
+        # Now compare the two datetime objects directly
+        self.assertEqual(actual_date, expected_date)
+
+         # Convert actual value to datetime object in UTC
+        actual_date = timezone.datetime.strptime(response.data['date_of_modification'], '%Y-%m-%dT%H:%M:%S.%f%z').astimezone(timezone.utc)
+
+        # Ensure expected value is also in UTC
+        expected_date = video.date_of_modification.astimezone(timezone.utc)
+
+        # Now compare the two datetime objects directly
+        self.assertEqual(actual_date, expected_date)
 
 
         # Staff user should be allowed to see any video
@@ -174,8 +202,23 @@ class VideoPaginationTest(APITestCase):
         self.assertEqual(response.data['url'], video.url)
         self.assertEqual(response.data['free'], video.free)
         self.assertEqual(response.data['image'], video.image.url)
-        self.assertEqual(response.data['date_of_creation'], video.date_of_creation.strftime('%Y-%m-%dT%H:%M:%S.%fZ'))
-        self.assertEqual(response.data['date_of_modification'], video.date_of_modification.strftime('%Y-%m-%dT%H:%M:%S.%fZ'))
+         # Convert actual value to datetime object in UTC
+        actual_date = timezone.datetime.strptime(response.data['date_of_creation'], '%Y-%m-%dT%H:%M:%S.%f%z').astimezone(timezone.utc)
+
+        # Ensure expected value is also in UTC
+        expected_date = video.date_of_creation.astimezone(timezone.utc)
+
+        # Now compare the two datetime objects directly
+        self.assertEqual(actual_date, expected_date)
+
+         # Convert actual value to datetime object in UTC
+        actual_date = timezone.datetime.strptime(response.data['date_of_modification'], '%Y-%m-%dT%H:%M:%S.%f%z').astimezone(timezone.utc)
+
+        # Ensure expected value is also in UTC
+        expected_date = video.date_of_modification.astimezone(timezone.utc)
+
+        # Now compare the two datetime objects directly
+        self.assertEqual(actual_date, expected_date)
     
 
     def test_update_video(self):
@@ -237,9 +280,24 @@ class VideoPaginationTest(APITestCase):
         self.assertEqual(response.data['url'], video.url)
         self.assertEqual(response.data['free'], video.free)
         self.assertEqual(response.data['image'], video.image.url)
-        print(response.data['image'], video.image.url)
-        self.assertEqual(response.data['date_of_creation'], video.date_of_creation.strftime('%Y-%m-%dT%H:%M:%S.%fZ'))
-        self.assertEqual(response.data['date_of_modification'], video.date_of_modification.strftime('%Y-%m-%dT%H:%M:%S.%fZ'))
+        
+         # Convert actual value to datetime object in UTC
+        actual_date = timezone.datetime.strptime(response.data['date_of_creation'], '%Y-%m-%dT%H:%M:%S.%f%z').astimezone(timezone.utc)
+
+        # Ensure expected value is also in UTC
+        expected_date = video.date_of_creation.astimezone(timezone.utc)
+
+        # Now compare the two datetime objects directly
+        self.assertEqual(actual_date, expected_date)
+
+         # Convert actual value to datetime object in UTC
+        actual_date = timezone.datetime.strptime(response.data['date_of_modification'], '%Y-%m-%dT%H:%M:%S.%f%z').astimezone(timezone.utc)
+
+        # Ensure expected value is also in UTC
+        expected_date = video.date_of_modification.astimezone(timezone.utc)
+
+        # Now compare the two datetime objects directly
+        self.assertEqual(actual_date, expected_date)
 
         # Assert that the data used for the update matches the updated video attributes
         self.assertEqual(data['title'], video.title)
@@ -303,8 +361,23 @@ class VideoPaginationTest(APITestCase):
         self.assertEqual(response.data['url'], video.url)
         self.assertEqual(response.data['free'], video.free)
         self.assertTrue(video.image.name in response.data['image'])
-        self.assertEqual(response.data['date_of_creation'], video.date_of_creation.strftime('%Y-%m-%dT%H:%M:%S.%fZ'))
-        self.assertEqual(response.data['date_of_modification'], video.date_of_modification.strftime('%Y-%m-%dT%H:%M:%S.%fZ'))
+         # Convert actual value to datetime object in UTC
+        actual_date = timezone.datetime.strptime(response.data['date_of_creation'], '%Y-%m-%dT%H:%M:%S.%f%z').astimezone(timezone.utc)
+
+        # Ensure expected value is also in UTC
+        expected_date = video.date_of_creation.astimezone(timezone.utc)
+
+        # Now compare the two datetime objects directly
+        self.assertEqual(actual_date, expected_date)
+
+         # Convert actual value to datetime object in UTC
+        actual_date = timezone.datetime.strptime(response.data['date_of_modification'], '%Y-%m-%dT%H:%M:%S.%f%z').astimezone(timezone.utc)
+
+        # Ensure expected value is also in UTC
+        expected_date = video.date_of_modification.astimezone(timezone.utc)
+
+        # Now compare the two datetime objects directly
+        self.assertEqual(actual_date, expected_date)
 
         # Remove the uploaded image file
         os.remove(f"media/{video.image.name}")
@@ -340,8 +413,23 @@ class VideoPaginationTest(APITestCase):
         self.assertEqual(response.data['url'], video.url)
         self.assertEqual(response.data['free'], video.free)
         self.assertTrue(video.image.name in response.data['image'] )
-        self.assertEqual(response.data['date_of_creation'], video.date_of_creation.strftime('%Y-%m-%dT%H:%M:%S.%fZ'))
-        self.assertEqual(response.data['date_of_modification'], video.date_of_modification.strftime('%Y-%m-%dT%H:%M:%S.%fZ'))
+         # Convert actual value to datetime object in UTC
+        actual_date = timezone.datetime.strptime(response.data['date_of_creation'], '%Y-%m-%dT%H:%M:%S.%f%z').astimezone(timezone.utc)
+
+        # Ensure expected value is also in UTC
+        expected_date = video.date_of_creation.astimezone(timezone.utc)
+
+        # Now compare the two datetime objects directly
+        self.assertEqual(actual_date, expected_date)
+
+         # Convert actual value to datetime object in UTC
+        actual_date = timezone.datetime.strptime(response.data['date_of_modification'], '%Y-%m-%dT%H:%M:%S.%f%z').astimezone(timezone.utc)
+
+        # Ensure expected value is also in UTC
+        expected_date = video.date_of_modification.astimezone(timezone.utc)
+
+        # Now compare the two datetime objects directly
+        self.assertEqual(actual_date, expected_date)
         # Remove the uploaded image file
         os.remove(f"media/{video.image.name}")
 
@@ -429,8 +517,23 @@ class VideoPaginationTest(APITestCase):
         self.assertTrue(video.image.name in response.data['image'])
         self.assertEqual(response.data["categories"][0]["id"], category["id"])
         self.assertEqual(response.data["categories"][0]["description"], category["description"])
-        self.assertEqual(response.data['date_of_creation'], video.date_of_creation.strftime('%Y-%m-%dT%H:%M:%S.%fZ'))
-        self.assertEqual(response.data['date_of_modification'], video.date_of_modification.strftime('%Y-%m-%dT%H:%M:%S.%fZ'))
+         # Convert actual value to datetime object in UTC
+        actual_date = timezone.datetime.strptime(response.data['date_of_creation'], '%Y-%m-%dT%H:%M:%S.%f%z').astimezone(timezone.utc)
+
+        # Ensure expected value is also in UTC
+        expected_date = video.date_of_creation.astimezone(timezone.utc)
+
+        # Now compare the two datetime objects directly
+        self.assertEqual(actual_date, expected_date)
+
+         # Convert actual value to datetime object in UTC
+        actual_date = timezone.datetime.strptime(response.data['date_of_modification'], '%Y-%m-%dT%H:%M:%S.%f%z').astimezone(timezone.utc)
+
+        # Ensure expected value is also in UTC
+        expected_date = video.date_of_modification.astimezone(timezone.utc)
+
+        # Now compare the two datetime objects directly
+        self.assertEqual(actual_date, expected_date)
         
 
     def test_delete_video(self):
@@ -572,7 +675,6 @@ class CategoryAPITestCase(APITestCase):
 
         url = reverse('category-detail', args=[self.category.id])
         response = self.client.patch(url, data, HTTP_AUTHORIZATION=f'Bearer {self.access_staff_user_2}')
-        print(response.data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(self.category.category_videos.count(), 1)
 
@@ -606,7 +708,6 @@ class SearchVideoAPITestCase(APITestCase):
 
         response = self.client.get(url)
 
-        print("RESPONSE DATA", response.data)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['results']), 1)  # Assuming there is only one video with the specified title
