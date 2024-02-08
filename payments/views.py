@@ -176,6 +176,8 @@ class PaymentMethodView(APIView):
             return Response({'success': 'Payment method detached and deleted'}, status=status.HTTP_200_OK)
         except StripeError as e:
             return Response({'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    
+    
 
 
 
