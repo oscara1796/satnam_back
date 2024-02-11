@@ -146,7 +146,7 @@ class PaymentMethodView(APIView):
                 'payment_method_id': payment_method.id
             }, status=status.HTTP_201_CREATED)
         except StripeError as e:
-            print(e)
+            
             return Response({'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request, pk):
