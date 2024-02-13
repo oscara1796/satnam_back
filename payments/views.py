@@ -10,8 +10,10 @@ import stripe
 from stripe.error import StripeError
 from dotenv import dotenv_values
 import json
+from .models import StripeEvent
 from django.conf import settings
 from core.models import CustomUser
+from django.db import transaction
 
 
 env_vars = dotenv_values(".env.dev")
@@ -23,35 +25,7 @@ FRONTEND_SUBSCRIPTION_CANCEL_URL = settings.SUBSCRIPTION_FAILED_URL
 webhook_secret = settings.STRIPE_WEBHOOK_SECRET
 
 
-class PaymentList(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-    # def get(self, request):
-    #     # extract pagination parameters from query params
-    #     page = int(request.query_params.get('page', 1))
-    #     page_size = int(request.query_params.get('page_size', 10))
 
-       
-        
-    #     # calculate start and end indices based on pagination parameters
-    #     start_index = (page - 1) * page_size
-    #     end_index = start_index + page_size
-    #     videos = None
-    #     # query the database for videos
-    #     if self.request.user.active or self.request.user.is_staff:
-    #         # print("active", self.request.user.username)
-    #         videos = Video.objects.all()[start_index:end_index]
-    #     else:
-    #         # print("inactive", self.request.user.username)
-    #         videos = Video.objects.filter(free=True)[start_index:end_index]
-        
-    #     # serialize the videos and return them as a response
-    #     serializer = VideoSerializer(videos, many=True)
-        
-    #     return Response({
-    #         'total_count': Video.objects.all().count(),
-    #         'count': len(videos),
-    #         'results': serializer.data,
-    #     })
 
 
 class PricesListView(APIView):
@@ -140,6 +114,13 @@ class PaymentMethodView(APIView):
             stripe.PaymentMethod.attach(
                 payment_method.id,
                 customer=user.stripe_customer_id,
+            )
+
+            stripe.Customer.modify(
+                user.stripe_customer_id,
+                invoice_settings={
+                    'default_payment_method':payment_method.id,
+                },
             )
 
             return Response({
@@ -330,67 +311,105 @@ class StripeWebhookView(APIView):
         except ValueError as e:
             # Invalid payload
             return JsonResponse({'error': str(e)}, status=400)
-
-        # Handle the event based on its type
-        if event.type == 'invoice.payment_succeeded':
-            invoice = event.data.object
-            customer_id = invoice.customer
-            print("invoice paid")
-            # Retrieve customer's email from your database
-            customer_email = self.get_customer_email(customer_id)
-            if customer_email:
-                print("mandamos email")
-                self.send_invoice_email(customer_email, invoice)
         
-        elif event.type == 'invoice.payment_failed':
-            invoice = event.data.object
-            customer_id = invoice.customer
-            
-            # Retrieve customer's email from your database
-            customer_email = self.get_customer_email(customer_id)
-            if customer_email:
-                self.send_payment_failed_email(customer_email, invoice)
+        existing_event = StripeEvent.objects.filter(stripe_event_id=event.id).first()
+        if existing_event:
+            if existing_event.status == 'processed':
+                # Event already processed successfully
+                return Response(status=200)
 
         
-        elif event.type == "customer.subscription.created":
-            subscription = event.data.object
-            if subscription.trial_end:
-                customer_id = subscription.customer
-                customer_email = self.get_customer_email(customer_id)
-                if customer_email:
-                    self.send_trial_start_email(customer_email, subscription)
-
-            
-
+        try:
         
-        elif event.type == "customer.subscription.updated":
-            """
-            Occurs whenever a subscription changes (e.g., switching from one plan to another, or changing the status from trial to active).
-            """
-            pass
-        
-        elif event.type == "customer.subscription.deleted":
-            subscription = event.data.object
-            customer_id = subscription.customer
-            # Retrieve customer's email from your database
-            customer_email = self.get_customer_email(customer_id)
-            if customer_email:
-                self.send_subscription_deleted_email(customer_email)
-            
-            try:
-                user = CustomUser.objects.get(stripe_customer_id=customer_id)
-                user.active = False
-                user.stripe_subscription_id = None
-                user.save()
-            except CustomUser.DoesNotExist:
-                return JsonResponse({'status': 'user not found'}, status=404)
+            with transaction.atomic():
+                
 
-        elif event.type == "customer.subscription.trial_will_end":
-            subscription = event.data.object
-            customer_id = subscription.customer
-            customer_email = self.get_customer_email(customer_id)
-            if customer_email:
-                self.send_trial_will_end_email(customer_email, subscription)
+                # Handle the event based on its type
+                if event.type == 'invoice.payment_succeeded':
+                    invoice = event.data.object
+                    customer_id = invoice.customer
+                    print("invoice paid")
+                    # Retrieve customer's email from your database
+                    customer_email = self.get_customer_email(customer_id)
+                    if customer_email:
+                        print("mandamos email")
+                        self.send_invoice_email(customer_email, invoice)
+                
+                elif event.type == 'invoice.payment_failed':
+                    invoice = event.data.object
+                    customer_id = invoice.customer
+                    
+                    # Retrieve customer's email from your database
+                    customer_email = self.get_customer_email(customer_id)
+                    if customer_email:
+                        self.send_payment_failed_email(customer_email, invoice)
+
+                
+                elif event.type == "customer.subscription.created":
+                    subscription = event.data.object
+                    if subscription.trial_end:
+                        customer_id = subscription.customer
+                        customer_email = self.get_customer_email(customer_id)
+                        if customer_email:
+                            self.send_trial_start_email(customer_email, subscription)
+
+                    
+
+                
+                elif event.type == "customer.subscription.updated":
+                    """
+                    Occurs whenever a subscription changes (e.g., switching from one plan to another, or changing the status from trial to active).
+                    """
+                    pass
+                
+                elif event.type == "customer.subscription.deleted":
+                    subscription = event.data.object
+                    customer_id = subscription.customer
+                    # Retrieve customer's email from your database
+                    customer_email = self.get_customer_email(customer_id)
+                    if customer_email:
+                        self.send_subscription_deleted_email(customer_email)
+                    
+                    try:
+                        user = CustomUser.objects.get(stripe_customer_id=customer_id)
+                        user.active = False
+                        user.stripe_subscription_id = None
+                        user.save()
+                    except CustomUser.DoesNotExist:
+                        return JsonResponse({'status': 'user not found'}, status=404)
+
+                elif event.type == "customer.subscription.trial_will_end":
+                    subscription = event.data.object
+                    customer_id = subscription.customer
+                    customer_email = self.get_customer_email(customer_id)
+                    if customer_email:
+                        self.send_trial_will_end_email(customer_email, subscription)
+                
+                if existing_event:
+                    existing_event.status = 'processed'
+                    existing_event.save()
+                else:
+                    # If the event is processed successfully, record it as 'processed'
+                    StripeEvent.objects.create(
+                        stripe_event_id=event.id,
+                        status='processed'
+                    )
+                
+        except Exception as e:
+            # Log the exception
+            #logger.error(f"Error processing Stripe webhook: {e}", exc_info=True)
+            # If processing fails, record the event as failed
+            if existing_event:
+                existing_event.status = 'failed'
+                existing_event.save()
+            else:
+                # If anything goes wrong, record the event as 'failed'
+                StripeEvent.objects.create(
+                    stripe_event_id=event.id,
+                    status='failed'
+                )
+            # Return a non-200 response to indicate failure to Stripe
+            return JsonResponse({'error': str(e)}, status=500)
 
         return Response(status=200)
 

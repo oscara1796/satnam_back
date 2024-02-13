@@ -4,6 +4,9 @@ FROM python:3.10.8-slim-buster
 # set working directory
 WORKDIR /usr/src/app
 
+RUN mkdir /usr/src/app/logs
+RUN chmod 777 /usr/src/app/logs 
+
 # set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
@@ -19,6 +22,7 @@ RUN pip install -r requirements.txt
 
 COPY ./entrypoint.sh /usr/src/app/entrypoint.sh
 RUN chmod +x /usr/src/app/entrypoint.sh
+
 
 
 
