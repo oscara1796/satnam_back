@@ -1,20 +1,22 @@
-from django.shortcuts import render, redirect
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status, permissions
-from django.contrib.auth import get_user_model
-from django.http import JsonResponse
-from django.core.mail import send_mail
-from .serializers import PaymentMethodSerializer, StripePriceSerializer
-import stripe
-from stripe.error import StripeError
-from dotenv import dotenv_values
 import json
-from .models import StripeEvent
-from django.conf import settings
-from core.models import CustomUser
-from django.db import transaction
 
+import stripe
+from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.core.mail import send_mail
+from django.db import transaction
+from django.http import JsonResponse
+from django.shortcuts import redirect
+from dotenv import dotenv_values
+from rest_framework import permissions, status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from stripe.error import StripeError
+
+from core.models import CustomUser
+
+from .models import StripeEvent
+from .serializers import PaymentMethodSerializer
 
 env_vars = dotenv_values(".env.dev")
 stripe.api_key = env_vars["STRIPE_SECRET_KEY"]
@@ -25,12 +27,8 @@ FRONTEND_SUBSCRIPTION_CANCEL_URL = settings.SUBSCRIPTION_FAILED_URL
 webhook_secret = settings.STRIPE_WEBHOOK_SECRET
 
 
-
-
-
 class PricesListView(APIView):
     permission_classes = [permissions.IsAuthenticated]
-
 
     def get(self, request):
         # extract pagination parameters from query params
@@ -38,7 +36,7 @@ class PricesListView(APIView):
             data = stripe.Product.list()
 
             products = data.data
-            
+
             for product in products:
                 data_json_product = stripe.Price.retrieve(product.default_price)
                 product["price"] = data_json_product.unit_amount
@@ -47,30 +45,27 @@ class PricesListView(APIView):
 
             return Response(json_str, status=200)
         except Exception as e:
-            return Response({'errors': e}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
+            return Response({"errors": e}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class SubscriptionDetailView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
-    def post(self , request):
+    def post(self, request):
         data = request.data
         try:
             checkout_session = stripe.checkout.Session.create(
-                line_items = [
-                    {
-                   'price' : data['price_id'],
-                   'quantity' : 1
-                    }
-                ],
-                mode = 'subscription',        
-                success_url = FRONTEND_SUBSCRIPTION_SUCCESS_URL +"?session_id={CHECKOUT_SESSION_ID}",
-                cancel_url = FRONTEND_SUBSCRIPTION_CANCEL_URL
+                line_items=[{"price": data["price_id"], "quantity": 1}],
+                mode="subscription",
+                success_url=FRONTEND_SUBSCRIPTION_SUCCESS_URL
+                + "?session_id={CHECKOUT_SESSION_ID}",
+                cancel_url=FRONTEND_SUBSCRIPTION_CANCEL_URL,
             )
-            return redirect(checkout_session.url , code=303)
+            return redirect(checkout_session.url, code=303)
         except Exception as err:
-            return Response({'errors': err}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {"errors": err}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 class PaymentMethodView(APIView):
@@ -84,22 +79,32 @@ class PaymentMethodView(APIView):
 
             # Retrieve the default payment method
             default_payment_method_id = customer.invoice_settings.default_payment_method
-            default_payment_method = stripe.PaymentMethod.retrieve(default_payment_method_id) if default_payment_method_id else None
+            default_payment_method = (
+                stripe.PaymentMethod.retrieve(default_payment_method_id)
+                if default_payment_method_id
+                else None
+            )
 
             # Retrieve all payment methods
             payment_methods = stripe.PaymentMethod.list(
-                customer=user.stripe_customer_id,
-                type="card"
+                customer=user.stripe_customer_id, type="card"
             )
 
-            return Response({
-                'default_payment_method': default_payment_method,
-                'all_payment_methods': payment_methods.data,
-            }, status=status.HTTP_200_OK)
+            return Response(
+                {
+                    "default_payment_method": default_payment_method,
+                    "all_payment_methods": payment_methods.data,
+                },
+                status=status.HTTP_200_OK,
+            )
         except get_user_model().DoesNotExist:
-            return Response({'message': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"message": "User not found."}, status=status.HTTP_404_NOT_FOUND
+            )
         except StripeError as e:
-            return Response({'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
     def post(self, request, pk):
         try:
@@ -108,7 +113,7 @@ class PaymentMethodView(APIView):
             serializer.is_valid(raise_exception=True)
             validated_data = serializer.validated_data
             payment_method = stripe.PaymentMethod.create(
-                type='card',
+                type="card",
                 card=validated_data,
             )
             stripe.PaymentMethod.attach(
@@ -119,16 +124,16 @@ class PaymentMethodView(APIView):
             stripe.Customer.modify(
                 user.stripe_customer_id,
                 invoice_settings={
-                    'default_payment_method':payment_method.id,
+                    "default_payment_method": payment_method.id,
                 },
             )
 
-            return Response({
-                'payment_method_id': payment_method.id
-            }, status=status.HTTP_201_CREATED)
+            return Response(
+                {"payment_method_id": payment_method.id}, status=status.HTTP_201_CREATED
+            )
         except StripeError as e:
-            
-            return Response({'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+            return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request, pk):
         try:
@@ -136,30 +141,34 @@ class PaymentMethodView(APIView):
             stripe.Customer.modify(
                 user.stripe_customer_id,
                 invoice_settings={
-                    'default_payment_method': request.data.get('payment_method_id'),
+                    "default_payment_method": request.data.get("payment_method_id"),
                 },
             )
 
-            return Response({'success': 'Default payment method updated'}, status=status.HTTP_200_OK)
+            return Response(
+                {"success": "Default payment method updated"}, status=status.HTTP_200_OK
+            )
         except StripeError as e:
-            return Response({'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk):
         try:
-            payment_method_id = request.data.get('payment_method_id')
+            payment_method_id = request.data.get("payment_method_id")
             if not payment_method_id:
-                return Response({'message': 'No se proporciono un payment method'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"message": "No se proporciono un payment method"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
             # Detach the payment method from the customer
             stripe.PaymentMethod.detach(payment_method_id)
 
-
-            return Response({'success': 'Payment method detached and deleted'}, status=status.HTTP_200_OK)
+            return Response(
+                {"success": "Payment method detached and deleted"},
+                status=status.HTTP_200_OK,
+            )
         except StripeError as e:
-            return Response({'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-    
-    
-
+            return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class PaymentDetailView(APIView):
@@ -171,17 +180,15 @@ class PaymentDetailView(APIView):
             # Retrieve the customer's Stripe subscription
             subscription = stripe.Subscription.retrieve(user.stripe_subscription_id)
 
-
-
             product = stripe.Product.retrieve(subscription.plan.product)
 
             response = {
-                'subscription_id': subscription.id,
-                'status': subscription.status,
-                'current_period_end': subscription.current_period_end,
-                'product_price': subscription.plan.amount,
-                'product_name': product.name,
-                'cancel_at_period_end': subscription.cancel_at_period_end,
+                "subscription_id": subscription.id,
+                "status": subscription.status,
+                "current_period_end": subscription.current_period_end,
+                "product_price": subscription.plan.amount,
+                "product_name": product.name,
+                "cancel_at_period_end": subscription.cancel_at_period_end,
             }
 
             if subscription.status == "trialing":
@@ -192,23 +199,25 @@ class PaymentDetailView(APIView):
             # Return the subscription details
             return Response(response, status=status.HTTP_200_OK)
         except get_user_model().DoesNotExist:
-            return Response({'message': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"message": "User not found."}, status=status.HTTP_404_NOT_FOUND
+            )
         except StripeError as e:
             print("error ", e)
-            return Response({'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
-    
     def post(self, request, pk):
         try:
             user = get_user_model().objects.get(id=pk)
 
-            payment_method_id = request.data.get('payment_method_id')
+            payment_method_id = request.data.get("payment_method_id")
             subscription_args = {
-                    'customer': user.stripe_customer_id,
-                    'items': [{'price': request.data.get('price_id')}],
+                "customer": user.stripe_customer_id,
+                "items": [{"price": request.data.get("price_id")}],
             }
 
-            
             if payment_method_id:
                 # Attach the provided payment method and set as default
                 subscription_args["default_payment_method"] = payment_method_id
@@ -217,16 +226,23 @@ class PaymentDetailView(APIView):
                 serializer.is_valid(raise_exception=True)
                 # Create and attach a new payment method as per the existing flow
                 validated_data = serializer.validated_data
-                payment_method = stripe.PaymentMethod.create(type='card', card=validated_data)
-                stripe.PaymentMethod.attach(payment_method.id, customer=user.stripe_customer_id)
-                stripe.Customer.modify(user.stripe_customer_id, invoice_settings={'default_payment_method': payment_method.id})
+                payment_method = stripe.PaymentMethod.create(
+                    type="card", card=validated_data
+                )
+                stripe.PaymentMethod.attach(
+                    payment_method.id, customer=user.stripe_customer_id
+                )
+                stripe.Customer.modify(
+                    user.stripe_customer_id,
+                    invoice_settings={"default_payment_method": payment_method.id},
+                )
 
             # Subscription creation logic remains the same
-            trial_days = request.data.get('trial')
+            trial_days = request.data.get("trial")
             trial_period_days = None if trial_days is None else int(trial_days)
-            
+
             if trial_period_days is not None:
-                subscription_args['trial_period_days'] = trial_period_days
+                subscription_args["trial_period_days"] = trial_period_days
             subscription = stripe.Subscription.create(**subscription_args)
 
             user.stripe_subscription_id = subscription.id
@@ -234,10 +250,10 @@ class PaymentDetailView(APIView):
             user.save()
 
             response = {
-                'stripe_customer_id': user.stripe_customer_id,
-                'subscription_id': subscription.id,
-                'status': subscription.status,
-                'user_is_active': user.active
+                "stripe_customer_id": user.stripe_customer_id,
+                "subscription_id": subscription.id,
+                "status": subscription.status,
+                "user_is_active": user.active,
             }
             if subscription.status == "trialing":
                 response["trial_start"] = subscription.trial_start
@@ -245,29 +261,37 @@ class PaymentDetailView(APIView):
 
             return Response(response, status=status.HTTP_201_CREATED)
         except stripe.error.StripeError as e:
-            return Response({'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            return Response({'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
+            return Response(
+                {"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
     def delete(self, request, pk):
         try:
             user = get_user_model().objects.get(id=pk)
             subscription_id = user.stripe_subscription_id
 
             if not subscription_id:
-                return Response({'error': 'Missing subscription_id in request data'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"error": "Missing subscription_id in request data"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
-            stripe.Subscription.modify(
-                subscription_id,
-                cancel_at_period_end=True
+            stripe.Subscription.modify(subscription_id, cancel_at_period_end=True)
+
+            return Response(
+                {"success": "Subscription set to cancel at period end"},
+                status=status.HTTP_200_OK,
             )
-
-            
-            return Response({'success': 'Subscription set to cancel at period end'}, status=status.HTTP_200_OK)
         except get_user_model().DoesNotExist:
-            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "User not found"}, status=status.HTTP_404_NOT_FOUND
+            )
         except StripeError as e:
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
     def patch(self, request, pk):
         try:
@@ -275,27 +299,31 @@ class PaymentDetailView(APIView):
             subscription_id = user.stripe_subscription_id
 
             if not subscription_id:
-                return Response({'error': 'Missing subscription_id'}, status=status.HTTP_400_BAD_REQUEST)
-
+                return Response(
+                    {"error": "Missing subscription_id"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
             print("hola")
             # Update the subscription to not cancel at the period end
             updated_subscription = stripe.Subscription.modify(
-                subscription_id,
-                cancel_at_period_end=False
+                subscription_id, cancel_at_period_end=False
             )
 
             # Prepare and return the response
             response = {
-                'subscription_id': updated_subscription.id,
-                'cancel_at_period_end': updated_subscription.cancel_at_period_end
+                "subscription_id": updated_subscription.id,
+                "cancel_at_period_end": updated_subscription.cancel_at_period_end,
             }
             return Response(response, status=status.HTTP_200_OK)
         except get_user_model().DoesNotExist:
-            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "User not found"}, status=status.HTTP_404_NOT_FOUND
+            )
         except StripeError as e:
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+            return Response(
+                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 class StripeWebhookView(APIView):
@@ -305,27 +333,23 @@ class StripeWebhookView(APIView):
 
         try:
             payload_data = json.loads(payload)
-            event = stripe.Event.construct_from(
-                payload_data, stripe.api_key
-            )
+            event = stripe.Event.construct_from(payload_data, stripe.api_key)
         except ValueError as e:
             # Invalid payload
-            return JsonResponse({'error': str(e)}, status=400)
-        
+            return JsonResponse({"error": str(e)}, status=400)
+
         existing_event = StripeEvent.objects.filter(stripe_event_id=event.id).first()
         if existing_event:
-            if existing_event.status == 'processed':
+            if existing_event.status == "processed":
                 # Event already processed successfully
                 return Response(status=200)
 
-        
         try:
-        
+
             with transaction.atomic():
-                
 
                 # Handle the event based on its type
-                if event.type == 'invoice.payment_succeeded':
+                if event.type == "invoice.payment_succeeded":
                     invoice = event.data.object
                     customer_id = invoice.customer
                     print("invoice paid")
@@ -334,17 +358,16 @@ class StripeWebhookView(APIView):
                     if customer_email:
                         print("mandamos email")
                         self.send_invoice_email(customer_email, invoice)
-                
-                elif event.type == 'invoice.payment_failed':
+
+                elif event.type == "invoice.payment_failed":
                     invoice = event.data.object
                     customer_id = invoice.customer
-                    
+
                     # Retrieve customer's email from your database
                     customer_email = self.get_customer_email(customer_id)
                     if customer_email:
                         self.send_payment_failed_email(customer_email, invoice)
 
-                
                 elif event.type == "customer.subscription.created":
                     subscription = event.data.object
                     if subscription.trial_end:
@@ -353,15 +376,12 @@ class StripeWebhookView(APIView):
                         if customer_email:
                             self.send_trial_start_email(customer_email, subscription)
 
-                    
-
-                
                 elif event.type == "customer.subscription.updated":
                     """
                     Occurs whenever a subscription changes (e.g., switching from one plan to another, or changing the status from trial to active).
                     """
                     pass
-                
+
                 elif event.type == "customer.subscription.deleted":
                     subscription = event.data.object
                     customer_id = subscription.customer
@@ -369,14 +389,14 @@ class StripeWebhookView(APIView):
                     customer_email = self.get_customer_email(customer_id)
                     if customer_email:
                         self.send_subscription_deleted_email(customer_email)
-                    
+
                     try:
                         user = CustomUser.objects.get(stripe_customer_id=customer_id)
                         user.active = False
                         user.stripe_subscription_id = None
                         user.save()
                     except CustomUser.DoesNotExist:
-                        return JsonResponse({'status': 'user not found'}, status=404)
+                        return JsonResponse({"status": "user not found"}, status=404)
 
                 elif event.type == "customer.subscription.trial_will_end":
                     subscription = event.data.object
@@ -384,32 +404,28 @@ class StripeWebhookView(APIView):
                     customer_email = self.get_customer_email(customer_id)
                     if customer_email:
                         self.send_trial_will_end_email(customer_email, subscription)
-                
+
                 if existing_event:
-                    existing_event.status = 'processed'
+                    existing_event.status = "processed"
                     existing_event.save()
                 else:
                     # If the event is processed successfully, record it as 'processed'
                     StripeEvent.objects.create(
-                        stripe_event_id=event.id,
-                        status='processed'
+                        stripe_event_id=event.id, status="processed"
                     )
-                
+
         except Exception as e:
             # Log the exception
-            #logger.error(f"Error processing Stripe webhook: {e}", exc_info=True)
+            # logger.error(f"Error processing Stripe webhook: {e}", exc_info=True)
             # If processing fails, record the event as failed
             if existing_event:
-                existing_event.status = 'failed'
+                existing_event.status = "failed"
                 existing_event.save()
             else:
                 # If anything goes wrong, record the event as 'failed'
-                StripeEvent.objects.create(
-                    stripe_event_id=event.id,
-                    status='failed'
-                )
+                StripeEvent.objects.create(stripe_event_id=event.id, status="failed")
             # Return a non-200 response to indicate failure to Stripe
-            return JsonResponse({'error': str(e)}, status=500)
+            return JsonResponse({"error": str(e)}, status=500)
 
         return Response(status=200)
 
@@ -421,12 +437,11 @@ class StripeWebhookView(APIView):
             return customer_email
         except Exception as e:
             print(f"Error: {e}")
-        
+
         return None
-        
 
     def send_invoice_email(self, customer_email, invoice):
-        subject = 'Pago Sat Nam Yoga Notificación'
+        subject = "Pago Sat Nam Yoga Notificación"
         message = """
             <!DOCTYPE html>
             <html>
@@ -475,40 +490,49 @@ class StripeWebhookView(APIView):
                 </div>
             </body>
             </html>
-            """.format(invoice.id, invoice.amount_due / 100, invoice.currency)
-        from_email = 'oscara1706cl@hotmail.com'  # Replace with your email address
+            """.format(
+            invoice.id, invoice.amount_due / 100, invoice.currency
+        )
+        from_email = "oscara1706cl@hotmail.com"  # Replace with your email address
         recipient_list = [customer_email]
 
-        send_mail(subject, message, from_email, recipient_list, fail_silently=False, html_message=message)
+        send_mail(
+            subject,
+            message,
+            from_email,
+            recipient_list,
+            fail_silently=False,
+            html_message=message,
+        )
 
     def send_trial_start_email(self, customer_email, subscription):
-        subject = 'Welcome to Your Trial Period!'
-        message = f'Dear Customer,\n\nThank you for starting a trial with us! We hope you enjoy everything we have to offer. Your trial ends on {subscription.trial_end}.'
-        from_email = 'oscara1706cl@hotmail.com'
+        subject = "Welcome to Your Trial Period!"
+        message = f"Dear Customer,\n\nThank you for starting a trial with us! We hope you enjoy everything we have to offer. Your trial ends on {subscription.trial_end}."
+        from_email = "oscara1706cl@hotmail.com"
         recipient_list = [customer_email]
 
-        send_mail(subject, message, from_email, recipient_list) 
+        send_mail(subject, message, from_email, recipient_list)
 
     def send_payment_failed_email(self, customer_email, invoice):
-        subject = 'Payment Failed Notification'
-        message = f'Hello,\n\nYour payment for Invoice ID: {invoice.id} has failed.\nPlease update your payment information or contact support.'
-        from_email = 'oscara1706cl@hotmail.com'  # Replace with your email address
+        subject = "Payment Failed Notification"
+        message = f"Hello,\n\nYour payment for Invoice ID: {invoice.id} has failed.\nPlease update your payment information or contact support."
+        from_email = "oscara1706cl@hotmail.com"  # Replace with your email address
         recipient_list = [customer_email]
 
         send_mail(subject, message, from_email, recipient_list)
-    
+
     def send_subscription_deleted_email(self, customer_email):
-        subject = 'We Are Going to Miss You'
-        message = f'Dear Customer,\n\nWe noticed that your subscription has been deleted. We are going to miss you! If you have any feedback or need assistance, please feel free to contact us.'
-        from_email = 'oscara1706cl@hotmail.com'  # Replace with your email address
+        subject = "We Are Going to Miss You"
+        message = "Dear Customer,\n\nWe noticed that your subscription has been deleted. We are going to miss you! If you have any feedback or need assistance, please feel free to contact us."
+        from_email = "oscara1706cl@hotmail.com"  # Replace with your email address
         recipient_list = [customer_email]
 
         send_mail(subject, message, from_email, recipient_list)
-    
+
     def send_trial_will_end_email(self, customer_email, subscription):
-        subject = 'Your Trial Period is Ending Soon'
-        message = f'Dear Customer,\n\nJust a heads-up that your trial period is ending soon. You will be charged after {subscription.trial_end}. We hope you enjoyed your trial!'
-        from_email = 'oscara1706cl@hotmail.com'
+        subject = "Your Trial Period is Ending Soon"
+        message = f"Dear Customer,\n\nJust a heads-up that your trial period is ending soon. You will be charged after {subscription.trial_end}. We hope you enjoyed your trial!"
+        from_email = "oscara1706cl@hotmail.com"
         recipient_list = [customer_email]
 
         send_mail(subject, message, from_email, recipient_list)

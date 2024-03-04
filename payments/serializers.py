@@ -1,6 +1,5 @@
-
-
 from rest_framework import serializers
+
 
 class PaymentMethodSerializer(serializers.Serializer):
     number = serializers.CharField(max_length=16)
@@ -14,7 +13,7 @@ class StripePriceSerializer(serializers.Serializer):
 
     def validate_price_id(self, value):
         # Perform custom validation for the Stripe price ID
-        if not value.startswith('price_'):
-            raise serializers.ValidationError('Invalid Stripe price ID')
-        
+        if not value.startswith("price_"):
+            raise serializers.ValidationError("Invalid Stripe price ID")
+
         return value

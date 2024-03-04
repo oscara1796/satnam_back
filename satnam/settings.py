@@ -10,21 +10,21 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
+import datetime
+import os
 from pathlib import Path
 from dotenv import load_dotenv
-import os
-import datetime
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-from dotenv import load_dotenv
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # SECRET_KEY = 'django-insecure-j$3o=&)t0)2c7w8r&j3z_(2f2qv^&pdwzna+#c6_k!z3r*%s24'
-load_dotenv('.env.dev')
+load_dotenv(".env.dev")
 
 SECRET_KEY = os.environ.get("SECRET_KEY")
 
@@ -39,61 +39,61 @@ ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS").split(" ")
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'sslserver',
-    'rest_framework', 
-    'corsheaders',
-    'core',
-    'videos',
-    'payments',
-    'contact',
-    'captcha_app',
-    'scheduler',
-     
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "anymail",
+    "sslserver",
+    "rest_framework",
+    "corsheaders",
+    "core",
+    "videos",
+    "payments",
+    "contact",
+    "captcha_app",
+    "scheduler",
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = 'satnam.urls'
+ROOT_URLCONF = "satnam.urls"
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'satnam.wsgi.application'
+WSGI_APPLICATION = "satnam.wsgi.application"
 
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
 DATABASES = {
-    'default': {
+    "default": {
         "ENGINE": os.environ.get("SQL_ENGINE", "django.db.backends.sqlite3"),
         "NAME": os.environ.get("SQL_DATABASE", os.path.join(BASE_DIR, "db.sqlite3")),
         "USER": os.environ.get("SQL_USER", "user"),
@@ -109,16 +109,16 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
@@ -126,9 +126,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
 
-LANGUAGE_CODE = 'es-MX'
+LANGUAGE_CODE = "es-MX"
 
-TIME_ZONE = 'America/Mexico_City'
+TIME_ZONE = "America/Mexico_City"
 
 USE_I18N = True
 
@@ -137,68 +137,63 @@ USE_L10N = True
 USE_TZ = True
 
 LANGUAGES = [
-    ('es-MX', 'Spanish (Mexico)'),
+    ("es-MX", "Spanish (Mexico)"),
     # Add other languages here
 ]
-
 
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = "static/"
 
-MEDIA_URL = '/media/'
+MEDIA_URL = "/media/"
 
 
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
-#Custom model
+# Custom model
 
-AUTH_USER_MODEL = 'core.CustomUser'
-
-
-#Authentication using session and token auth
-
-AUTHENTICATION_BACKENDS = ['core.backends.CustomBackend']
+AUTH_USER_MODEL = "core.CustomUser"
 
 
+# Authentication using session and token auth
 
-
+AUTHENTICATION_BACKENDS = ["core.backends.CustomBackend"]
 
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
     )
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': datetime.timedelta(minutes=20),
-    'REFRESH_TOKEN_LIFETIME': datetime.timedelta(days=1),
-    'USER_ID_CLAIM': 'id',
-    'SLIDING_TOKEN_REFRESH_RESET': True,
-    'BLACKLIST_AFTER_ROTATION': False,
+    "ACCESS_TOKEN_LIFETIME": datetime.timedelta(minutes=20),
+    "REFRESH_TOKEN_LIFETIME": datetime.timedelta(days=1),
+    "USER_ID_CLAIM": "id",
+    "SLIDING_TOKEN_REFRESH_RESET": True,
+    "BLACKLIST_AFTER_ROTATION": False,
 }
 
 
-STRIPE_WEBHOOK_SECRET = 'whsec_aea6cc4ba45773f32e82953b195c02843187f9b6ef0c85915b327a1927dfda53'
-STRIPE_SUBSCRIPTION_PRICE_ID='price_1I2kVQJQ5QjlwW1LWRpqDQlC'
+STRIPE_WEBHOOK_SECRET = (
+    "whsec_aea6cc4ba45773f32e82953b195c02843187f9b6ef0c85915b327a1927dfda53"
+)
+STRIPE_SUBSCRIPTION_PRICE_ID = "price_1I2kVQJQ5QjlwW1LWRpqDQlC"
 
 
-#frontend
-SUBSCRIPTION_SUCCESS_URL = 'http://localhost:8009/subscription/success/'
-SUBSCRIPTION_FAILED_URL = 'http://localhost:8009/subscription/failed/'
-
-
+# frontend
+SUBSCRIPTION_SUCCESS_URL = "http://localhost:8009/subscription/success/"
+SUBSCRIPTION_FAILED_URL = "http://localhost:8009/subscription/failed/"
 
 
 # CORS_ORIGIN_WHITELIST = [
@@ -225,35 +220,43 @@ SESSION_COOKIE_HTTPONLY = True
 
 # EMAIL WITH GMAIL
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = "smtp-mail.outlook.com"
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = "smtp-mail.outlook.com"
 EMAIL_HOST_USER = "oscara1706cl@hotmail.com"
-EMAIL_HOST_PASSWORD = "3471abraham"
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
+# EMAIL_HOST_PASSWORD = "3471abraham"
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+
+ANYMAIL = {
+    "MAILGUN_API_KEY": os.environ.get("MAILGUN_API_KEY"),
+    "MAILGUN_SENDER_DOMAIN": os.environ.get("MAILGUN_SANDBOX_DOMAIN"),
+}
+EMAIL_BACKEND = "anymail.backends.mailgun.EmailBackend"
+DEFAULT_FROM_EMAIL = "oscara1706cl@gmail.com"
+SERVER_EMAIL = "oscara1706cl@gmail.com"
 
 TESTING = True
 
 
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'file': {
-            'level': 'ERROR',
-            'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'logs', 'django_errors.log'),
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "file": {
+            "level": "ERROR",
+            "class": "logging.FileHandler",
+            "filename": os.path.join(BASE_DIR, "logs", "django_errors.log"),
         },
-        'console': {
-            'level': 'DEBUG',
-            'class': 'logging.StreamHandler',
+        "console": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
         },
     },
-    'loggers': {
-        'django': {
-            'handlers': ['file', 'console'],
-            'level': 'ERROR',
-            'propagate': True,
+    "loggers": {
+        "django": {
+            "handlers": ["file", "console"],
+            "level": "ERROR",
+            "propagate": True,
         },
     },
 }

@@ -1,30 +1,36 @@
-# myapp/management/commands/create_superuser.py
-from django.core.management.base import BaseCommand
-from core.models import CustomUser  # Import your custom user model
 from django.contrib.auth import get_user_model
-
-class Command(BaseCommand):
-    help = 'Create a superuser'
-
-    def handle(self, *args, **options):
-        if not CustomUser.objects.filter(username='oscar').exists():
-            CustomUser.objects.create_superuser('oscar', 'oscar@example.com', 'adminpassword')
-            self.stdout.write(self.style.SUCCESS('Superuser created successfully'))
-        else:
-            self.stdout.write(self.style.SUCCESS('Superuser already exists'))
+from django.core.management.base import BaseCommand
 
 
 class Command(BaseCommand):
-    help = 'Create a staff user'
+    help = "Create a superuser or a staff user"
+
+    def add_arguments(self, parser):
+        # Adding a named (optional) argument
+        parser.add_argument(
+            "--staff",
+            action="store_true",
+            help="Create a staff user instead of a superuser",
+        )
 
     def handle(self, *args, **options):
         User = get_user_model()
-        username = 'staffuser'  # Replace with desired username
-        email = 'staff@example.com'  # Replace with desired email
-        password = 'staffpassword'  # Replace with desired password
+
+        if options["staff"]:
+            username = "staffuser"  # Replace with desired username
+            email = "staff@example.com"  # Replace with desired email
+            password = "staffpassword"  # Replace with desired password
+            user_type = "Staff user"
+            extra_fields = {"is_staff": True, "is_superuser": False}
+        else:
+            username = "oscar"
+            email = "oscar@example.com"
+            password = "adminpassword"
+            user_type = "Superuser"
+            extra_fields = {"is_staff": True, "is_superuser": True}
 
         if not User.objects.filter(username=username).exists():
-            User.objects.create_user(username, email, password, is_staff=True)
-            self.stdout.write(self.style.SUCCESS('Staff user created successfully'))
+            User.objects.create_user(username, email, password, **extra_fields)
+            self.stdout.write(self.style.SUCCESS(f"{user_type} created successfully"))
         else:
-            self.stdout.write(self.style.SUCCESS('Staff user already exists'))
+            self.stdout.write(self.style.SUCCESS(f"{user_type} already exists"))
