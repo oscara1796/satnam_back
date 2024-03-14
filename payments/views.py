@@ -74,7 +74,6 @@ class PaymentMethodView(APIView):
     def get(self, request, pk):
         try:
             user = get_user_model().objects.get(id=pk)
-            print(user)
             customer = stripe.Customer.retrieve(user.stripe_customer_id)
 
             # Retrieve the default payment method

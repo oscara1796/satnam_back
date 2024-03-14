@@ -126,7 +126,6 @@ class UserTestCase(APITestCase):
             url, HTTP_AUTHORIZATION=f"Bearer {self.access}", format="json"
         )
 
-        print("response data", response.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["id"], self.user.id)
         self.assertEqual(response.data["username"], self.user.username)

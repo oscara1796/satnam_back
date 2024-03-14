@@ -75,7 +75,7 @@ class ContactSubmissionTests(APITestCase):
         )
 
         assert response.status_code == status.HTTP_200_OK
-        assert len(response.data) == 2
+        assert response.data['count'] == 2
 
     def test_get_single_submission(self):
         # Similar setup as above, then...

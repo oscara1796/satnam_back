@@ -335,6 +335,8 @@ class PaymentMethodViewTests(APITestCase):
         response = self.client.get(
             self.url, HTTP_AUTHORIZATION=f"Bearer {self.access}", format="json"
         )
+        self.assertIsNotNone(response.data["default_payment_method"])
+        self.assertEqual(response.data["default_payment_method"].get("id"), created_payment_method_id)
         self.assertEqual(response.status_code, 200)
         all_payment_methods = response.data["all_payment_methods"]
         self.assertIn(
@@ -459,8 +461,8 @@ class PaymentMethodViewTests(APITestCase):
         )
         self.assertEqual(response.status_code, 200)
         data = response.data
-        # Verify 'default_payment_method' is None
-        self.assertIsNone(data["default_payment_method"])
+        # Verify 'default_payment_method' is not None
+        self.assertIsNotNone(data["default_payment_method"])
 
         # Verify 'all_payment_methods' is a list
         self.assertIsInstance(data["all_payment_methods"], list)
@@ -493,7 +495,7 @@ class PaymentMethodViewTests(APITestCase):
             self.assertEqual(card["exp_year"], 2024)
             self.assertEqual(card["last4"], "4242")
 
-        default_payment_method_id = payment_ids[0].get("id")
+        default_payment_method_id = payment_ids[0].get("payment_method_id")
         response = self.client.put(
             self.url,
             {"payment_method_id": default_payment_method_id},
@@ -509,7 +511,7 @@ class PaymentMethodViewTests(APITestCase):
 
         # Verify the default payment method has been updated
         data = response.data
-        self.assertEqual(data["default_payment_method"], default_payment_method_id)
+        self.assertEqual(data["default_payment_method"].get("id"), default_payment_method_id)
         # Verify the response contains the expected keys
         # Note: This assumes you have set up test payment methods in Stripe
 
@@ -579,73 +581,3 @@ class PaymentMethodViewTests(APITestCase):
         )  # Verify all_payment_methods is a list
         self.assertEqual(len(data["all_payment_methods"]), 0)
 
-
-#     def test_create_payment_intent(self):
-#         # Make a request to your Django API endpoint that creates a payment intent
-#         response = self.client.post('/api/payment/create-intent/', data={'amount': 1000, 'currency': 'usd'})
-
-#         # Assert that the API request was successful (HTTP status code 200)
-#         self.assertEqual(response.status_code, 200)
-
-#         # Assert that the response contains a valid payment intent ID
-#         payment_intent_id = response.data.get('payment_intent_id')
-#         self.assertIsNotNone(payment_intent_id)
-
-#         # Retrieve the payment intent from Stripe using the payment intent ID
-#         payment_intent = stripe.PaymentIntent.retrieve(payment_intent_id)
-
-#         # Assert that the payment intent amount and currency match the request
-#         self.assertEqual(payment_intent.amount, 1000)
-#         self.assertEqual(payment_intent.currency, 'usd')
-
-#     def test_process_payment(self):
-#         # Create a payment method in Stripe (e.g., using a test card)
-#         payment_method = stripe.PaymentMethod.create(
-#             type='card',
-#             card={
-#                 'number': '4242424242424242',
-#                 'exp_month': 12,
-#                 'exp_year': 2024,
-#                 'cvc': '123'
-#             }
-#         )
-
-#         # Make a request to your Django API endpoint that processes the payment
-#         response = self.client.post('/api/payment/process-payment/', data={'payment_method_id': payment_method.id})
-
-#         # Assert that the API request was successful (HTTP status code 200)
-#         self.assertEqual(response.status_code, 200)
-
-#         # Assert that the payment was successful by checking the payment status
-#         payment_status = response.data.get('status')
-#         self.assertEqual(payment_status, 'succeeded')
-
-# def test_create_subscription(self):
-#     # Prepare the request data
-
-
-#     data = {
-#         'customer_id': 'cus_1234567890',  # Stripe customer ID
-#         'plan_id': 'plan_1234567890',  # Stripe plan ID
-#         'payment_method_id': 'pm_1234567890',  # Stripe payment method ID
-#     }
-
-#     # Make the API request
-#     response = self.client.post(self.subscription_url, data, format='json')
-
-#     # Assert the response status code
-#     self.assertEqual(response.status_code, 200)
-
-#     # Assert the response data
-#     response_data = json.loads(response.content)
-#     self.assertTrue('subscription_id' in response_data)
-
-#     # Assert the subscription was created in Stripe
-#     subscription_id = response_data['subscription_id']
-#     try:
-#         subscription = stripe.Subscription.retrieve(subscription_id)
-#         self.assertEqual(subscription.customer, data['customer_id'])
-#         self.assertEqual(subscription.plan, data['plan_id'])
-#         self.assertEqual(subscription.default_payment_method, data['payment_method_id'])
-#     except stripe.StripeError as e:
-#         self.fail(f"Failed to retrieve subscription from Stripe: {str(e)}")

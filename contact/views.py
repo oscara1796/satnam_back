@@ -31,9 +31,10 @@ class ContactSubmissionView(APIView):
         if pk is not None:
             try:
                 submission = ContactSubmission.objects.get(pk=pk)
+                serializer = ContactSubmissionSerializer(submission)
+                return Response(serializer.data)
             except ContactSubmission.DoesNotExist:
                 return Response(status=status.HTTP_404_NOT_FOUND)
-            serializer = ContactSubmissionSerializer(submission)
         else:
             submissions = ContactSubmission.objects.all()
             paginator = (
