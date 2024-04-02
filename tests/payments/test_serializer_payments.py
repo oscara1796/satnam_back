@@ -336,7 +336,9 @@ class PaymentMethodViewTests(APITestCase):
             self.url, HTTP_AUTHORIZATION=f"Bearer {self.access}", format="json"
         )
         self.assertIsNotNone(response.data["default_payment_method"])
-        self.assertEqual(response.data["default_payment_method"].get("id"), created_payment_method_id)
+        self.assertEqual(
+            response.data["default_payment_method"].get("id"), created_payment_method_id
+        )
         self.assertEqual(response.status_code, 200)
         all_payment_methods = response.data["all_payment_methods"]
         self.assertIn(
@@ -511,7 +513,9 @@ class PaymentMethodViewTests(APITestCase):
 
         # Verify the default payment method has been updated
         data = response.data
-        self.assertEqual(data["default_payment_method"].get("id"), default_payment_method_id)
+        self.assertEqual(
+            data["default_payment_method"].get("id"), default_payment_method_id
+        )
         # Verify the response contains the expected keys
         # Note: This assumes you have set up test payment methods in Stripe
 
@@ -580,4 +584,3 @@ class PaymentMethodViewTests(APITestCase):
             data["all_payment_methods"], list
         )  # Verify all_payment_methods is a list
         self.assertEqual(len(data["all_payment_methods"]), 0)
-

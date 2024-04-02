@@ -13,11 +13,13 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 import datetime
 import os
 from pathlib import Path
+
+import dj_database_url
+from django.core.management.utils import get_random_secret_key
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
@@ -26,14 +28,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECRET_KEY = 'django-insecure-j$3o=&)t0)2c7w8r&j3z_(2f2qv^&pdwzna+#c6_k!z3r*%s24'
 load_dotenv(".env.dev")
 
-SECRET_KEY = os.environ.get("SECRET_KEY")
+SECRET_KEY = os.environ.get("SECRET_KEY", default=get_random_secret_key())
 
 DEBUG = int(os.environ.get("DEBUG", default=0))
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG = True
 
-ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS").split(" ")
+ALLOWED_HOSTS = os.environ.get(
+    "DJANGO_ALLOWED_HOSTS", default="127.0.0.1 localhost [::1]"
+).split(" ")
 
 
 # Application definition
@@ -45,7 +49,6 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "anymail",
     "sslserver",
     "rest_framework",
     "corsheaders",
@@ -60,6 +63,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -102,6 +106,8 @@ DATABASES = {
         "PORT": os.environ.get("SQL_PORT", "5432"),
     }
 }
+
+DATABASES["default"] = dj_database_url.config(default="sqlite:///db.sqlite3")
 
 
 # Password validation
@@ -147,12 +153,14 @@ LANGUAGES = [
 
 STATIC_URL = "static/"
 
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
 MEDIA_URL = "/media/"
 
 
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
-
-STATIC_ROOT = BASE_DIR / 'static'
 
 
 # Default primary key field type
@@ -222,20 +230,12 @@ SESSION_COOKIE_HTTPONLY = True
 
 # EMAIL WITH GMAIL
 
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_HOST = "smtp-mail.outlook.com"
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp-mail.outlook.com"
 EMAIL_HOST_USER = "oscara1706cl@hotmail.com"
-# EMAIL_HOST_PASSWORD = "3471abraham"
-# EMAIL_PORT = 587
-# EMAIL_USE_TLS = True
-
-ANYMAIL = {
-    "MAILGUN_API_KEY": os.environ.get("MAILGUN_API_KEY"),
-    "MAILGUN_SENDER_DOMAIN": os.environ.get("MAILGUN_SANDBOX_DOMAIN"),
-}
-EMAIL_BACKEND = "anymail.backends.mailgun.EmailBackend"
-DEFAULT_FROM_EMAIL = "oscara1706cl@gmail.com"
-SERVER_EMAIL = "oscara1706cl@gmail.com"
+EMAIL_HOST_PASSWORD = (os.environ.get("EMAIL_HOST_PASSWORD"),)
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
 
 TESTING = True
 

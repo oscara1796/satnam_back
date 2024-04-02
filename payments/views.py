@@ -1,4 +1,6 @@
 import json
+import logging
+from datetime import datetime, timezone
 
 import stripe
 from django.conf import settings
@@ -25,6 +27,8 @@ FRONTEND_SUBSCRIPTION_SUCCESS_URL = settings.SUBSCRIPTION_SUCCESS_URL
 FRONTEND_SUBSCRIPTION_CANCEL_URL = settings.SUBSCRIPTION_FAILED_URL
 
 webhook_secret = settings.STRIPE_WEBHOOK_SECRET
+
+logger = logging.getLogger("django")
 
 
 class PricesListView(APIView):
@@ -415,7 +419,7 @@ class StripeWebhookView(APIView):
 
         except Exception as e:
             # Log the exception
-            # logger.error(f"Error processing Stripe webhook: {e}", exc_info=True)
+            logger.error(f"Error processing Stripe webhook: {e}", exc_info=True)
             # If processing fails, record the event as failed
             if existing_event:
                 existing_event.status = "failed"
@@ -424,6 +428,7 @@ class StripeWebhookView(APIView):
                 # If anything goes wrong, record the event as 'failed'
                 StripeEvent.objects.create(stripe_event_id=event.id, status="failed")
             # Return a non-200 response to indicate failure to Stripe
+            print(e)
             return JsonResponse({"error": str(e)}, status=500)
 
         return Response(status=200)
@@ -492,7 +497,7 @@ class StripeWebhookView(APIView):
             """.format(
             invoice.id, invoice.amount_due / 100, invoice.currency
         )
-        from_email = "oscara1706cl@hotmail.com"  # Replace with your email address
+        from_email = "satnamyogajal@gmail.com"  # Replace with your email address
         recipient_list = [customer_email]
 
         send_mail(
@@ -505,33 +510,40 @@ class StripeWebhookView(APIView):
         )
 
     def send_trial_start_email(self, customer_email, subscription):
-        subject = "Welcome to Your Trial Period!"
-        message = f"Dear Customer,\n\nThank you for starting a trial with us! We hope you enjoy everything we have to offer. Your trial ends on {subscription.trial_end}."
-        from_email = "oscara1706cl@hotmail.com"
+        # Convert to a readable format, timezone-aware
+        readable_date = datetime.fromtimestamp(
+            subscription.trial_end, timezone.utc
+        ).strftime("%Y-%m-%d %H:%M:%S")
+        # Set the timezone to UTC using `replace`
+        subject = "Bienvenido a tu período de prueba! Sat Nam Yoga Estudio"
+        message = f"Estimado cliente,\n\n¡Gracias por comenzar un período de prueba con nosotros! Esperamos que disfrutes de todo lo que tenemos para ofrecer. Tu período de prueba termina el {readable_date}."
+        from_email = "satnamyogajal@gmail.com"
         recipient_list = [customer_email]
 
         send_mail(subject, message, from_email, recipient_list)
 
     def send_payment_failed_email(self, customer_email, invoice):
-        subject = "Payment Failed Notification"
-        message = f"Hello,\n\nYour payment for Invoice ID: {invoice.id} has failed.\nPlease update your payment information or contact support."
-        from_email = "oscara1706cl@hotmail.com"  # Replace with your email address
+        subject = "Notificación de Pago Fallido"
+        message = f"Hola,\n\nTu pago para el ID de factura: {invoice.id} ha fallado.\nPor favor, actualiza tu información de pago o contacta al soporte."
+        from_email = "satnamyogajal@gmail.com"  # Replace with your email address
         recipient_list = [customer_email]
 
         send_mail(subject, message, from_email, recipient_list)
 
     def send_subscription_deleted_email(self, customer_email):
-        subject = "We Are Going to Miss You"
-        message = "Dear Customer,\n\nWe noticed that your subscription has been deleted. We are going to miss you! If you have any feedback or need assistance, please feel free to contact us."
-        from_email = "oscara1706cl@hotmail.com"  # Replace with your email address
+        subject = (
+            "Vamos a extrañarte! Subscripción ha sido eliminado (Sat Nam yoga Estudio)"
+        )
+        message = "Estimado cliente,\n\nHemos notado que tu suscripción ha sido eliminada. ¡Vamos a extrañarte! Si tienes algún comentario o necesitas asistencia, no dudes en contactarnos."
+        from_email = "satnamyogajal@gmail.com"  # Replace with your email address
         recipient_list = [customer_email]
 
         send_mail(subject, message, from_email, recipient_list)
 
     def send_trial_will_end_email(self, customer_email, subscription):
-        subject = "Your Trial Period is Ending Soon"
-        message = f"Dear Customer,\n\nJust a heads-up that your trial period is ending soon. You will be charged after {subscription.trial_end}. We hope you enjoyed your trial!"
-        from_email = "oscara1706cl@hotmail.com"
+        subject = "Tu período de prueba está por terminar"
+        message = f"Estimado cliente,\n\nSolo un aviso de que tu período de prueba está por terminar. Se te cobrará después del {subscription.trial_end}. ¡Esperamos que hayas disfrutado tu prueba!"
+        from_email = "satnamyogajal@gmail.com"
         recipient_list = [customer_email]
 
         send_mail(subject, message, from_email, recipient_list)

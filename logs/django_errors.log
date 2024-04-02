@@ -373,3 +373,36 @@ Traceback (most recent call last):
   File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 423, in finalize_response
     assert isinstance(response, HttpResponseBase), (
 AssertionError: Expected a `Response`, `HttpResponse` or `HttpStreamingResponse` to be returned from the view, but received a `<class 'NoneType'>`
+Internal Server Error: /api/create_subscription/1/
+"GET /api/create_subscription/1/ HTTP/1.1" 500 161
+Internal Server Error: /api/create_subscription/1/
+"GET /api/create_subscription/1/ HTTP/1.1" 500 161
+Internal Server Error: /api/create_subscription/1/
+"GET /api/create_subscription/1/ HTTP/1.1" 500 161
+Internal Server Error: /stripe/webhook/
+"POST /stripe/webhook/ HTTP/1.1" 500 281
+Internal Server Error: /stripe/webhook/
+"POST /stripe/webhook/ HTTP/1.1" 500 63
+Internal Server Error: /api/create_subscription/1/
+"GET /api/create_subscription/1/ HTTP/1.1" 500 161
+Internal Server Error: /api/create_subscription/1/
+"GET /api/create_subscription/1/ HTTP/1.1" 500 161
+Internal Server Error: /api/create_subscription/1/
+"GET /api/create_subscription/1/ HTTP/1.1" 500 161
+Internal Server Error: /stripe/webhook/
+"POST /stripe/webhook/ HTTP/1.1" 500 63
+Internal Server Error: /api/create_subscription/1/
+"GET /api/create_subscription/1/ HTTP/1.1" 500 161
+Internal Server Error: /api/create_subscription/1/
+"GET /api/create_subscription/1/ HTTP/1.1" 500 161
+Error processing Stripe webhook: module 'datetime' has no attribute 'fromtimestamp'
+Traceback (most recent call last):
+  File "/usr/src/app/payments/views.py", line 381, in post
+    self.send_trial_start_email(customer_email, subscription)
+  File "/usr/src/app/payments/views.py", line 515, in send_trial_start_email
+    readable_date = datetime.fromtimestamp(subscription.trial_end, datetime.timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
+AttributeError: module 'datetime' has no attribute 'fromtimestamp'
+Internal Server Error: /stripe/webhook/
+"POST /stripe/webhook/ HTTP/1.1" 500 63
+Internal Server Error: /api/create_subscription/1/
+"GET /api/create_subscription/1/ HTTP/1.1" 500 161

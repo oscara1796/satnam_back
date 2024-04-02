@@ -1,0 +1,27 @@
+version: '3.8'
+services:
+  core_prod:
+    build:
+      context: .
+      dockerfile: satnam_prod_dockerfile
+    command: gunicorn satnam.wsgi:application --bind 0.0.0.0:8000
+    container_name: core_prod
+    ports:
+      - 8000:8000
+    env_file:
+      - ./.env.dev
+    environment:
+      - DATABASE_URL=postgresql://oscar:17dejunio@core-prod-db:5432/core_dev
+    depends_on:
+      - core-prod-db
+  core-prod-db:
+    image: postgres:14-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=oscar
+      - POSTGRES_PASSWORD=17dejunio
+      - POSTGRES_DB=core_dev
+
+volumes:
+  postgres_data:
