@@ -107,7 +107,7 @@ DATABASES = {
     }
 }
 
-DATABASES["default"] = dj_database_url.config(default="sqlite:///db.sqlite3")
+DATABASES["default"] = dj_database_url.config(os.environ.get("DATABASE_URL", default="sqlite:///db.sqlite3"))
 
 
 # Password validation
@@ -226,6 +226,9 @@ SESSION_ENGINE = "django.contrib.sessions.backends.db"
 
 SESSION_COOKIE_SECURE = True
 SESSION_COOKIE_HTTPONLY = True
+
+CSRF_TRUSTED_ORIGINS = ["https://satnam-api-38ccd2c6f742.herokuapp.com"]
+
 
 
 # EMAIL WITH GMAIL
