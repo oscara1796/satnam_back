@@ -117,6 +117,9 @@ DATABASES = {
 DATABASE_URL = os.environ.get('DATABASE_URL')
 db_from_env = dj_database_url.config(default=DATABASE_URL, conn_max_age=500, ssl_require=True)
 DATABASES['default'].update(db_from_env)
+
+
+
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
 
@@ -222,6 +225,7 @@ CORS_ALLOWED_ORIGINS = [
     "https://192.168.100.162:3001",  # The origin of your React app
     "https://localhost:3001",  # The origin of your React app
     "https://127.0.0.1:3001",  # The origin of your React app
+    "https://satnam-client-4754c00a2e7d.herokuapp.com"
 ]
 
 CORS_ORIGIN_ALLOW_ALL = True
