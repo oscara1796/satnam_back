@@ -225,7 +225,9 @@ CORS_ALLOWED_ORIGINS = [
     "https://192.168.100.162:3001",  # The origin of your React app
     "https://localhost:3001",  # The origin of your React app
     "https://127.0.0.1:3001",  # The origin of your React app
-    "https://satnam-client-4754c00a2e7d.herokuapp.com"
+    "https://satnam-client-4754c00a2e7d.herokuapp.com",
+    "http://www.satnamyogaestudio.com.mx",
+    "https://www.satnamyogaestudio.com.mx"
 ]
 
 # CORS_ORIGIN_ALLOW_ALL = True
