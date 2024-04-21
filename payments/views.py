@@ -46,9 +46,10 @@ class PricesListView(APIView):
                 product["price"] = data_json_product.unit_amount
                 product["currency"] = data_json_product.currency
             json_str = json.dumps(products)
-
+            logger.info("Retrieved product prices successfully.")
             return Response(json_str, status=200)
         except Exception as e:
+            logger.error("Failed to retrieve product prices", exc_info=True)
             return Response({"errors": e}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -65,8 +66,10 @@ class SubscriptionDetailView(APIView):
                 + "?session_id={CHECKOUT_SESSION_ID}",
                 cancel_url=FRONTEND_SUBSCRIPTION_CANCEL_URL,
             )
+            logger.info("Checkout session created successfully.")
             return redirect(checkout_session.url, code=303)
         except Exception as err:
+            logger.error(f"Failed to create checkout session: {err}", exc_info=True)
             return Response(
                 {"errors": err}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
@@ -92,7 +95,7 @@ class PaymentMethodView(APIView):
             payment_methods = stripe.PaymentMethod.list(
                 customer=user.stripe_customer_id, type="card"
             )
-
+            logger.info(f"Retrieved payment methods for user {user.id}")
             return Response(
                 {
                     "default_payment_method": default_payment_method,
@@ -101,10 +104,12 @@ class PaymentMethodView(APIView):
                 status=status.HTTP_200_OK,
             )
         except get_user_model().DoesNotExist:
+            logger.warning(f"User with id {pk} not found")
             return Response(
                 {"message": "User not found."}, status=status.HTTP_404_NOT_FOUND
             )
         except StripeError as e:
+            logger.error(f"Stripe API error: {e}", exc_info=True)
             return Response(
                 {"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
@@ -130,12 +135,12 @@ class PaymentMethodView(APIView):
                     "default_payment_method": payment_method.id,
                 },
             )
-
+            logger.info(f"Created and attached new payment method for user {user.id}")
             return Response(
                 {"payment_method_id": payment_method.id}, status=status.HTTP_201_CREATED
             )
         except StripeError as e:
-
+            logger.error(f"Failed to create or attach payment method: {e}", exc_info=True)
             return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request, pk):
@@ -147,11 +152,12 @@ class PaymentMethodView(APIView):
                     "default_payment_method": request.data.get("payment_method_id"),
                 },
             )
-
+            logger.info(f"Updated default payment method for user {user.id}")
             return Response(
                 {"success": "Default payment method updated"}, status=status.HTTP_200_OK
             )
         except StripeError as e:
+            logger.error(f"Failed to update default payment method for user {user.id}: {e}", exc_info=True)
             return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk):
@@ -165,12 +171,13 @@ class PaymentMethodView(APIView):
 
             # Detach the payment method from the customer
             stripe.PaymentMethod.detach(payment_method_id)
-
+            logger.info(f"Detached and deleted payment method {payment_method_id}")
             return Response(
                 {"success": "Payment method detached and deleted"},
                 status=status.HTTP_200_OK,
             )
         except StripeError as e:
+            logger.error(f"Failed to detach payment method: {e}", exc_info=True)
             return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -200,13 +207,16 @@ class PaymentDetailView(APIView):
 
             # print(subscription)
             # Return the subscription details
+
+            logger.info(f"Subscription details retrieved for user {user.id}")
             return Response(response, status=status.HTTP_200_OK)
         except get_user_model().DoesNotExist:
+            logger.error(f"User with ID {pk} not found.")
             return Response(
                 {"message": "User not found."}, status=status.HTTP_404_NOT_FOUND
             )
         except StripeError as e:
-            print("error ", e)
+            logger.error(f"Stripe error while retrieving subscription for user {user.id}: {e}", exc_info=True)
             return Response(
                 {"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
@@ -252,6 +262,8 @@ class PaymentDetailView(APIView):
             user.active = subscription.status in ("active", "trialing")
             user.save()
 
+
+            logger.info(f"New subscription created for user {user.id}")
             response = {
                 "stripe_customer_id": user.stripe_customer_id,
                 "subscription_id": subscription.id,
@@ -264,8 +276,10 @@ class PaymentDetailView(APIView):
 
             return Response(response, status=status.HTTP_201_CREATED)
         except stripe.error.StripeError as e:
+            logger.error(f"Stripe error while creating subscription for user {user.id}: {e}", exc_info=True)
             return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
+            logger.error(f"Unexpected error while creating subscription: {e}", exc_info=True)
             return Response(
                 {"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
@@ -276,22 +290,25 @@ class PaymentDetailView(APIView):
             subscription_id = user.stripe_subscription_id
 
             if not subscription_id:
+                logger.warning(f"Attempt to cancel non-existent subscription for user {user.id}")
                 return Response(
                     {"error": "Missing subscription_id in request data"},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
             stripe.Subscription.modify(subscription_id, cancel_at_period_end=True)
-
+            logger.info(f"Subscription set to cancel at period end for user {user.id}")
             return Response(
                 {"success": "Subscription set to cancel at period end"},
                 status=status.HTTP_200_OK,
             )
         except get_user_model().DoesNotExist:
+            logger.error(f"User with ID {pk} not found.")
             return Response(
                 {"error": "User not found"}, status=status.HTTP_404_NOT_FOUND
             )
         except StripeError as e:
+            logger.error(f"Stripe error while cancelling subscription for user {user.id}: {e}", exc_info=True)
             return Response(
                 {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
@@ -302,17 +319,17 @@ class PaymentDetailView(APIView):
             subscription_id = user.stripe_subscription_id
 
             if not subscription_id:
+                logger.warning(f"No subscription_id provided for update for user {user.id}")
                 return Response(
                     {"error": "Missing subscription_id"},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            print("hola")
             # Update the subscription to not cancel at the period end
             updated_subscription = stripe.Subscription.modify(
                 subscription_id, cancel_at_period_end=False
             )
-
+            logger.info(f"Subscription update processed for user {user.id}")
             # Prepare and return the response
             response = {
                 "subscription_id": updated_subscription.id,
@@ -320,10 +337,12 @@ class PaymentDetailView(APIView):
             }
             return Response(response, status=status.HTTP_200_OK)
         except get_user_model().DoesNotExist:
+            logger.error(f"User with ID {pk} not found.")
             return Response(
                 {"error": "User not found"}, status=status.HTTP_404_NOT_FOUND
             )
         except StripeError as e:
+            logger.error(f"Stripe error while updating subscription for user {user.id}: {e}", exc_info=True)
             return Response(
                 {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
@@ -337,13 +356,16 @@ class StripeWebhookView(APIView):
         try:
             payload_data = json.loads(payload)
             event = stripe.Event.construct_from(payload_data, stripe.api_key)
+            logger.info(f"Stripe event {event.type} received with ID {event.id}")
         except ValueError as e:
             # Invalid payload
+            logger.error(f"Invalid payload received: {str(e)}")
             return JsonResponse({"error": str(e)}, status=400)
 
         existing_event = StripeEvent.objects.filter(stripe_event_id=event.id).first()
         if existing_event:
             if existing_event.status == "processed":
+                logger.info(f"Stripe event {event.id} already processed.")
                 # Event already processed successfully
                 return Response(status=200)
 
@@ -355,12 +377,11 @@ class StripeWebhookView(APIView):
                 if event.type == "invoice.payment_succeeded":
                     invoice = event.data.object
                     customer_id = invoice.customer
-                    print("invoice paid")
                     # Retrieve customer's email from your database
                     customer_email = self.get_customer_email(customer_id)
                     if customer_email:
-                        print("mandamos email")
                         self.send_invoice_email(customer_email, invoice)
+                        logger.info(f"Invoice payment email sent for invoice {invoice.id} to {customer_email}")
 
                 elif event.type == "invoice.payment_failed":
                     invoice = event.data.object
@@ -370,6 +391,7 @@ class StripeWebhookView(APIView):
                     customer_email = self.get_customer_email(customer_id)
                     if customer_email:
                         self.send_payment_failed_email(customer_email, invoice)
+                        logger.info(f"Payment failed email sent for invoice {invoice.id} to {customer_email}")
 
                 elif event.type == "customer.subscription.created":
                     subscription = event.data.object
@@ -378,6 +400,7 @@ class StripeWebhookView(APIView):
                         customer_email = self.get_customer_email(customer_id)
                         if customer_email:
                             self.send_trial_start_email(customer_email, subscription)
+                            logger.info(f"Trial start email sent for subscription {subscription.id} to {customer_email}")
 
                 elif event.type == "customer.subscription.updated":
                     """
@@ -392,12 +415,14 @@ class StripeWebhookView(APIView):
                     customer_email = self.get_customer_email(customer_id)
                     if customer_email:
                         self.send_subscription_deleted_email(customer_email)
+                        logger.info(f"Subscription deleted email sent for subscription {subscription.id} to {customer_email}")
 
                     try:
                         user = CustomUser.objects.get(stripe_customer_id=customer_id)
                         user.active = False
                         user.stripe_subscription_id = None
                         user.save()
+                        logger.info(f"User {user.id} deactivated after subscription deletion")
                     except CustomUser.DoesNotExist:
                         return JsonResponse({"status": "user not found"}, status=404)
 
@@ -411,15 +436,17 @@ class StripeWebhookView(APIView):
                 if existing_event:
                     existing_event.status = "processed"
                     existing_event.save()
+                    logger.info(f"Stripe event {event.id} marked as processed.")
                 else:
                     # If the event is processed successfully, record it as 'processed'
                     StripeEvent.objects.create(
                         stripe_event_id=event.id, status="processed"
                     )
+                    logger.info(f"Processed new Stripe event {event.id}.")
 
         except Exception as e:
             # Log the exception
-            logger.error(f"Error processing Stripe webhook: {e}", exc_info=True)
+            logger.error(f"Error processing Stripe webhook for event {event.id}: {e}", exc_info=True)
             # If processing fails, record the event as failed
             if existing_event:
                 existing_event.status = "failed"
@@ -428,7 +455,6 @@ class StripeWebhookView(APIView):
                 # If anything goes wrong, record the event as 'failed'
                 StripeEvent.objects.create(stripe_event_id=event.id, status="failed")
             # Return a non-200 response to indicate failure to Stripe
-            print(e)
             return JsonResponse({"error": str(e)}, status=500)
 
         return Response(status=200)
@@ -440,7 +466,7 @@ class StripeWebhookView(APIView):
             customer_email = user.email
             return customer_email
         except Exception as e:
-            print(f"Error: {e}")
+            logger.error(f"Error retrieving email for customer {customer_id}: {str(e)}", exc_info=True)
 
         return None
 
@@ -517,18 +543,12 @@ class StripeWebhookView(APIView):
         # Set the timezone to UTC using `replace`
         subject = "Bienvenido a tu período de prueba! Sat Nam Yoga Estudio"
         message = f"Estimado cliente,\n\n¡Gracias por comenzar un período de prueba con nosotros! Esperamos que disfrutes de todo lo que tenemos para ofrecer. Tu período de prueba termina el {readable_date}."
-        from_email = "satnamyogajal@gmail.com"
-        recipient_list = [customer_email]
-
-        send_mail(subject, message, from_email, recipient_list)
+        self.send_email(customer_email, subject, message)
 
     def send_payment_failed_email(self, customer_email, invoice):
         subject = "Notificación de Pago Fallido"
         message = f"Hola,\n\nTu pago para el ID de factura: {invoice.id} ha fallado.\nPor favor, actualiza tu información de pago o contacta al soporte."
-        from_email = "satnamyogajal@gmail.com"  # Replace with your email address
-        recipient_list = [customer_email]
-
-        send_mail(subject, message, from_email, recipient_list)
+        self.send_email(customer_email, subject, message)
 
     def send_subscription_deleted_email(self, customer_email):
         subject = (
@@ -536,14 +556,14 @@ class StripeWebhookView(APIView):
         )
         message = "Estimado cliente,\n\nHemos notado que tu suscripción ha sido eliminada. ¡Vamos a extrañarte! Si tienes algún comentario o necesitas asistencia, no dudes en contactarnos."
         from_email = "satnamyogajal@gmail.com"  # Replace with your email address
-        recipient_list = [customer_email]
-
-        send_mail(subject, message, from_email, recipient_list)
+        self.send_email(customer_email, subject, message)
 
     def send_trial_will_end_email(self, customer_email, subscription):
         subject = "Tu período de prueba está por terminar"
         message = f"Estimado cliente,\n\nSolo un aviso de que tu período de prueba está por terminar. Se te cobrará después del {subscription.trial_end}. ¡Esperamos que hayas disfrutado tu prueba!"
+        self.send_email(customer_email, subject, message)
+    
+    def send_email(self, to_email, subject, message):
         from_email = "satnamyogajal@gmail.com"
-        recipient_list = [customer_email]
-
-        send_mail(subject, message, from_email, recipient_list)
+        send_mail(subject, message, from_email, [to_email], fail_silently=False)
+        logger.info(f"Email sent to {to_email} with subject '{subject}'")

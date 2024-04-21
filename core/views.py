@@ -1,4 +1,5 @@
 import stripe
+import logging
 from django.conf import settings
 from django.contrib.auth import get_user_model
 
@@ -24,6 +25,8 @@ from .serializers import LogInSerializer, TrialDaysSerializer, UserSerializer
 
 env_vars = dotenv_values(".env.dev")
 stripe.api_key = env_vars["STRIPE_SECRET_KEY"]
+
+logger = logging.getLogger("django")
 
 
 def conditional_ratelimit(*args, **kwargs):
@@ -51,16 +54,18 @@ class SignUpView(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if not serializer.is_valid():
-            # Here you can customize the error response
+            logger.warning("User registration failed due to invalid data.", extra={"request_data": request.data, "errors": serializer.errors})
             errors = {"message": serializer.errors}
             return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
-        # If the serializer is valid, proceed as normal
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(
-            serializer.data, status=status.HTTP_201_CREATED, headers=headers
-        )
+        try:
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+            logger.info("New user registered successfully.", extra={"user_id": serializer.data.get("id", "Unknown")})
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        except Exception as e:
+            logger.error("Unexpected error during user registration", exc_info=True)
+            return Response({"message": "An unexpected error occurred during user registration."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class LogInView(TokenObtainPairView):
@@ -77,7 +82,7 @@ class LogInView(TokenObtainPairView):
             # Perform any additional actions you need to do here
             return Response(serializer.validated_data)
         except Exception as e:
-            print("HELLO", e.detail)
+            logger.error(f"Login error: {str(e)}", exc_info=True)
             return Response(
                 {
                     "message": "No se encontró una cuenta activa con las credenciales proporcionadas."
@@ -139,14 +144,9 @@ class PasswordResetRequestView(APIView):
                 },
                 status=status.HTTP_200_OK,
             )
-        except user_model.DoesNotExist:
-            # For privacy reasons, do not reveal whether or not the email exists in the system
-            return Response(
-                {
-                    "message": "Si existe una cuenta con el correo electrónico, se ha enviado un enlace para restablecer la contraseña"
-                },
-                status=status.HTTP_200_OK,
-            )
+        except get_user_model().DoesNotExist:
+            logger.info("Intento de restablecimiento de contraseña para usuario inexistente")
+            return Response({"message": "No se encontró ningún usuario con el ID proporcionado."}, status=status.HTTP_404_NOT_FOUND)
 
 
 class PasswordResetConfirmView(APIView):
@@ -168,27 +168,16 @@ class PasswordResetConfirmView(APIView):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
         except ValueError:
-            # Handle the case where urlsafe_base64_decode() raises a ValueError
-            return Response(
-                {
-                    "message": "Invalid user ID. Please check your request and try again."
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            logger.warning("Intento de decodificación de UID inválido", exc_info=True)
+            return Response({"message": "ID de usuario no válido. Por favor, revise su solicitud y vuelva a intentarlo."}, status=status.HTTP_400_BAD_REQUEST)
         except get_user_model().DoesNotExist:
-            # Handle the case where no user matches the provided UID
-            return Response(
-                {"message": "No user found with the provided user ID."},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-        except Exception:
-            # Log or handle unexpected exceptions here
-            # Consider logging the exception to help with debugging
-            # print(e)
-            return Response(
-                {"message": "An unexpected error occurred. Please try again later."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+            logger.info("Intento de restablecimiento de contraseña para usuario inexistente")
+            return Response({"message": "No se encontró ningún usuario con el ID proporcionado."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            logger.error("Error inesperado durante el restablecimiento de contraseña", exc_info=True)
+            return Response({"message": "Ocurrió un error inesperado. Por favor, intente de nuevo más tarde."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+            
 
 
 class UserDetailView(APIView):
@@ -205,24 +194,22 @@ class UserDetailView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
-
-        errors = {"message": serializer.errors}
-        return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            errors = {"message": serializer.errors}
+            logger.error(f"Update user failed: {errors}")
+            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk):
         try:
             user = get_user_model().objects.get(id=pk)
             stripe_response = stripe.Customer.delete(user.stripe_customer_id)
-            # print(stripe_response)
             if not stripe_response["deleted"]:
                 raise Exception("Stripe could not delete customer")
             user.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Exception as e:
-            print(e)
-            return Response(
-                data={"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            logger.error(f"Error deleting user: {str(e)}", exc_info=True)
+            return Response(data={"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class IsStaffOrReadOnly(permissions.BasePermission):
@@ -241,41 +228,52 @@ class TrialDaysDetail(APIView):
         try:
             return TrialDays.objects.get(pk=pk)
         except TrialDays.DoesNotExist:
+            logger.error(f"TrialDay with pk={pk} not found.")
             raise Http404
 
     def get(self, request, pk=None, format=None):
         if pk:
-            trial_day = self.get_object(pk)
-            if trial_day is not None:
+            try:
+                trial_day = self.get_object(pk)
                 serializer = TrialDaysSerializer(trial_day)
-            else:
-                # If pk is provided but the object is not found, return an empty response or error
-                return Response(
-                    {"error": "TrialDay not found"}, status=status.HTTP_404_NOT_FOUND
-                )
+                return Response(serializer.data)
+            except Http404:
+                return Response({"error": "TrialDay not found"}, status=status.HTTP_404_NOT_FOUND)
         else:
-            # If no pk is provided, return all trial days
             trial_days = TrialDays.objects.all()
             serializer = TrialDaysSerializer(trial_days, many=True)
-
-        return Response(serializer.data)
+            logger.info("Retrieved all trial days.")
+            return Response(serializer.data)
 
     def post(self, request, format=None):
         serializer = TrialDaysSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
+            logger.info("Created a new trial day.")
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            logger.warning(f"Failed to create a new trial day: {serializer.errors}")
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
     def put(self, request, pk, format=None):
         trial_day = self.get_object(pk)
         serializer = TrialDaysSerializer(trial_day, data=request.data)
         if serializer.is_valid():
             serializer.save()
+            logger.info(f"Updated trial day with pk={pk}.")
             return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            logger.warning(f"Failed to update trial day with pk={pk}: {serializer.errors}")
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
     def delete(self, request, pk, format=None):
         trial_day = self.get_object(pk)
-        trial_day.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        try:
+            trial_day.delete()
+            logger.info(f"Deleted trial day with pk={pk}.")
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Exception as e:
+            logger.error(f"Failed to delete trial day with pk={pk}: {str(e)}", exc_info=True)
+            return Response({"error": "An error occurred while deleting the trial day."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
