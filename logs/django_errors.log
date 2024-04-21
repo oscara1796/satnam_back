@@ -781,3 +781,93 @@ Traceback (most recent call last):
     print("HELLO", e.detail)
 AttributeError: 'ProgrammingError' object has no attribute 'detail'
 "POST /api/log_in/ HTTP/1.1" 500 187466
+Login error: No active account found with the given credentials
+Traceback (most recent call last):
+  File "/usr/src/app/core/views.py", line 81, in post
+    serializer.is_valid(raise_exception=True)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/serializers.py", line 227, in is_valid
+    self._validated_data = self.run_validation(self.initial_data)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/serializers.py", line 429, in run_validation
+    value = self.validate(value)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework_simplejwt/serializers.py", line 68, in validate
+    data = super().validate(attrs)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework_simplejwt/serializers.py", line 52, in validate
+    raise exceptions.AuthenticationFailed(
+rest_framework.exceptions.AuthenticationFailed: No active account found with the given credentials
+INFO 2024-04-21 11:01:51,978 autoreload Watching for file changes with StatReloader
+INFO 2024-04-21 11:02:27,434 basehttp "POST /api/log_in/ HTTP/1.1" 200 1070
+INFO 2024-04-21 11:02:27,466 views Retrieved all trial days.
+INFO 2024-04-21 11:02:27,472 basehttp "GET /api/trial-days/ HTTP/1.1" 200 2
+INFO 2024-04-21 11:02:29,796 basehttp "OPTIONS /api/get_product_prices/ HTTP/1.1" 200 0
+INFO 2024-04-21 11:02:29,797 basehttp "OPTIONS /api/payment_method/1/ HTTP/1.1" 200 0
+INFO 2024-04-21 11:02:30,376 views Retrieved payment methods for user 1
+INFO 2024-04-21 11:02:30,377 basehttp "GET /api/payment_method/1/ HTTP/1.1" 200 56
+INFO 2024-04-21 11:02:30,552 views Retrieved product prices successfully.
+INFO 2024-04-21 11:02:30,553 basehttp "GET /api/get_product_prices/ HTTP/1.1" 200 1399
+INFO 2024-04-21 11:02:50,096 basehttp "OPTIONS /api/create_subscription/1/ HTTP/1.1" 200 0
+INFO 2024-04-21 11:02:51,251 views Stripe event payment_method.attached received with ID evt_1P82qtJQ5QjlwW1LlzZcGp2q
+INFO 2024-04-21 11:02:51,262 views Processed new Stripe event evt_1P82qtJQ5QjlwW1LlzZcGp2q.
+INFO 2024-04-21 11:02:51,262 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 11:02:51,569 views Stripe event customer.updated received with ID evt_1P82qtJQ5QjlwW1L70ft7GBT
+INFO 2024-04-21 11:02:51,579 views Processed new Stripe event evt_1P82qtJQ5QjlwW1L70ft7GBT.
+INFO 2024-04-21 11:02:51,581 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 11:02:53,655 views New subscription created for user 1
+INFO 2024-04-21 11:02:53,656 basehttp "POST /api/create_subscription/1/ HTTP/1.1" 201 132
+INFO 2024-04-21 11:02:53,706 basehttp "OPTIONS /api/users/1/ HTTP/1.1" 200 0
+INFO 2024-04-21 11:02:53,719 basehttp "GET /api/users/1/ HTTP/1.1" 200 241
+INFO 2024-04-21 11:02:53,831 views Stripe event charge.succeeded received with ID evt_3P82qtJQ5QjlwW1L0nSOPXnu
+INFO 2024-04-21 11:02:53,841 views Processed new Stripe event evt_3P82qtJQ5QjlwW1L0nSOPXnu.
+INFO 2024-04-21 11:02:53,843 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 11:02:53,908 views Stripe event customer.updated received with ID evt_1P82qvJQ5QjlwW1LIeS18kyo
+INFO 2024-04-21 11:02:53,918 views Processed new Stripe event evt_1P82qvJQ5QjlwW1LIeS18kyo.
+INFO 2024-04-21 11:02:53,919 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 11:02:54,060 views Stripe event customer.subscription.created received with ID evt_1P82qvJQ5QjlwW1Lv6QAVLOS
+INFO 2024-04-21 11:02:54,070 views Processed new Stripe event evt_1P82qvJQ5QjlwW1Lv6QAVLOS.
+INFO 2024-04-21 11:02:54,071 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 11:02:54,180 views Stripe event payment_intent.succeeded received with ID evt_3P82qtJQ5QjlwW1L03YWhwOZ
+INFO 2024-04-21 11:02:54,188 views Processed new Stripe event evt_3P82qtJQ5QjlwW1L03YWhwOZ.
+INFO 2024-04-21 11:02:54,189 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 11:02:54,248 views Stripe event payment_intent.created received with ID evt_3P82qtJQ5QjlwW1L0BydxehF
+INFO 2024-04-21 11:02:54,258 views Processed new Stripe event evt_3P82qtJQ5QjlwW1L0BydxehF.
+INFO 2024-04-21 11:02:54,258 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 11:02:54,372 views Stripe event invoice.created received with ID evt_1P82qwJQ5QjlwW1LaUROmZ2W
+INFO 2024-04-21 11:02:54,382 views Processed new Stripe event evt_1P82qwJQ5QjlwW1LaUROmZ2W.
+INFO 2024-04-21 11:02:54,383 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 11:02:54,455 views Stripe event invoice.finalized received with ID evt_1P82qwJQ5QjlwW1LCFU4HaVR
+INFO 2024-04-21 11:02:54,465 views Processed new Stripe event evt_1P82qwJQ5QjlwW1LCFU4HaVR.
+INFO 2024-04-21 11:02:54,466 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 11:02:54,563 views Stripe event invoice.paid received with ID evt_1P82qwJQ5QjlwW1LV5Vpuwxc
+INFO 2024-04-21 11:02:54,574 views Processed new Stripe event evt_1P82qwJQ5QjlwW1LV5Vpuwxc.
+INFO 2024-04-21 11:02:54,575 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 11:02:54,646 views Stripe event invoice.payment_succeeded received with ID evt_1P82qwJQ5QjlwW1LYcuXZ2kF
+ERROR 2024-04-21 11:02:55,136 views Error processing Stripe webhook for event evt_1P82qwJQ5QjlwW1LYcuXZ2kF: Connection unexpectedly closed
+Traceback (most recent call last):
+  File "/usr/src/app/payments/views.py", line 383, in post
+    self.send_invoice_email(customer_email, invoice)
+  File "/usr/src/app/payments/views.py", line 529, in send_invoice_email
+    send_mail(
+  File "/usr/local/lib/python3.10/site-packages/django/core/mail/__init__.py", line 87, in send_mail
+    return mail.send()
+  File "/usr/local/lib/python3.10/site-packages/django/core/mail/message.py", line 298, in send
+    return self.get_connection(fail_silently).send_messages([self])
+  File "/usr/local/lib/python3.10/site-packages/django/core/mail/backends/smtp.py", line 124, in send_messages
+    new_conn_created = self.open()
+  File "/usr/local/lib/python3.10/site-packages/django/core/mail/backends/smtp.py", line 91, in open
+    self.connection.login(self.username, self.password)
+  File "/usr/local/lib/python3.10/smtplib.py", line 739, in login
+    (code, resp) = self.auth(
+  File "/usr/local/lib/python3.10/smtplib.py", line 642, in auth
+    (code, resp) = self.docmd("AUTH", mechanism + " " + response)
+  File "/usr/local/lib/python3.10/smtplib.py", line 432, in docmd
+    return self.getreply()
+  File "/usr/local/lib/python3.10/smtplib.py", line 405, in getreply
+    raise SMTPServerDisconnected("Connection unexpectedly closed")
+smtplib.SMTPServerDisconnected: Connection unexpectedly closed
+ERROR 2024-04-21 11:02:55,138 log Internal Server Error: /stripe/webhook/
+ERROR 2024-04-21 11:02:55,139 basehttp "POST /stripe/webhook/ HTTP/1.1" 500 43
+INFO 2024-04-21 11:02:55,678 views Subscription details retrieved for user 1
+INFO 2024-04-21 11:02:55,679 basehttp "GET /api/create_subscription/1/ HTTP/1.1" 200 193
+INFO 2024-04-21 11:02:55,953 views Retrieved payment methods for user 1
+INFO 2024-04-21 11:02:55,954 basehttp "GET /api/payment_method/1/ HTTP/1.1" 200 1502
+INFO 2024-04-21 11:22:28,126 views Retrieved all trial days.
+INFO 2024-04-21 11:22:28,132 basehttp "GET /api/trial-days/ HTTP/1.1" 200 2

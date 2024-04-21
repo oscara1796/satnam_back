@@ -266,9 +266,12 @@ LOGGING = {
     "disable_existing_loggers": False,
     "handlers": {
         "file": {
-            "level": "ERROR",
-            "class": "logging.FileHandler",
+            "level": "INFO",
+            "class": "logging.handlers.RotatingFileHandler",
             "filename": os.path.join(BASE_DIR, "logs", "django_errors.log"),
+            'maxBytes': 1024*1024*5,
+            'backupCount': 5,
+            'formatter': 'verbose'
         },
         "console": {
             "level": "DEBUG",
@@ -278,8 +281,14 @@ LOGGING = {
     "loggers": {
         "django": {
             "handlers": ["file", "console"],
-            "level": "ERROR",
+            "level": "INFO",
             "propagate": True,
+        },
+    },
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
         },
     },
 }
