@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 
 import datetime
 import os
+import redis
 from pathlib import Path
 
 import dj_database_url
@@ -119,6 +120,12 @@ else:
     db_from_env = dj_database_url.config(default=DATABASE_URL, conn_max_age=500, ssl_require=True)
     DATABASES['default'].update(db_from_env)
 
+#REDIS CONFIG
+
+REDIS_URL = os.getenv('REDIS_URL', 'redis://redis:6379')
+
+# Set up a Redis connection pool
+REDIS_POOL = redis.ConnectionPool.from_url(REDIS_URL)
 
 
 # Password validation
@@ -264,6 +271,8 @@ EMAIL_HOST_USER = "satnamyogajal@gmail.com"
 
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
+AWS_SES_REGION_NAME = 'us-east-2' 
+AWS_SES_REGION_ENDPOINT = 'email.us-east-2.amazonaws.com'  
 
 TESTING = True
 

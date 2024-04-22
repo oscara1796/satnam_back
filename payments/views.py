@@ -362,16 +362,18 @@ class StripeWebhookView(APIView):
             logger.error(f"Invalid payload received: {str(e)}")
             return JsonResponse({"error": str(e)}, status=400)
 
-        existing_event = StripeEvent.objects.filter(stripe_event_id=event.id).first()
-        if existing_event:
-            if existing_event.status == "processed":
-                logger.info(f"Stripe event {event.id} already processed.")
+        
+        with transaction.atomic():
+            existing_event, created = StripeEvent.objects.get_or_create(
+                stripe_event_id=event.id,
+                defaults={'status': 'processing'}
+            )
+            if not created and existing_event.status == "processed":
                 # Event already processed successfully
+                logger.info(f"Stripe event {event.id} already processed.")
                 return Response(status=200)
 
-        try:
-
-            with transaction.atomic():
+            try:
 
                 # Handle the event based on its type
                 if event.type == "invoice.payment_succeeded":
@@ -382,6 +384,7 @@ class StripeWebhookView(APIView):
                     if customer_email:
                         self.send_invoice_email(customer_email, invoice)
                         logger.info(f"Invoice payment email sent for invoice {invoice.id} to {customer_email}")
+                    existing_event.status = 'processed'
 
                 elif event.type == "invoice.payment_failed":
                     invoice = event.data.object
@@ -392,6 +395,7 @@ class StripeWebhookView(APIView):
                     if customer_email:
                         self.send_payment_failed_email(customer_email, invoice)
                         logger.info(f"Payment failed email sent for invoice {invoice.id} to {customer_email}")
+                    existing_event.status = 'processed'
 
                 elif event.type == "customer.subscription.created":
                     subscription = event.data.object
@@ -401,6 +405,7 @@ class StripeWebhookView(APIView):
                         if customer_email:
                             self.send_trial_start_email(customer_email, subscription)
                             logger.info(f"Trial start email sent for subscription {subscription.id} to {customer_email}")
+                    existing_event.status = 'processed'
 
                 elif event.type == "customer.subscription.updated":
                     """
@@ -426,38 +431,28 @@ class StripeWebhookView(APIView):
                     except CustomUser.DoesNotExist:
                         return JsonResponse({"status": "user not found"}, status=404)
 
+                    existing_event.status = 'processed'
+
                 elif event.type == "customer.subscription.trial_will_end":
                     subscription = event.data.object
                     customer_id = subscription.customer
                     customer_email = self.get_customer_email(customer_id)
                     if customer_email:
                         self.send_trial_will_end_email(customer_email, subscription)
-
-                if existing_event:
-                    existing_event.status = "processed"
-                    existing_event.save()
-                    logger.info(f"Stripe event {event.id} marked as processed.")
+                    existing_event.status = 'processed'
                 else:
-                    # If the event is processed successfully, record it as 'processed'
-                    StripeEvent.objects.create(
-                        stripe_event_id=event.id, status="processed"
-                    )
-                    logger.info(f"Processed new Stripe event {event.id}.")
+                    existing_event.status = 'unhandled'
 
-        except Exception as e:
-            # Log the exception
-            logger.error(f"Error processing Stripe webhook for event {event.id}: {e}", exc_info=True)
-            # If processing fails, record the event as failed
-            if existing_event:
+            except Exception as e:
+                # Log the exception
+                logger.error(f"Error processing Stripe webhook for event {event.id}: {e}", exc_info=True)
+                # If processing fails, record the event as failed
                 existing_event.status = "failed"
-                existing_event.save()
-            else:
-                # If anything goes wrong, record the event as 'failed'
-                StripeEvent.objects.create(stripe_event_id=event.id, status="failed")
-            # Return a non-200 response to indicate failure to Stripe
-            return JsonResponse({"error": str(e)}, status=500)
+            finally:
+                if existing_event.status != 'unhandled':
+                    existing_event.save()
+                return Response(status=200)
 
-        return Response(status=200)
 
     def get_customer_email(self, customer_id):
         # Implement logic to retrieve customer's email from your database
