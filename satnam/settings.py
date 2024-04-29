@@ -210,6 +210,7 @@ CORS_ALLOWED_ORIGINS = [
     "https://192.168.100.162:3001",  # The origin of your React app
     "https://localhost:3001",  # The origin of your React app
     "https://127.0.0.1:3001",  # The origin of your React app
+    "https://zbc9982v-3001.use.devtunnels.ms"
 ]
 
 CORS_ORIGIN_ALLOW_ALL = True
