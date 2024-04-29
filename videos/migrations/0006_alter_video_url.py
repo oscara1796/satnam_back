@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('videos', '0005_category_video_categories'),
+        ("videos", "0005_category_video_categories"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='video',
-            name='url',
+            model_name="video",
+            name="url",
             field=models.TextField(),
         ),
     ]

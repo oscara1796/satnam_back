@@ -1,1 +1,2734 @@
 
+Internal Server Error: /api/trial-days/
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+psycopg2.errors.UndefinedTable: relation "core_trialdays" does not exist
+LINE 1: ...ore_trialdays"."id", "core_trialdays"."days" FROM "core_tria...
+                                                             ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/decorators/csrf.py", line 54, in wrapped_view
+    return view_func(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/generic/base.py", line 103, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/usr/src/app/core/views.py", line 257, in get
+    return Response(serializer.data)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/serializers.py", line 768, in data
+    ret = super().data
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/serializers.py", line 253, in data
+    self._data = self.to_representation(self.instance)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/serializers.py", line 686, in to_representation
+    return [
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 394, in __iter__
+    self._fetch_all()
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 1866, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 87, in __iter__
+    results = compiler.execute_sql(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1398, in execute_sql
+    cursor.execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 103, in execute
+    return super().execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 67, in execute
+    return self._execute_with_wrappers(
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 80, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 84, in _execute
+    with self.db.wrap_database_errors:
+  File "/usr/local/lib/python3.10/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+django.db.utils.ProgrammingError: relation "core_trialdays" does not exist
+LINE 1: ...ore_trialdays"."id", "core_trialdays"."days" FROM "core_tria...
+                                                             ^
+
+"GET /api/trial-days/ HTTP/1.1" 500 148787
+Internal Server Error: /api/sign_up/
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+psycopg2.errors.UndefinedTable: relation "core_customuser" does not exist
+LINE 1: SELECT 1 AS "a" FROM "core_customuser" WHERE "core_customuse...
+                             ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/decorators/csrf.py", line 54, in wrapped_view
+    return view_func(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/generic/base.py", line 103, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/utils/decorators.py", line 46, in _wrapper
+    return bound_method(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/generics.py", line 190, in post
+    return self.create(request, *args, **kwargs)
+  File "/usr/src/app/core/views.py", line 54, in create
+    if not serializer.is_valid():
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/serializers.py", line 227, in is_valid
+    self._validated_data = self.run_validation(self.initial_data)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/serializers.py", line 426, in run_validation
+    value = self.to_internal_value(data)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/serializers.py", line 483, in to_internal_value
+    validated_value = field.run_validation(primitive_value)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/fields.py", line 751, in run_validation
+    return super().run_validation(data)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/fields.py", line 548, in run_validation
+    self.run_validators(value)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/fields.py", line 560, in run_validators
+    validator(value, self)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/validators.py", line 73, in __call__
+    if qs_exists(queryset):
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/validators.py", line 21, in qs_exists
+    return queryset.exists()
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 1225, in exists
+    return self.query.has_results(using=self.db)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/sql/query.py", line 592, in has_results
+    return compiler.has_results()
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1366, in has_results
+    return bool(self.execute_sql(SINGLE))
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1398, in execute_sql
+    cursor.execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 103, in execute
+    return super().execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 67, in execute
+    return self._execute_with_wrappers(
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 80, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 84, in _execute
+    with self.db.wrap_database_errors:
+  File "/usr/local/lib/python3.10/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+django.db.utils.ProgrammingError: relation "core_customuser" does not exist
+LINE 1: SELECT 1 AS "a" FROM "core_customuser" WHERE "core_customuse...
+                             ^
+
+"POST /api/sign_up/ HTTP/1.1" 500 185864
+Internal Server Error: /api/password-reset/
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/decorators/csrf.py", line 54, in wrapped_view
+    return view_func(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/generic/base.py", line 103, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/usr/src/app/core/views.py", line 149, in post
+    reset_link = f'http://192.168.100.162:3001/#/reset-password/{uid.decode()}/{token}'
+AttributeError: 'str' object has no attribute 'decode'
+"POST /api/password-reset/ HTTP/1.1" 500 84196
+Internal Server Error: /api/password-reset/
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/decorators/csrf.py", line 54, in wrapped_view
+    return view_func(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/generic/base.py", line 103, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/usr/src/app/core/views.py", line 178, in post
+    if response.status_code == 200:
+AttributeError: 'str' object has no attribute 'status_code'
+"POST /api/password-reset/ HTTP/1.1" 500 86897
+Internal Server Error: /api/password-reset/
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/decorators/csrf.py", line 54, in wrapped_view
+    return view_func(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/generic/base.py", line 103, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/usr/src/app/core/views.py", line 182, in post
+    response = client.messages.send( message=message)
+AttributeError: 'Client' object has no attribute 'messages'
+"POST /api/password-reset/ HTTP/1.1" 500 86633
+Internal Server Error: /api/trial-days/
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+psycopg2.errors.UndefinedTable: relation "core_trialdays" does not exist
+LINE 1: ...ore_trialdays"."id", "core_trialdays"."days" FROM "core_tria...
+                                                             ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/decorators/csrf.py", line 54, in wrapped_view
+    return view_func(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/generic/base.py", line 103, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/usr/src/app/core/views.py", line 264, in get
+    return Response(serializer.data)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/serializers.py", line 768, in data
+    ret = super().data
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/serializers.py", line 253, in data
+    self._data = self.to_representation(self.instance)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/serializers.py", line 686, in to_representation
+    return [
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 394, in __iter__
+    self._fetch_all()
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 1866, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 87, in __iter__
+    results = compiler.execute_sql(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1398, in execute_sql
+    cursor.execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 103, in execute
+    return super().execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 67, in execute
+    return self._execute_with_wrappers(
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 80, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 84, in _execute
+    with self.db.wrap_database_errors:
+  File "/usr/local/lib/python3.10/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+django.db.utils.ProgrammingError: relation "core_trialdays" does not exist
+LINE 1: ...ore_trialdays"."id", "core_trialdays"."days" FROM "core_tria...
+                                                             ^
+
+"GET /api/trial-days/ HTTP/1.1" 500 148967
+Internal Server Error: /api/sign_up/
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+psycopg2.errors.UndefinedTable: relation "core_customuser" does not exist
+LINE 1: SELECT 1 AS "a" FROM "core_customuser" WHERE "core_customuse...
+                             ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/decorators/csrf.py", line 54, in wrapped_view
+    return view_func(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/generic/base.py", line 103, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/utils/decorators.py", line 46, in _wrapper
+    return bound_method(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/generics.py", line 190, in post
+    return self.create(request, *args, **kwargs)
+  File "/usr/src/app/core/views.py", line 54, in create
+    if not serializer.is_valid():
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/serializers.py", line 227, in is_valid
+    self._validated_data = self.run_validation(self.initial_data)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/serializers.py", line 426, in run_validation
+    value = self.to_internal_value(data)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/serializers.py", line 483, in to_internal_value
+    validated_value = field.run_validation(primitive_value)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/fields.py", line 751, in run_validation
+    return super().run_validation(data)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/fields.py", line 548, in run_validation
+    self.run_validators(value)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/fields.py", line 560, in run_validators
+    validator(value, self)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/validators.py", line 73, in __call__
+    if qs_exists(queryset):
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/validators.py", line 21, in qs_exists
+    return queryset.exists()
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 1225, in exists
+    return self.query.has_results(using=self.db)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/sql/query.py", line 592, in has_results
+    return compiler.has_results()
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1366, in has_results
+    return bool(self.execute_sql(SINGLE))
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1398, in execute_sql
+    cursor.execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 103, in execute
+    return super().execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 67, in execute
+    return self._execute_with_wrappers(
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 80, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 84, in _execute
+    with self.db.wrap_database_errors:
+  File "/usr/local/lib/python3.10/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+django.db.utils.ProgrammingError: relation "core_customuser" does not exist
+LINE 1: SELECT 1 AS "a" FROM "core_customuser" WHERE "core_customuse...
+                             ^
+
+"POST /api/sign_up/ HTTP/1.1" 500 186045
+Internal Server Error: /api/password-reset/
+"POST /api/password-reset/ HTTP/1.1" 500 52
+Internal Server Error: /api/password-reset/
+"POST /api/password-reset/ HTTP/1.1" 500 52
+Internal Server Error: /api/password-reset/
+"POST /api/password-reset/ HTTP/1.1" 500 52
+Internal Server Error: /api/contact/5/
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/decorators/csrf.py", line 54, in wrapped_view
+    return view_func(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/generic/base.py", line 103, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 511, in dispatch
+    self.response = self.finalize_response(request, response, *args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 423, in finalize_response
+    assert isinstance(response, HttpResponseBase), (
+AssertionError: Expected a `Response`, `HttpResponse` or `HttpStreamingResponse` to be returned from the view, but received a `<class 'NoneType'>`
+Internal Server Error: /api/contact/5/
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/decorators/csrf.py", line 54, in wrapped_view
+    return view_func(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/generic/base.py", line 103, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 511, in dispatch
+    self.response = self.finalize_response(request, response, *args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 423, in finalize_response
+    assert isinstance(response, HttpResponseBase), (
+AssertionError: Expected a `Response`, `HttpResponse` or `HttpStreamingResponse` to be returned from the view, but received a `<class 'NoneType'>`
+Internal Server Error: /api/create_subscription/1/
+"GET /api/create_subscription/1/ HTTP/1.1" 500 161
+Internal Server Error: /api/create_subscription/1/
+"GET /api/create_subscription/1/ HTTP/1.1" 500 161
+Internal Server Error: /api/create_subscription/1/
+"GET /api/create_subscription/1/ HTTP/1.1" 500 161
+Internal Server Error: /stripe/webhook/
+"POST /stripe/webhook/ HTTP/1.1" 500 281
+Internal Server Error: /stripe/webhook/
+"POST /stripe/webhook/ HTTP/1.1" 500 63
+Internal Server Error: /api/create_subscription/1/
+"GET /api/create_subscription/1/ HTTP/1.1" 500 161
+Internal Server Error: /api/create_subscription/1/
+"GET /api/create_subscription/1/ HTTP/1.1" 500 161
+Internal Server Error: /api/create_subscription/1/
+"GET /api/create_subscription/1/ HTTP/1.1" 500 161
+Internal Server Error: /stripe/webhook/
+"POST /stripe/webhook/ HTTP/1.1" 500 63
+Internal Server Error: /api/create_subscription/1/
+"GET /api/create_subscription/1/ HTTP/1.1" 500 161
+Internal Server Error: /api/create_subscription/1/
+"GET /api/create_subscription/1/ HTTP/1.1" 500 161
+Error processing Stripe webhook: module 'datetime' has no attribute 'fromtimestamp'
+Traceback (most recent call last):
+  File "/usr/src/app/payments/views.py", line 381, in post
+    self.send_trial_start_email(customer_email, subscription)
+  File "/usr/src/app/payments/views.py", line 515, in send_trial_start_email
+    readable_date = datetime.fromtimestamp(subscription.trial_end, datetime.timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
+AttributeError: module 'datetime' has no attribute 'fromtimestamp'
+Internal Server Error: /stripe/webhook/
+"POST /stripe/webhook/ HTTP/1.1" 500 63
+Internal Server Error: /api/create_subscription/1/
+"GET /api/create_subscription/1/ HTTP/1.1" 500 161
+Internal Server Error: /api/log_in/
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/sqlite3/base.py", line 357, in execute
+    return Database.Cursor.execute(self, query, params)
+sqlite3.OperationalError: no such table: core_customuser
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/src/app/core/views.py", line 76, in post
+    serializer.is_valid(raise_exception=True)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/serializers.py", line 227, in is_valid
+    self._validated_data = self.run_validation(self.initial_data)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/serializers.py", line 429, in run_validation
+    value = self.validate(value)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework_simplejwt/serializers.py", line 68, in validate
+    data = super().validate(attrs)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework_simplejwt/serializers.py", line 49, in validate
+    self.user = authenticate(**authenticate_kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/decorators/debug.py", line 42, in sensitive_variables_wrapper
+    return func(*func_args, **func_kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/contrib/auth/__init__.py", line 77, in authenticate
+    user = backend.authenticate(request, **credentials)
+  File "/usr/src/app/core/backends.py", line 11, in authenticate
+    user = User.objects.get(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 646, in get
+    num = len(clone)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 376, in __len__
+    self._fetch_all()
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 1866, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 87, in __iter__
+    results = compiler.execute_sql(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1398, in execute_sql
+    cursor.execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 103, in execute
+    return super().execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 67, in execute
+    return self._execute_with_wrappers(
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 80, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 84, in _execute
+    with self.db.wrap_database_errors:
+  File "/usr/local/lib/python3.10/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/sqlite3/base.py", line 357, in execute
+    return Database.Cursor.execute(self, query, params)
+django.db.utils.OperationalError: no such table: core_customuser
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/decorators/csrf.py", line 54, in wrapped_view
+    return view_func(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/generic/base.py", line 103, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/usr/src/app/core/views.py", line 80, in post
+    print("HELLO", e.detail)
+AttributeError: 'OperationalError' object has no attribute 'detail'
+"POST /api/log_in/ HTTP/1.1" 500 195702
+Internal Server Error: /api/log_in/
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/sqlite3/base.py", line 357, in execute
+    return Database.Cursor.execute(self, query, params)
+sqlite3.OperationalError: no such table: core_customuser
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/src/app/core/views.py", line 76, in post
+    serializer.is_valid(raise_exception=True)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/serializers.py", line 227, in is_valid
+    self._validated_data = self.run_validation(self.initial_data)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/serializers.py", line 429, in run_validation
+    value = self.validate(value)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework_simplejwt/serializers.py", line 68, in validate
+    data = super().validate(attrs)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework_simplejwt/serializers.py", line 49, in validate
+    self.user = authenticate(**authenticate_kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/decorators/debug.py", line 42, in sensitive_variables_wrapper
+    return func(*func_args, **func_kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/contrib/auth/__init__.py", line 77, in authenticate
+    user = backend.authenticate(request, **credentials)
+  File "/usr/src/app/core/backends.py", line 11, in authenticate
+    user = User.objects.get(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 646, in get
+    num = len(clone)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 376, in __len__
+    self._fetch_all()
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 1866, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 87, in __iter__
+    results = compiler.execute_sql(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1398, in execute_sql
+    cursor.execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 103, in execute
+    return super().execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 67, in execute
+    return self._execute_with_wrappers(
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 80, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 84, in _execute
+    with self.db.wrap_database_errors:
+  File "/usr/local/lib/python3.10/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/sqlite3/base.py", line 357, in execute
+    return Database.Cursor.execute(self, query, params)
+django.db.utils.OperationalError: no such table: core_customuser
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/decorators/csrf.py", line 54, in wrapped_view
+    return view_func(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/generic/base.py", line 103, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/usr/src/app/core/views.py", line 80, in post
+    print("HELLO", e.detail)
+AttributeError: 'OperationalError' object has no attribute 'detail'
+"POST /api/log_in/ HTTP/1.1" 500 195702
+Internal Server Error: /api/log_in/
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/sqlite3/base.py", line 357, in execute
+    return Database.Cursor.execute(self, query, params)
+sqlite3.OperationalError: no such table: core_customuser
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/src/app/core/views.py", line 76, in post
+    serializer.is_valid(raise_exception=True)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/serializers.py", line 227, in is_valid
+    self._validated_data = self.run_validation(self.initial_data)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/serializers.py", line 429, in run_validation
+    value = self.validate(value)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework_simplejwt/serializers.py", line 68, in validate
+    data = super().validate(attrs)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework_simplejwt/serializers.py", line 49, in validate
+    self.user = authenticate(**authenticate_kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/decorators/debug.py", line 42, in sensitive_variables_wrapper
+    return func(*func_args, **func_kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/contrib/auth/__init__.py", line 77, in authenticate
+    user = backend.authenticate(request, **credentials)
+  File "/usr/src/app/core/backends.py", line 11, in authenticate
+    user = User.objects.get(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 646, in get
+    num = len(clone)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 376, in __len__
+    self._fetch_all()
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 1866, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 87, in __iter__
+    results = compiler.execute_sql(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1398, in execute_sql
+    cursor.execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 103, in execute
+    return super().execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 67, in execute
+    return self._execute_with_wrappers(
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 80, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 84, in _execute
+    with self.db.wrap_database_errors:
+  File "/usr/local/lib/python3.10/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/sqlite3/base.py", line 357, in execute
+    return Database.Cursor.execute(self, query, params)
+django.db.utils.OperationalError: no such table: core_customuser
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/decorators/csrf.py", line 54, in wrapped_view
+    return view_func(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/generic/base.py", line 103, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/usr/src/app/core/views.py", line 80, in post
+    print("HELLO", e.detail)
+AttributeError: 'OperationalError' object has no attribute 'detail'
+"POST /api/log_in/ HTTP/1.1" 500 195702
+Internal Server Error: /api/trial-days/
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+psycopg2.errors.UndefinedTable: relation "core_trialdays" does not exist
+LINE 1: ...ore_trialdays"."id", "core_trialdays"."days" FROM "core_tria...
+                                                             ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/decorators/csrf.py", line 54, in wrapped_view
+    return view_func(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/generic/base.py", line 103, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/usr/src/app/core/views.py", line 261, in get
+    return Response(serializer.data)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/serializers.py", line 768, in data
+    ret = super().data
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/serializers.py", line 253, in data
+    self._data = self.to_representation(self.instance)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/serializers.py", line 686, in to_representation
+    return [
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 394, in __iter__
+    self._fetch_all()
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 1866, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 87, in __iter__
+    results = compiler.execute_sql(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1398, in execute_sql
+    cursor.execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 103, in execute
+    return super().execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 67, in execute
+    return self._execute_with_wrappers(
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 80, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 84, in _execute
+    with self.db.wrap_database_errors:
+  File "/usr/local/lib/python3.10/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+django.db.utils.ProgrammingError: relation "core_trialdays" does not exist
+LINE 1: ...ore_trialdays"."id", "core_trialdays"."days" FROM "core_tria...
+                                                             ^
+
+"GET /api/trial-days/ HTTP/1.1" 500 149420
+Internal Server Error: /api/log_in/
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+psycopg2.errors.UndefinedTable: relation "core_customuser" does not exist
+LINE 1: ...subscription_id", "core_customuser"."active" FROM "core_cust...
+                                                             ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/src/app/core/views.py", line 76, in post
+    serializer.is_valid(raise_exception=True)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/serializers.py", line 227, in is_valid
+    self._validated_data = self.run_validation(self.initial_data)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/serializers.py", line 429, in run_validation
+    value = self.validate(value)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework_simplejwt/serializers.py", line 68, in validate
+    data = super().validate(attrs)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework_simplejwt/serializers.py", line 49, in validate
+    self.user = authenticate(**authenticate_kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/decorators/debug.py", line 42, in sensitive_variables_wrapper
+    return func(*func_args, **func_kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/contrib/auth/__init__.py", line 77, in authenticate
+    user = backend.authenticate(request, **credentials)
+  File "/usr/src/app/core/backends.py", line 11, in authenticate
+    user = User.objects.get(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 646, in get
+    num = len(clone)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 376, in __len__
+    self._fetch_all()
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 1866, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 87, in __iter__
+    results = compiler.execute_sql(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1398, in execute_sql
+    cursor.execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 103, in execute
+    return super().execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 67, in execute
+    return self._execute_with_wrappers(
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 80, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 84, in _execute
+    with self.db.wrap_database_errors:
+  File "/usr/local/lib/python3.10/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+django.db.utils.ProgrammingError: relation "core_customuser" does not exist
+LINE 1: ...subscription_id", "core_customuser"."active" FROM "core_cust...
+                                                             ^
+
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/decorators/csrf.py", line 54, in wrapped_view
+    return view_func(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/generic/base.py", line 103, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/usr/src/app/core/views.py", line 80, in post
+    print("HELLO", e.detail)
+AttributeError: 'ProgrammingError' object has no attribute 'detail'
+"POST /api/log_in/ HTTP/1.1" 500 187466
+Login error: No active account found with the given credentials
+Traceback (most recent call last):
+  File "/usr/src/app/core/views.py", line 81, in post
+    serializer.is_valid(raise_exception=True)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/serializers.py", line 227, in is_valid
+    self._validated_data = self.run_validation(self.initial_data)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/serializers.py", line 429, in run_validation
+    value = self.validate(value)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework_simplejwt/serializers.py", line 68, in validate
+    data = super().validate(attrs)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework_simplejwt/serializers.py", line 52, in validate
+    raise exceptions.AuthenticationFailed(
+rest_framework.exceptions.AuthenticationFailed: No active account found with the given credentials
+INFO 2024-04-21 11:01:51,978 autoreload Watching for file changes with StatReloader
+INFO 2024-04-21 11:02:27,434 basehttp "POST /api/log_in/ HTTP/1.1" 200 1070
+INFO 2024-04-21 11:02:27,466 views Retrieved all trial days.
+INFO 2024-04-21 11:02:27,472 basehttp "GET /api/trial-days/ HTTP/1.1" 200 2
+INFO 2024-04-21 11:02:29,796 basehttp "OPTIONS /api/get_product_prices/ HTTP/1.1" 200 0
+INFO 2024-04-21 11:02:29,797 basehttp "OPTIONS /api/payment_method/1/ HTTP/1.1" 200 0
+INFO 2024-04-21 11:02:30,376 views Retrieved payment methods for user 1
+INFO 2024-04-21 11:02:30,377 basehttp "GET /api/payment_method/1/ HTTP/1.1" 200 56
+INFO 2024-04-21 11:02:30,552 views Retrieved product prices successfully.
+INFO 2024-04-21 11:02:30,553 basehttp "GET /api/get_product_prices/ HTTP/1.1" 200 1399
+INFO 2024-04-21 11:02:50,096 basehttp "OPTIONS /api/create_subscription/1/ HTTP/1.1" 200 0
+INFO 2024-04-21 11:02:51,251 views Stripe event payment_method.attached received with ID evt_1P82qtJQ5QjlwW1LlzZcGp2q
+INFO 2024-04-21 11:02:51,262 views Processed new Stripe event evt_1P82qtJQ5QjlwW1LlzZcGp2q.
+INFO 2024-04-21 11:02:51,262 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 11:02:51,569 views Stripe event customer.updated received with ID evt_1P82qtJQ5QjlwW1L70ft7GBT
+INFO 2024-04-21 11:02:51,579 views Processed new Stripe event evt_1P82qtJQ5QjlwW1L70ft7GBT.
+INFO 2024-04-21 11:02:51,581 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 11:02:53,655 views New subscription created for user 1
+INFO 2024-04-21 11:02:53,656 basehttp "POST /api/create_subscription/1/ HTTP/1.1" 201 132
+INFO 2024-04-21 11:02:53,706 basehttp "OPTIONS /api/users/1/ HTTP/1.1" 200 0
+INFO 2024-04-21 11:02:53,719 basehttp "GET /api/users/1/ HTTP/1.1" 200 241
+INFO 2024-04-21 11:02:53,831 views Stripe event charge.succeeded received with ID evt_3P82qtJQ5QjlwW1L0nSOPXnu
+INFO 2024-04-21 11:02:53,841 views Processed new Stripe event evt_3P82qtJQ5QjlwW1L0nSOPXnu.
+INFO 2024-04-21 11:02:53,843 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 11:02:53,908 views Stripe event customer.updated received with ID evt_1P82qvJQ5QjlwW1LIeS18kyo
+INFO 2024-04-21 11:02:53,918 views Processed new Stripe event evt_1P82qvJQ5QjlwW1LIeS18kyo.
+INFO 2024-04-21 11:02:53,919 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 11:02:54,060 views Stripe event customer.subscription.created received with ID evt_1P82qvJQ5QjlwW1Lv6QAVLOS
+INFO 2024-04-21 11:02:54,070 views Processed new Stripe event evt_1P82qvJQ5QjlwW1Lv6QAVLOS.
+INFO 2024-04-21 11:02:54,071 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 11:02:54,180 views Stripe event payment_intent.succeeded received with ID evt_3P82qtJQ5QjlwW1L03YWhwOZ
+INFO 2024-04-21 11:02:54,188 views Processed new Stripe event evt_3P82qtJQ5QjlwW1L03YWhwOZ.
+INFO 2024-04-21 11:02:54,189 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 11:02:54,248 views Stripe event payment_intent.created received with ID evt_3P82qtJQ5QjlwW1L0BydxehF
+INFO 2024-04-21 11:02:54,258 views Processed new Stripe event evt_3P82qtJQ5QjlwW1L0BydxehF.
+INFO 2024-04-21 11:02:54,258 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 11:02:54,372 views Stripe event invoice.created received with ID evt_1P82qwJQ5QjlwW1LaUROmZ2W
+INFO 2024-04-21 11:02:54,382 views Processed new Stripe event evt_1P82qwJQ5QjlwW1LaUROmZ2W.
+INFO 2024-04-21 11:02:54,383 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 11:02:54,455 views Stripe event invoice.finalized received with ID evt_1P82qwJQ5QjlwW1LCFU4HaVR
+INFO 2024-04-21 11:02:54,465 views Processed new Stripe event evt_1P82qwJQ5QjlwW1LCFU4HaVR.
+INFO 2024-04-21 11:02:54,466 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 11:02:54,563 views Stripe event invoice.paid received with ID evt_1P82qwJQ5QjlwW1LV5Vpuwxc
+INFO 2024-04-21 11:02:54,574 views Processed new Stripe event evt_1P82qwJQ5QjlwW1LV5Vpuwxc.
+INFO 2024-04-21 11:02:54,575 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 11:02:54,646 views Stripe event invoice.payment_succeeded received with ID evt_1P82qwJQ5QjlwW1LYcuXZ2kF
+ERROR 2024-04-21 11:02:55,136 views Error processing Stripe webhook for event evt_1P82qwJQ5QjlwW1LYcuXZ2kF: Connection unexpectedly closed
+Traceback (most recent call last):
+  File "/usr/src/app/payments/views.py", line 383, in post
+    self.send_invoice_email(customer_email, invoice)
+  File "/usr/src/app/payments/views.py", line 529, in send_invoice_email
+    send_mail(
+  File "/usr/local/lib/python3.10/site-packages/django/core/mail/__init__.py", line 87, in send_mail
+    return mail.send()
+  File "/usr/local/lib/python3.10/site-packages/django/core/mail/message.py", line 298, in send
+    return self.get_connection(fail_silently).send_messages([self])
+  File "/usr/local/lib/python3.10/site-packages/django/core/mail/backends/smtp.py", line 124, in send_messages
+    new_conn_created = self.open()
+  File "/usr/local/lib/python3.10/site-packages/django/core/mail/backends/smtp.py", line 91, in open
+    self.connection.login(self.username, self.password)
+  File "/usr/local/lib/python3.10/smtplib.py", line 739, in login
+    (code, resp) = self.auth(
+  File "/usr/local/lib/python3.10/smtplib.py", line 642, in auth
+    (code, resp) = self.docmd("AUTH", mechanism + " " + response)
+  File "/usr/local/lib/python3.10/smtplib.py", line 432, in docmd
+    return self.getreply()
+  File "/usr/local/lib/python3.10/smtplib.py", line 405, in getreply
+    raise SMTPServerDisconnected("Connection unexpectedly closed")
+smtplib.SMTPServerDisconnected: Connection unexpectedly closed
+ERROR 2024-04-21 11:02:55,138 log Internal Server Error: /stripe/webhook/
+ERROR 2024-04-21 11:02:55,139 basehttp "POST /stripe/webhook/ HTTP/1.1" 500 43
+INFO 2024-04-21 11:02:55,678 views Subscription details retrieved for user 1
+INFO 2024-04-21 11:02:55,679 basehttp "GET /api/create_subscription/1/ HTTP/1.1" 200 193
+INFO 2024-04-21 11:02:55,953 views Retrieved payment methods for user 1
+INFO 2024-04-21 11:02:55,954 basehttp "GET /api/payment_method/1/ HTTP/1.1" 200 1502
+INFO 2024-04-21 11:22:28,126 views Retrieved all trial days.
+INFO 2024-04-21 11:22:28,132 basehttp "GET /api/trial-days/ HTTP/1.1" 200 2
+INFO 2024-04-21 12:57:52,223 autoreload Watching for file changes with StatReloader
+INFO 2024-04-21 12:59:15,425 autoreload /usr/src/app/satnam/settings.py changed, reloading.
+INFO 2024-04-21 12:59:15,927 autoreload Watching for file changes with StatReloader
+INFO 2024-04-21 12:59:21,071 basehttp "OPTIONS /api/log_in/ HTTP/1.1" 200 0
+INFO 2024-04-21 12:59:21,217 basehttp "POST /api/log_in/ HTTP/1.1" 200 1137
+INFO 2024-04-21 12:59:21,268 views Retrieved all trial days.
+INFO 2024-04-21 12:59:21,274 basehttp "GET /api/trial-days/ HTTP/1.1" 200 2
+INFO 2024-04-21 12:59:27,150 views Retrieved all trial days.
+INFO 2024-04-21 12:59:27,156 basehttp "GET /api/trial-days/ HTTP/1.1" 200 2
+INFO 2024-04-21 13:00:03,879 views Stripe event customer.created received with ID evt_1P84gJJQ5QjlwW1LKt8NzObc
+INFO 2024-04-21 13:00:03,890 views New user registered successfully.
+INFO 2024-04-21 13:00:03,890 views Processed new Stripe event evt_1P84gJJQ5QjlwW1LKt8NzObc.
+INFO 2024-04-21 13:00:03,890 basehttp "POST /api/sign_up/ HTTP/1.1" 201 235
+INFO 2024-04-21 13:00:03,891 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 13:00:15,534 basehttp "POST /api/log_in/ HTTP/1.1" 200 1121
+INFO 2024-04-21 13:00:15,554 views Retrieved all trial days.
+INFO 2024-04-21 13:00:15,560 basehttp "GET /api/trial-days/ HTTP/1.1" 200 2
+INFO 2024-04-21 13:00:17,249 basehttp "OPTIONS /api/payment_method/2/ HTTP/1.1" 200 0
+INFO 2024-04-21 13:00:17,249 basehttp "OPTIONS /api/get_product_prices/ HTTP/1.1" 200 0
+INFO 2024-04-21 13:00:17,686 views Retrieved payment methods for user 2
+INFO 2024-04-21 13:00:17,687 basehttp "GET /api/payment_method/2/ HTTP/1.1" 200 56
+INFO 2024-04-21 13:00:17,994 views Retrieved product prices successfully.
+INFO 2024-04-21 13:00:17,995 basehttp "GET /api/get_product_prices/ HTTP/1.1" 200 1399
+INFO 2024-04-21 13:07:38,092 autoreload Watching for file changes with StatReloader
+INFO 2024-04-21 13:09:09,734 autoreload Watching for file changes with StatReloader
+INFO 2024-04-21 13:11:59,288 autoreload Watching for file changes with StatReloader
+INFO 2024-04-21 13:12:10,336 views Retrieved all trial days.
+INFO 2024-04-21 13:12:10,343 basehttp "GET /api/trial-days/ HTTP/1.1" 200 2
+ERROR 2024-04-21 13:12:17,096 views Login error: No active account found with the given credentials
+Traceback (most recent call last):
+  File "/usr/src/app/core/views.py", line 81, in post
+    serializer.is_valid(raise_exception=True)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/serializers.py", line 227, in is_valid
+    self._validated_data = self.run_validation(self.initial_data)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/serializers.py", line 429, in run_validation
+    value = self.validate(value)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework_simplejwt/serializers.py", line 68, in validate
+    data = super().validate(attrs)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework_simplejwt/serializers.py", line 52, in validate
+    raise exceptions.AuthenticationFailed(
+rest_framework.exceptions.AuthenticationFailed: No active account found with the given credentials
+WARNING 2024-04-21 13:12:17,097 log Unauthorized: /api/log_in/
+WARNING 2024-04-21 13:12:17,097 basehttp "POST /api/log_in/ HTTP/1.1" 401 84
+INFO 2024-04-21 13:12:41,438 views Stripe event customer.created received with ID evt_1P84sXJQ5QjlwW1LROxgaGtj
+INFO 2024-04-21 13:12:41,448 views Processed new Stripe event evt_1P84sXJQ5QjlwW1LROxgaGtj.
+INFO 2024-04-21 13:12:41,448 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 13:12:41,471 views New user registered successfully.
+INFO 2024-04-21 13:12:41,471 basehttp "POST /api/sign_up/ HTTP/1.1" 201 216
+INFO 2024-04-21 13:12:47,149 basehttp "POST /api/log_in/ HTTP/1.1" 200 1070
+INFO 2024-04-21 13:12:47,185 views Retrieved all trial days.
+INFO 2024-04-21 13:12:47,190 basehttp "GET /api/trial-days/ HTTP/1.1" 200 2
+INFO 2024-04-21 13:12:48,983 basehttp "OPTIONS /api/payment_method/1/ HTTP/1.1" 200 0
+INFO 2024-04-21 13:12:49,563 views Retrieved payment methods for user 1
+INFO 2024-04-21 13:12:49,564 basehttp "GET /api/payment_method/1/ HTTP/1.1" 200 56
+INFO 2024-04-21 13:12:49,577 views Retrieved product prices successfully.
+INFO 2024-04-21 13:12:49,577 basehttp "GET /api/get_product_prices/ HTTP/1.1" 200 1399
+INFO 2024-04-21 13:13:02,536 basehttp "OPTIONS /api/create_subscription/1/ HTTP/1.1" 200 0
+INFO 2024-04-21 13:13:03,600 views Stripe event payment_method.attached received with ID evt_1P84stJQ5QjlwW1LxabRP0F1
+INFO 2024-04-21 13:13:03,611 views Processed new Stripe event evt_1P84stJQ5QjlwW1LxabRP0F1.
+INFO 2024-04-21 13:13:03,612 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 13:13:03,896 views Stripe event customer.updated received with ID evt_1P84stJQ5QjlwW1La2BKMHIg
+INFO 2024-04-21 13:13:03,907 views Processed new Stripe event evt_1P84stJQ5QjlwW1La2BKMHIg.
+INFO 2024-04-21 13:13:03,908 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 13:13:06,005 views New subscription created for user 1
+INFO 2024-04-21 13:13:06,005 basehttp "POST /api/create_subscription/1/ HTTP/1.1" 201 132
+INFO 2024-04-21 13:13:06,048 basehttp "OPTIONS /api/users/1/ HTTP/1.1" 200 0
+INFO 2024-04-21 13:13:06,060 basehttp "GET /api/users/1/ HTTP/1.1" 200 241
+INFO 2024-04-21 13:13:06,192 views Stripe event charge.succeeded received with ID evt_3P84suJQ5QjlwW1L2W7JqubF
+INFO 2024-04-21 13:13:06,203 views Processed new Stripe event evt_3P84suJQ5QjlwW1L2W7JqubF.
+INFO 2024-04-21 13:13:06,204 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 13:13:06,250 views Stripe event customer.updated received with ID evt_1P84swJQ5QjlwW1LA9g5SsPa
+INFO 2024-04-21 13:13:06,260 views Processed new Stripe event evt_1P84swJQ5QjlwW1LA9g5SsPa.
+INFO 2024-04-21 13:13:06,261 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 13:13:06,413 views Stripe event customer.subscription.created received with ID evt_1P84swJQ5QjlwW1LH8FlGHFE
+INFO 2024-04-21 13:13:06,424 views Processed new Stripe event evt_1P84swJQ5QjlwW1LH8FlGHFE.
+INFO 2024-04-21 13:13:06,425 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 13:13:06,604 views Stripe event payment_intent.created received with ID evt_3P84suJQ5QjlwW1L29XjCNmF
+INFO 2024-04-21 13:13:06,614 views Processed new Stripe event evt_3P84suJQ5QjlwW1L29XjCNmF.
+INFO 2024-04-21 13:13:06,615 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 13:13:06,621 views Stripe event payment_intent.succeeded received with ID evt_3P84suJQ5QjlwW1L2PJV5joS
+INFO 2024-04-21 13:13:06,632 views Processed new Stripe event evt_3P84suJQ5QjlwW1L2PJV5joS.
+INFO 2024-04-21 13:13:06,633 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 13:13:06,771 views Stripe event invoice.created received with ID evt_1P84swJQ5QjlwW1Le6dfTcJf
+INFO 2024-04-21 13:13:06,782 views Processed new Stripe event evt_1P84swJQ5QjlwW1Le6dfTcJf.
+INFO 2024-04-21 13:13:06,783 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 13:13:06,850 views Stripe event invoice.finalized received with ID evt_1P84swJQ5QjlwW1LdYjBTKDo
+INFO 2024-04-21 13:13:06,859 views Processed new Stripe event evt_1P84swJQ5QjlwW1LdYjBTKDo.
+INFO 2024-04-21 13:13:06,859 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 13:13:06,953 views Stripe event invoice.paid received with ID evt_1P84swJQ5QjlwW1Lk5KfnqZ5
+INFO 2024-04-21 13:13:06,965 views Processed new Stripe event evt_1P84swJQ5QjlwW1Lk5KfnqZ5.
+INFO 2024-04-21 13:13:06,966 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 13:13:07,045 views Stripe event invoice.payment_succeeded received with ID evt_1P84swJQ5QjlwW1LDFgTx1Pd
+ERROR 2024-04-21 13:13:07,528 views Error processing Stripe webhook for event evt_1P84swJQ5QjlwW1LDFgTx1Pd: An error occurred (AccessDenied) when calling the GetSendQuota operation: User: arn:aws:iam::500838697508:user/satnam is not authorized to perform: ses:GetSendQuota because no identity-based policy allows the ses:GetSendQuota action
+Traceback (most recent call last):
+  File "/usr/src/app/payments/views.py", line 383, in post
+    self.send_invoice_email(customer_email, invoice)
+  File "/usr/src/app/payments/views.py", line 529, in send_invoice_email
+    send_mail(
+  File "/usr/local/lib/python3.10/site-packages/django/core/mail/__init__.py", line 87, in send_mail
+    return mail.send()
+  File "/usr/local/lib/python3.10/site-packages/django/core/mail/message.py", line 298, in send
+    return self.get_connection(fail_silently).send_messages([self])
+  File "/usr/local/lib/python3.10/site-packages/django_ses/__init__.py", line 160, in send_messages
+    self._update_throttling()
+  File "/usr/local/lib/python3.10/site-packages/django_ses/__init__.py", line 209, in _update_throttling
+    rate_limit = self.get_rate_limit()
+  File "/usr/local/lib/python3.10/site-packages/django_ses/__init__.py", line 304, in get_rate_limit
+    return self._get_v2_send_quota() if self._use_ses_v2 else self._get_v1_send_quota()
+  File "/usr/local/lib/python3.10/site-packages/django_ses/__init__.py", line 322, in _get_v1_send_quota
+    quota_dict = self.connection.get_send_quota()
+  File "/usr/local/lib/python3.10/site-packages/botocore/client.py", line 565, in _api_call
+    return self._make_api_call(operation_name, kwargs)
+  File "/usr/local/lib/python3.10/site-packages/botocore/client.py", line 1021, in _make_api_call
+    raise error_class(parsed_response, operation_name)
+botocore.exceptions.ClientError: An error occurred (AccessDenied) when calling the GetSendQuota operation: User: arn:aws:iam::500838697508:user/satnam is not authorized to perform: ses:GetSendQuota because no identity-based policy allows the ses:GetSendQuota action
+ERROR 2024-04-21 13:13:07,531 log Internal Server Error: /stripe/webhook/
+ERROR 2024-04-21 13:13:07,532 basehttp "POST /stripe/webhook/ HTTP/1.1" 500 245
+INFO 2024-04-21 13:13:08,006 views Subscription details retrieved for user 1
+INFO 2024-04-21 13:13:08,006 basehttp "GET /api/create_subscription/1/ HTTP/1.1" 200 193
+INFO 2024-04-21 13:13:08,253 views Retrieved payment methods for user 1
+INFO 2024-04-21 13:13:08,254 basehttp "GET /api/payment_method/1/ HTTP/1.1" 200 1502
+INFO 2024-04-21 13:20:26,908 autoreload Watching for file changes with StatReloader
+INFO 2024-04-21 13:20:47,155 views Stripe event customer.created received with ID evt_1P850NJQ5QjlwW1Lr6WFdwZP
+INFO 2024-04-21 13:20:47,163 views Processed new Stripe event evt_1P850NJQ5QjlwW1Lr6WFdwZP.
+INFO 2024-04-21 13:20:47,164 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 13:20:47,206 views New user registered successfully.
+INFO 2024-04-21 13:20:47,206 basehttp "POST /api/sign_up/ HTTP/1.1" 201 216
+INFO 2024-04-21 13:20:54,476 basehttp "POST /api/log_in/ HTTP/1.1" 200 1070
+INFO 2024-04-21 13:20:54,495 views Retrieved all trial days.
+INFO 2024-04-21 13:20:54,501 basehttp "GET /api/trial-days/ HTTP/1.1" 200 2
+INFO 2024-04-21 13:20:56,488 views Retrieved payment methods for user 1
+INFO 2024-04-21 13:20:56,489 basehttp "GET /api/payment_method/1/ HTTP/1.1" 200 56
+INFO 2024-04-21 13:20:56,535 views Retrieved product prices successfully.
+INFO 2024-04-21 13:20:56,536 basehttp "GET /api/get_product_prices/ HTTP/1.1" 200 1399
+INFO 2024-04-21 13:21:11,274 views Stripe event payment_method.attached received with ID evt_1P850lJQ5QjlwW1L93R4aFws
+INFO 2024-04-21 13:21:11,284 views Processed new Stripe event evt_1P850lJQ5QjlwW1L93R4aFws.
+INFO 2024-04-21 13:21:11,285 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 13:21:11,578 views Stripe event customer.updated received with ID evt_1P850lJQ5QjlwW1Lege4LSnH
+INFO 2024-04-21 13:21:11,589 views Processed new Stripe event evt_1P850lJQ5QjlwW1Lege4LSnH.
+INFO 2024-04-21 13:21:11,590 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 13:21:13,694 views New subscription created for user 1
+INFO 2024-04-21 13:21:13,694 basehttp "POST /api/create_subscription/1/ HTTP/1.1" 201 132
+INFO 2024-04-21 13:21:13,724 basehttp "GET /api/users/1/ HTTP/1.1" 200 241
+INFO 2024-04-21 13:21:13,853 views Stripe event charge.succeeded received with ID evt_3P850lJQ5QjlwW1L2Q7gZKtZ
+INFO 2024-04-21 13:21:13,864 views Processed new Stripe event evt_3P850lJQ5QjlwW1L2Q7gZKtZ.
+INFO 2024-04-21 13:21:13,865 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 13:21:13,947 views Stripe event customer.updated received with ID evt_1P850nJQ5QjlwW1Lh2yZoWCe
+INFO 2024-04-21 13:21:13,956 views Processed new Stripe event evt_1P850nJQ5QjlwW1Lh2yZoWCe.
+INFO 2024-04-21 13:21:13,957 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 13:21:14,119 views Stripe event customer.subscription.created received with ID evt_1P850nJQ5QjlwW1LuAGhKLpP
+INFO 2024-04-21 13:21:14,129 views Processed new Stripe event evt_1P850nJQ5QjlwW1LuAGhKLpP.
+INFO 2024-04-21 13:21:14,130 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 13:21:14,229 views Stripe event payment_intent.succeeded received with ID evt_3P850lJQ5QjlwW1L2lXG2CtB
+INFO 2024-04-21 13:21:14,238 views Processed new Stripe event evt_3P850lJQ5QjlwW1L2lXG2CtB.
+INFO 2024-04-21 13:21:14,238 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 13:21:14,303 views Stripe event payment_intent.created received with ID evt_3P850lJQ5QjlwW1L2EGjdnEo
+INFO 2024-04-21 13:21:14,312 views Processed new Stripe event evt_3P850lJQ5QjlwW1L2EGjdnEo.
+INFO 2024-04-21 13:21:14,313 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 13:21:14,439 views Stripe event invoice.created received with ID evt_1P850oJQ5QjlwW1L43Vy66gZ
+INFO 2024-04-21 13:21:14,447 views Processed new Stripe event evt_1P850oJQ5QjlwW1L43Vy66gZ.
+INFO 2024-04-21 13:21:14,448 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 13:21:14,576 views Stripe event invoice.finalized received with ID evt_1P850oJQ5QjlwW1Li8AK4afR
+INFO 2024-04-21 13:21:14,587 views Processed new Stripe event evt_1P850oJQ5QjlwW1Li8AK4afR.
+INFO 2024-04-21 13:21:14,588 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 13:21:14,672 views Stripe event invoice.paid received with ID evt_1P850oJQ5QjlwW1LlF0eBeYk
+INFO 2024-04-21 13:21:14,682 views Processed new Stripe event evt_1P850oJQ5QjlwW1LlF0eBeYk.
+INFO 2024-04-21 13:21:14,683 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 13:21:14,759 views Stripe event invoice.payment_succeeded received with ID evt_1P850oJQ5QjlwW1LCADh1riJ
+ERROR 2024-04-21 13:21:15,295 views Error processing Stripe webhook for event evt_1P850oJQ5QjlwW1LCADh1riJ: An error occurred (MessageRejected) when calling the SendRawEmail operation: Email address is not verified. The following identities failed the check in region US-EAST-1: satnamyogajal@gmail.com, oscara1706cl@gmail.com
+Traceback (most recent call last):
+  File "/usr/src/app/payments/views.py", line 383, in post
+    self.send_invoice_email(customer_email, invoice)
+  File "/usr/src/app/payments/views.py", line 529, in send_invoice_email
+    send_mail(
+  File "/usr/local/lib/python3.10/site-packages/django/core/mail/__init__.py", line 87, in send_mail
+    return mail.send()
+  File "/usr/local/lib/python3.10/site-packages/django/core/mail/message.py", line 298, in send
+    return self.get_connection(fail_silently).send_messages([self])
+  File "/usr/local/lib/python3.10/site-packages/django_ses/__init__.py", line 167, in send_messages
+    else self.connection.send_raw_email(**kwargs))
+  File "/usr/local/lib/python3.10/site-packages/botocore/client.py", line 565, in _api_call
+    return self._make_api_call(operation_name, kwargs)
+  File "/usr/local/lib/python3.10/site-packages/botocore/client.py", line 1021, in _make_api_call
+    raise error_class(parsed_response, operation_name)
+botocore.errorfactory.MessageRejected: An error occurred (MessageRejected) when calling the SendRawEmail operation: Email address is not verified. The following identities failed the check in region US-EAST-1: satnamyogajal@gmail.com, oscara1706cl@gmail.com
+ERROR 2024-04-21 13:21:15,299 log Internal Server Error: /stripe/webhook/
+ERROR 2024-04-21 13:21:15,299 basehttp "POST /stripe/webhook/ HTTP/1.1" 500 231
+INFO 2024-04-21 13:21:15,673 views Subscription details retrieved for user 1
+INFO 2024-04-21 13:21:15,674 basehttp "GET /api/create_subscription/1/ HTTP/1.1" 200 193
+INFO 2024-04-21 13:21:15,928 views Retrieved payment methods for user 1
+INFO 2024-04-21 13:21:15,929 basehttp "GET /api/payment_method/1/ HTTP/1.1" 200 1502
+INFO 2024-04-21 13:29:12,778 autoreload Watching for file changes with StatReloader
+INFO 2024-04-21 13:29:43,114 views Retrieved all trial days.
+INFO 2024-04-21 13:29:43,121 basehttp "GET /api/trial-days/ HTTP/1.1" 200 2
+INFO 2024-04-21 13:30:13,230 views Stripe event customer.created received with ID evt_1P859VJQ5QjlwW1LAExIQmFW
+INFO 2024-04-21 13:30:13,240 views Processed new Stripe event evt_1P859VJQ5QjlwW1LAExIQmFW.
+INFO 2024-04-21 13:30:13,241 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 13:30:13,262 views New user registered successfully.
+INFO 2024-04-21 13:30:13,263 basehttp "POST /api/sign_up/ HTTP/1.1" 201 216
+INFO 2024-04-21 13:30:19,613 basehttp "POST /api/log_in/ HTTP/1.1" 200 1070
+INFO 2024-04-21 13:30:19,632 views Retrieved all trial days.
+INFO 2024-04-21 13:30:19,638 basehttp "GET /api/trial-days/ HTTP/1.1" 200 2
+INFO 2024-04-21 13:30:32,083 views Retrieved payment methods for user 1
+INFO 2024-04-21 13:30:32,084 basehttp "GET /api/payment_method/1/ HTTP/1.1" 200 56
+INFO 2024-04-21 13:30:32,140 views Retrieved product prices successfully.
+INFO 2024-04-21 13:30:32,141 basehttp "GET /api/get_product_prices/ HTTP/1.1" 200 1399
+INFO 2024-04-21 13:30:44,369 views Stripe event payment_method.attached received with ID evt_1P85A0JQ5QjlwW1LLdkLdSOD
+INFO 2024-04-21 13:30:44,378 views Processed new Stripe event evt_1P85A0JQ5QjlwW1LLdkLdSOD.
+INFO 2024-04-21 13:30:44,379 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 13:30:44,566 views Stripe event customer.updated received with ID evt_1P85A0JQ5QjlwW1L8pWDzLxp
+INFO 2024-04-21 13:30:44,575 views Processed new Stripe event evt_1P85A0JQ5QjlwW1L8pWDzLxp.
+INFO 2024-04-21 13:30:44,575 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 13:30:46,660 views New subscription created for user 1
+INFO 2024-04-21 13:30:46,661 basehttp "POST /api/create_subscription/1/ HTTP/1.1" 201 132
+INFO 2024-04-21 13:30:46,691 basehttp "GET /api/users/1/ HTTP/1.1" 200 241
+INFO 2024-04-21 13:30:46,822 views Stripe event charge.succeeded received with ID evt_3P85A0JQ5QjlwW1L2kKvqa5E
+INFO 2024-04-21 13:30:46,832 views Processed new Stripe event evt_3P85A0JQ5QjlwW1L2kKvqa5E.
+INFO 2024-04-21 13:30:46,833 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 13:30:46,894 views Stripe event customer.updated received with ID evt_1P85A2JQ5QjlwW1LOG8K68d8
+INFO 2024-04-21 13:30:46,903 views Processed new Stripe event evt_1P85A2JQ5QjlwW1LOG8K68d8.
+INFO 2024-04-21 13:30:46,904 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 13:30:47,049 views Stripe event customer.subscription.created received with ID evt_1P85A2JQ5QjlwW1LX4tVFhWG
+INFO 2024-04-21 13:30:47,058 views Processed new Stripe event evt_1P85A2JQ5QjlwW1LX4tVFhWG.
+INFO 2024-04-21 13:30:47,059 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 13:30:47,162 views Stripe event payment_intent.succeeded received with ID evt_3P85A0JQ5QjlwW1L2pC4pSaO
+INFO 2024-04-21 13:30:47,173 views Processed new Stripe event evt_3P85A0JQ5QjlwW1L2pC4pSaO.
+INFO 2024-04-21 13:30:47,174 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 13:30:47,227 views Stripe event payment_intent.created received with ID evt_3P85A0JQ5QjlwW1L2WtyiMuZ
+INFO 2024-04-21 13:30:47,236 views Processed new Stripe event evt_3P85A0JQ5QjlwW1L2WtyiMuZ.
+INFO 2024-04-21 13:30:47,237 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 13:30:47,381 views Stripe event invoice.created received with ID evt_1P85A3JQ5QjlwW1LSsuQczgH
+INFO 2024-04-21 13:30:47,390 views Processed new Stripe event evt_1P85A3JQ5QjlwW1LSsuQczgH.
+INFO 2024-04-21 13:30:47,390 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 13:30:47,459 views Stripe event invoice.finalized received with ID evt_1P85A3JQ5QjlwW1LPslHbQ5N
+INFO 2024-04-21 13:30:47,469 views Processed new Stripe event evt_1P85A3JQ5QjlwW1LPslHbQ5N.
+INFO 2024-04-21 13:30:47,470 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 13:30:47,563 views Stripe event invoice.paid received with ID evt_1P85A3JQ5QjlwW1LZalMVeXU
+INFO 2024-04-21 13:30:47,572 views Processed new Stripe event evt_1P85A3JQ5QjlwW1LZalMVeXU.
+INFO 2024-04-21 13:30:47,573 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 13:30:47,645 views Stripe event invoice.payment_succeeded received with ID evt_1P85A3JQ5QjlwW1LdJWqzXoS
+ERROR 2024-04-21 13:30:48,187 views Error processing Stripe webhook for event evt_1P85A3JQ5QjlwW1LdJWqzXoS: An error occurred (MessageRejected) when calling the SendRawEmail operation: Email address is not verified. The following identities failed the check in region US-EAST-1: satnamyogajal@gmail.com, oscara1706cl@gmail.com
+Traceback (most recent call last):
+  File "/usr/src/app/payments/views.py", line 383, in post
+    self.send_invoice_email(customer_email, invoice)
+  File "/usr/src/app/payments/views.py", line 529, in send_invoice_email
+    send_mail(
+  File "/usr/local/lib/python3.10/site-packages/django/core/mail/__init__.py", line 87, in send_mail
+    return mail.send()
+  File "/usr/local/lib/python3.10/site-packages/django/core/mail/message.py", line 298, in send
+    return self.get_connection(fail_silently).send_messages([self])
+  File "/usr/local/lib/python3.10/site-packages/django_ses/__init__.py", line 167, in send_messages
+    else self.connection.send_raw_email(**kwargs))
+  File "/usr/local/lib/python3.10/site-packages/botocore/client.py", line 565, in _api_call
+    return self._make_api_call(operation_name, kwargs)
+  File "/usr/local/lib/python3.10/site-packages/botocore/client.py", line 1021, in _make_api_call
+    raise error_class(parsed_response, operation_name)
+botocore.errorfactory.MessageRejected: An error occurred (MessageRejected) when calling the SendRawEmail operation: Email address is not verified. The following identities failed the check in region US-EAST-1: satnamyogajal@gmail.com, oscara1706cl@gmail.com
+ERROR 2024-04-21 13:30:48,191 log Internal Server Error: /stripe/webhook/
+ERROR 2024-04-21 13:30:48,191 basehttp "POST /stripe/webhook/ HTTP/1.1" 500 231
+INFO 2024-04-21 13:30:48,741 views Subscription details retrieved for user 1
+INFO 2024-04-21 13:30:48,742 basehttp "GET /api/create_subscription/1/ HTTP/1.1" 200 193
+INFO 2024-04-21 13:30:49,001 views Retrieved payment methods for user 1
+INFO 2024-04-21 13:30:49,002 basehttp "GET /api/payment_method/1/ HTTP/1.1" 200 1502
+INFO 2024-04-21 13:50:28,176 views Retrieved all trial days.
+INFO 2024-04-21 13:50:28,182 basehttp "GET /api/trial-days/ HTTP/1.1" 200 2
+INFO 2024-04-21 13:50:28,525 views Retrieved all trial days.
+INFO 2024-04-21 13:50:28,531 basehttp "GET /api/trial-days/ HTTP/1.1" 200 2
+INFO 2024-04-21 18:45:01,498 autoreload Watching for file changes with StatReloader
+INFO 2024-04-21 18:45:24,830 views Stripe event customer.created received with ID evt_1P8A4WJQ5QjlwW1LGHgvJ86a
+INFO 2024-04-21 18:45:24,840 views Processed new Stripe event evt_1P8A4WJQ5QjlwW1LGHgvJ86a.
+INFO 2024-04-21 18:45:24,841 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 18:45:24,873 views New user registered successfully.
+INFO 2024-04-21 18:45:24,874 basehttp "POST /api/sign_up/ HTTP/1.1" 201 216
+INFO 2024-04-21 18:45:31,903 basehttp "POST /api/log_in/ HTTP/1.1" 200 1070
+INFO 2024-04-21 18:45:31,930 views Retrieved all trial days.
+INFO 2024-04-21 18:45:31,936 basehttp "GET /api/trial-days/ HTTP/1.1" 200 2
+INFO 2024-04-21 18:45:34,370 views Retrieved payment methods for user 1
+INFO 2024-04-21 18:45:34,371 basehttp "GET /api/payment_method/1/ HTTP/1.1" 200 56
+INFO 2024-04-21 18:45:34,428 views Retrieved product prices successfully.
+INFO 2024-04-21 18:45:34,428 basehttp "GET /api/get_product_prices/ HTTP/1.1" 200 1399
+INFO 2024-04-21 18:45:53,517 views Stripe event payment_method.attached received with ID evt_1P8A4zJQ5QjlwW1LRKSVPg0k
+INFO 2024-04-21 18:45:53,528 views Processed new Stripe event evt_1P8A4zJQ5QjlwW1LRKSVPg0k.
+INFO 2024-04-21 18:45:53,529 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 18:45:53,822 views Stripe event customer.updated received with ID evt_1P8A4zJQ5QjlwW1LeAA0N7eS
+INFO 2024-04-21 18:45:53,833 views Processed new Stripe event evt_1P8A4zJQ5QjlwW1LeAA0N7eS.
+INFO 2024-04-21 18:45:53,834 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 18:45:55,874 views New subscription created for user 1
+INFO 2024-04-21 18:45:55,874 basehttp "POST /api/create_subscription/1/ HTTP/1.1" 201 132
+INFO 2024-04-21 18:45:55,913 basehttp "GET /api/users/1/ HTTP/1.1" 200 241
+INFO 2024-04-21 18:45:56,083 views Stripe event charge.succeeded received with ID evt_3P8A50JQ5QjlwW1L2Qjpk2Tz
+INFO 2024-04-21 18:45:56,094 views Processed new Stripe event evt_3P8A50JQ5QjlwW1L2Qjpk2Tz.
+INFO 2024-04-21 18:45:56,095 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 18:45:56,097 views Stripe event customer.updated received with ID evt_1P8A51JQ5QjlwW1L7Z2aqg8b
+INFO 2024-04-21 18:45:56,107 views Processed new Stripe event evt_1P8A51JQ5QjlwW1L7Z2aqg8b.
+INFO 2024-04-21 18:45:56,108 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 18:45:56,243 views Stripe event customer.subscription.created received with ID evt_1P8A52JQ5QjlwW1LJoR6L6yO
+INFO 2024-04-21 18:45:56,254 views Processed new Stripe event evt_1P8A52JQ5QjlwW1LJoR6L6yO.
+INFO 2024-04-21 18:45:56,255 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 18:45:56,361 views Stripe event payment_intent.succeeded received with ID evt_3P8A50JQ5QjlwW1L2jmjTqXg
+INFO 2024-04-21 18:45:56,371 views Processed new Stripe event evt_3P8A50JQ5QjlwW1L2jmjTqXg.
+INFO 2024-04-21 18:45:56,372 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 18:45:56,412 views Stripe event payment_intent.created received with ID evt_3P8A50JQ5QjlwW1L2igtEHGz
+INFO 2024-04-21 18:45:56,423 views Processed new Stripe event evt_3P8A50JQ5QjlwW1L2igtEHGz.
+INFO 2024-04-21 18:45:56,424 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 18:45:56,532 views Stripe event invoice.created received with ID evt_1P8A52JQ5QjlwW1LSIMN1KBs
+INFO 2024-04-21 18:45:56,543 views Processed new Stripe event evt_1P8A52JQ5QjlwW1LSIMN1KBs.
+INFO 2024-04-21 18:45:56,544 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 18:45:56,623 views Stripe event invoice.finalized received with ID evt_1P8A52JQ5QjlwW1LMv6mz7YI
+INFO 2024-04-21 18:45:56,632 views Processed new Stripe event evt_1P8A52JQ5QjlwW1LMv6mz7YI.
+INFO 2024-04-21 18:45:56,633 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 18:45:56,692 views Stripe event invoice.paid received with ID evt_1P8A52JQ5QjlwW1L0F1mWPyA
+INFO 2024-04-21 18:45:56,702 views Processed new Stripe event evt_1P8A52JQ5QjlwW1L0F1mWPyA.
+INFO 2024-04-21 18:45:56,703 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 18:45:56,789 views Stripe event invoice.payment_succeeded received with ID evt_1P8A52JQ5QjlwW1LhGtxUHKI
+ERROR 2024-04-21 18:45:57,348 views Error processing Stripe webhook for event evt_1P8A52JQ5QjlwW1LhGtxUHKI: An error occurred (MessageRejected) when calling the SendRawEmail operation: Email address is not verified. The following identities failed the check in region US-EAST-1: satnamyogajal@gmail.com, oscara1706cl@gmail.com
+Traceback (most recent call last):
+  File "/usr/src/app/payments/views.py", line 383, in post
+    self.send_invoice_email(customer_email, invoice)
+  File "/usr/src/app/payments/views.py", line 529, in send_invoice_email
+    send_mail(
+  File "/usr/local/lib/python3.10/site-packages/django/core/mail/__init__.py", line 87, in send_mail
+    return mail.send()
+  File "/usr/local/lib/python3.10/site-packages/django/core/mail/message.py", line 298, in send
+    return self.get_connection(fail_silently).send_messages([self])
+  File "/usr/local/lib/python3.10/site-packages/django_ses/__init__.py", line 167, in send_messages
+    else self.connection.send_raw_email(**kwargs))
+  File "/usr/local/lib/python3.10/site-packages/botocore/client.py", line 565, in _api_call
+    return self._make_api_call(operation_name, kwargs)
+  File "/usr/local/lib/python3.10/site-packages/botocore/client.py", line 1021, in _make_api_call
+    raise error_class(parsed_response, operation_name)
+botocore.errorfactory.MessageRejected: An error occurred (MessageRejected) when calling the SendRawEmail operation: Email address is not verified. The following identities failed the check in region US-EAST-1: satnamyogajal@gmail.com, oscara1706cl@gmail.com
+ERROR 2024-04-21 18:45:57,353 log Internal Server Error: /stripe/webhook/
+ERROR 2024-04-21 18:45:57,354 basehttp "POST /stripe/webhook/ HTTP/1.1" 500 231
+INFO 2024-04-21 18:45:57,860 views Subscription details retrieved for user 1
+INFO 2024-04-21 18:45:57,861 basehttp "GET /api/create_subscription/1/ HTTP/1.1" 200 193
+INFO 2024-04-21 18:45:58,120 views Retrieved payment methods for user 1
+INFO 2024-04-21 18:45:58,120 basehttp "GET /api/payment_method/1/ HTTP/1.1" 200 1502
+INFO 2024-04-21 18:50:28,724 autoreload /usr/src/app/satnam/settings.py changed, reloading.
+INFO 2024-04-21 18:50:29,326 autoreload Watching for file changes with StatReloader
+INFO 2024-04-21 18:51:03,434 autoreload /usr/src/app/satnam/settings.py changed, reloading.
+INFO 2024-04-21 18:51:03,968 autoreload Watching for file changes with StatReloader
+INFO 2024-04-21 18:52:24,008 autoreload Watching for file changes with StatReloader
+INFO 2024-04-21 18:52:38,215 views Retrieved all trial days.
+INFO 2024-04-21 18:52:38,222 basehttp "GET /api/trial-days/ HTTP/1.1" 200 2
+INFO 2024-04-21 18:53:00,624 views Stripe event customer.created received with ID evt_1P8ABsJQ5QjlwW1LCKvWjfCv
+INFO 2024-04-21 18:53:00,632 views Processed new Stripe event evt_1P8ABsJQ5QjlwW1LCKvWjfCv.
+INFO 2024-04-21 18:53:00,633 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 18:53:00,669 views New user registered successfully.
+INFO 2024-04-21 18:53:00,669 basehttp "POST /api/sign_up/ HTTP/1.1" 201 216
+INFO 2024-04-21 18:53:07,498 basehttp "POST /api/log_in/ HTTP/1.1" 200 1070
+INFO 2024-04-21 18:53:07,525 views Retrieved all trial days.
+INFO 2024-04-21 18:53:07,531 basehttp "GET /api/trial-days/ HTTP/1.1" 200 2
+INFO 2024-04-21 18:53:11,158 views Retrieved payment methods for user 1
+INFO 2024-04-21 18:53:11,159 basehttp "GET /api/payment_method/1/ HTTP/1.1" 200 56
+INFO 2024-04-21 18:53:11,189 views Retrieved product prices successfully.
+INFO 2024-04-21 18:53:11,189 basehttp "GET /api/get_product_prices/ HTTP/1.1" 200 1399
+INFO 2024-04-21 18:53:23,823 views Stripe event payment_method.attached received with ID evt_1P8ACFJQ5QjlwW1LDAv0PoXg
+INFO 2024-04-21 18:53:23,833 views Processed new Stripe event evt_1P8ACFJQ5QjlwW1LDAv0PoXg.
+INFO 2024-04-21 18:53:23,834 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 18:53:24,046 views Stripe event customer.updated received with ID evt_1P8ACFJQ5QjlwW1LWvbzqyyL
+INFO 2024-04-21 18:53:24,058 views Processed new Stripe event evt_1P8ACFJQ5QjlwW1LWvbzqyyL.
+INFO 2024-04-21 18:53:24,059 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 18:53:26,013 views New subscription created for user 1
+INFO 2024-04-21 18:53:26,014 basehttp "POST /api/create_subscription/1/ HTTP/1.1" 201 132
+INFO 2024-04-21 18:53:26,039 basehttp "GET /api/users/1/ HTTP/1.1" 200 241
+INFO 2024-04-21 18:53:26,159 views Stripe event charge.succeeded received with ID evt_3P8ACGJQ5QjlwW1L1ODO6TuJ
+INFO 2024-04-21 18:53:26,167 views Processed new Stripe event evt_3P8ACGJQ5QjlwW1L1ODO6TuJ.
+INFO 2024-04-21 18:53:26,168 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 18:53:26,251 views Stripe event customer.updated received with ID evt_1P8ACIJQ5QjlwW1LdfxUHN9S
+INFO 2024-04-21 18:53:26,261 views Processed new Stripe event evt_1P8ACIJQ5QjlwW1LdfxUHN9S.
+INFO 2024-04-21 18:53:26,262 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 18:53:26,470 views Stripe event customer.subscription.created received with ID evt_1P8ACIJQ5QjlwW1LLifnlwoe
+INFO 2024-04-21 18:53:26,480 views Processed new Stripe event evt_1P8ACIJQ5QjlwW1LLifnlwoe.
+INFO 2024-04-21 18:53:26,481 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 18:53:26,558 views Stripe event payment_intent.succeeded received with ID evt_3P8ACGJQ5QjlwW1L1bXMHKW7
+INFO 2024-04-21 18:53:26,566 views Stripe event payment_intent.created received with ID evt_3P8ACGJQ5QjlwW1L1CbmaC2F
+INFO 2024-04-21 18:53:26,568 views Processed new Stripe event evt_3P8ACGJQ5QjlwW1L1bXMHKW7.
+INFO 2024-04-21 18:53:26,569 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 18:53:26,574 views Processed new Stripe event evt_3P8ACGJQ5QjlwW1L1CbmaC2F.
+INFO 2024-04-21 18:53:26,575 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 18:53:26,674 views Stripe event invoice.created received with ID evt_1P8ACIJQ5QjlwW1LDOIbI4Qb
+INFO 2024-04-21 18:53:26,684 views Processed new Stripe event evt_1P8ACIJQ5QjlwW1LDOIbI4Qb.
+INFO 2024-04-21 18:53:26,685 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 18:53:26,925 views Stripe event invoice.finalized received with ID evt_1P8ACIJQ5QjlwW1LiVqi26mK
+INFO 2024-04-21 18:53:26,927 views Stripe event invoice.paid received with ID evt_1P8ACIJQ5QjlwW1LXuIvgWHW
+INFO 2024-04-21 18:53:26,936 views Processed new Stripe event evt_1P8ACIJQ5QjlwW1LXuIvgWHW.
+INFO 2024-04-21 18:53:26,937 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 18:53:26,937 views Processed new Stripe event evt_1P8ACIJQ5QjlwW1LiVqi26mK.
+INFO 2024-04-21 18:53:26,938 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 18:53:27,014 views Stripe event invoice.payment_succeeded received with ID evt_1P8ACIJQ5QjlwW1LHBhvF5UH
+INFO 2024-04-21 18:53:28,047 views Subscription details retrieved for user 1
+INFO 2024-04-21 18:53:28,047 basehttp "GET /api/create_subscription/1/ HTTP/1.1" 200 193
+INFO 2024-04-21 18:53:28,299 views Retrieved payment methods for user 1
+INFO 2024-04-21 18:53:28,301 basehttp "GET /api/payment_method/1/ HTTP/1.1" 200 1502
+INFO 2024-04-21 19:01:06,035 autoreload /usr/src/app/satnam/settings.py changed, reloading.
+INFO 2024-04-21 19:01:06,625 autoreload Watching for file changes with StatReloader
+INFO 2024-04-21 19:01:27,278 autoreload Watching for file changes with StatReloader
+ERROR 2024-04-21 19:01:34,728 views Login error: No active account found with the given credentials
+Traceback (most recent call last):
+  File "/usr/src/app/core/views.py", line 81, in post
+    serializer.is_valid(raise_exception=True)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/serializers.py", line 227, in is_valid
+    self._validated_data = self.run_validation(self.initial_data)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/serializers.py", line 429, in run_validation
+    value = self.validate(value)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework_simplejwt/serializers.py", line 68, in validate
+    data = super().validate(attrs)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework_simplejwt/serializers.py", line 52, in validate
+    raise exceptions.AuthenticationFailed(
+rest_framework.exceptions.AuthenticationFailed: No active account found with the given credentials
+WARNING 2024-04-21 19:01:34,729 log Unauthorized: /api/log_in/
+WARNING 2024-04-21 19:01:34,730 basehttp "POST /api/log_in/ HTTP/1.1" 401 84
+INFO 2024-04-21 19:01:56,970 views New user registered successfully.
+INFO 2024-04-21 19:01:56,970 basehttp "POST /api/sign_up/ HTTP/1.1" 201 216
+INFO 2024-04-21 19:01:56,984 views Stripe event customer.created received with ID evt_1P8AKWJQ5QjlwW1LAY1kAJLA
+INFO 2024-04-21 19:01:56,987 views Stripe event customer.created received with ID evt_1P8AKWJQ5QjlwW1LAY1kAJLA
+INFO 2024-04-21 19:01:56,993 views Processed new Stripe event evt_1P8AKWJQ5QjlwW1LAY1kAJLA.
+INFO 2024-04-21 19:01:56,993 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 19:01:56,995 views Stripe event evt_1P8AKWJQ5QjlwW1LAY1kAJLA already processed.
+INFO 2024-04-21 19:01:56,995 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 19:02:03,098 basehttp "POST /api/log_in/ HTTP/1.1" 200 1070
+INFO 2024-04-21 19:02:03,133 views Retrieved all trial days.
+INFO 2024-04-21 19:02:03,139 basehttp "GET /api/trial-days/ HTTP/1.1" 200 2
+INFO 2024-04-21 19:02:04,963 views Retrieved payment methods for user 1
+INFO 2024-04-21 19:02:04,963 basehttp "GET /api/payment_method/1/ HTTP/1.1" 200 56
+INFO 2024-04-21 19:02:05,014 views Retrieved product prices successfully.
+INFO 2024-04-21 19:02:05,015 basehttp "GET /api/get_product_prices/ HTTP/1.1" 200 1399
+INFO 2024-04-21 19:02:17,332 views Stripe event payment_method.attached received with ID evt_1P8AKrJQ5QjlwW1LkycgfaqM
+INFO 2024-04-21 19:02:17,333 views Stripe event payment_method.attached received with ID evt_1P8AKrJQ5QjlwW1LkycgfaqM
+INFO 2024-04-21 19:02:17,344 views Processed new Stripe event evt_1P8AKrJQ5QjlwW1LkycgfaqM.
+ERROR 2024-04-21 19:02:17,345 views Error processing Stripe webhook for event evt_1P8AKrJQ5QjlwW1LkycgfaqM: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_1P8AKrJQ5QjlwW1LkycgfaqM) already exists.
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+psycopg2.errors.UniqueViolation: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_1P8AKrJQ5QjlwW1LkycgfaqM) already exists.
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/src/app/payments/views.py", line 442, in post
+    StripeEvent.objects.create(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 671, in create
+    obj.save(force_insert=True, using=self.db)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 812, in save
+    self.save_base(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 863, in save_base
+    updated = self._save_table(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 1006, in _save_table
+    results = self._do_insert(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 1047, in _do_insert
+    return manager._insert(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 1790, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1660, in execute_sql
+    cursor.execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 103, in execute
+    return super().execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 67, in execute
+    return self._execute_with_wrappers(
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 80, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 84, in _execute
+    with self.db.wrap_database_errors:
+  File "/usr/local/lib/python3.10/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+django.db.utils.IntegrityError: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_1P8AKrJQ5QjlwW1LkycgfaqM) already exists.
+
+INFO 2024-04-21 19:02:17,345 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+ERROR 2024-04-21 19:02:17,422 log Internal Server Error: /stripe/webhook/
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+psycopg2.errors.UniqueViolation: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_1P8AKrJQ5QjlwW1LkycgfaqM) already exists.
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/src/app/payments/views.py", line 442, in post
+    StripeEvent.objects.create(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 671, in create
+    obj.save(force_insert=True, using=self.db)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 812, in save
+    self.save_base(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 863, in save_base
+    updated = self._save_table(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 1006, in _save_table
+    results = self._do_insert(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 1047, in _do_insert
+    return manager._insert(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 1790, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1660, in execute_sql
+    cursor.execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 103, in execute
+    return super().execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 67, in execute
+    return self._execute_with_wrappers(
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 80, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 84, in _execute
+    with self.db.wrap_database_errors:
+  File "/usr/local/lib/python3.10/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+django.db.utils.IntegrityError: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_1P8AKrJQ5QjlwW1LkycgfaqM) already exists.
+
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+psycopg2.errors.UniqueViolation: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_1P8AKrJQ5QjlwW1LkycgfaqM) already exists.
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/decorators/csrf.py", line 54, in wrapped_view
+    return view_func(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/generic/base.py", line 103, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/usr/src/app/payments/views.py", line 456, in post
+    StripeEvent.objects.create(stripe_event_id=event.id, status="failed")
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 671, in create
+    obj.save(force_insert=True, using=self.db)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 812, in save
+    self.save_base(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 863, in save_base
+    updated = self._save_table(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 1006, in _save_table
+    results = self._do_insert(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 1047, in _do_insert
+    return manager._insert(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 1790, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1660, in execute_sql
+    cursor.execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 103, in execute
+    return super().execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 67, in execute
+    return self._execute_with_wrappers(
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 80, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 84, in _execute
+    with self.db.wrap_database_errors:
+  File "/usr/local/lib/python3.10/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+django.db.utils.IntegrityError: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_1P8AKrJQ5QjlwW1LkycgfaqM) already exists.
+
+ERROR 2024-04-21 19:02:17,423 basehttp "POST /stripe/webhook/ HTTP/1.1" 500 265987
+INFO 2024-04-21 19:02:17,614 views Stripe event customer.updated received with ID evt_1P8AKrJQ5QjlwW1LIjnSBfms
+INFO 2024-04-21 19:02:17,618 views Stripe event customer.updated received with ID evt_1P8AKrJQ5QjlwW1LIjnSBfms
+INFO 2024-04-21 19:02:17,624 views Processed new Stripe event evt_1P8AKrJQ5QjlwW1LIjnSBfms.
+INFO 2024-04-21 19:02:17,624 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 19:02:17,628 views Stripe event evt_1P8AKrJQ5QjlwW1LIjnSBfms already processed.
+INFO 2024-04-21 19:02:17,628 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 19:02:19,644 views New subscription created for user 1
+INFO 2024-04-21 19:02:19,645 basehttp "POST /api/create_subscription/1/ HTTP/1.1" 201 132
+INFO 2024-04-21 19:02:19,682 basehttp "GET /api/users/1/ HTTP/1.1" 200 241
+INFO 2024-04-21 19:02:19,808 views Stripe event charge.succeeded received with ID evt_3P8AKrJQ5QjlwW1L2Oi471Cf
+INFO 2024-04-21 19:02:19,809 views Stripe event charge.succeeded received with ID evt_3P8AKrJQ5QjlwW1L2Oi471Cf
+INFO 2024-04-21 19:02:19,819 views Processed new Stripe event evt_3P8AKrJQ5QjlwW1L2Oi471Cf.
+ERROR 2024-04-21 19:02:19,820 views Error processing Stripe webhook for event evt_3P8AKrJQ5QjlwW1L2Oi471Cf: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_3P8AKrJQ5QjlwW1L2Oi471Cf) already exists.
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+psycopg2.errors.UniqueViolation: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_3P8AKrJQ5QjlwW1L2Oi471Cf) already exists.
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/src/app/payments/views.py", line 442, in post
+    StripeEvent.objects.create(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 671, in create
+    obj.save(force_insert=True, using=self.db)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 812, in save
+    self.save_base(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 863, in save_base
+    updated = self._save_table(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 1006, in _save_table
+    results = self._do_insert(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 1047, in _do_insert
+    return manager._insert(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 1790, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1660, in execute_sql
+    cursor.execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 103, in execute
+    return super().execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 67, in execute
+    return self._execute_with_wrappers(
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 80, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 84, in _execute
+    with self.db.wrap_database_errors:
+  File "/usr/local/lib/python3.10/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+django.db.utils.IntegrityError: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_3P8AKrJQ5QjlwW1L2Oi471Cf) already exists.
+
+INFO 2024-04-21 19:02:19,820 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+ERROR 2024-04-21 19:02:19,894 log Internal Server Error: /stripe/webhook/
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+psycopg2.errors.UniqueViolation: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_3P8AKrJQ5QjlwW1L2Oi471Cf) already exists.
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/src/app/payments/views.py", line 442, in post
+    StripeEvent.objects.create(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 671, in create
+    obj.save(force_insert=True, using=self.db)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 812, in save
+    self.save_base(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 863, in save_base
+    updated = self._save_table(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 1006, in _save_table
+    results = self._do_insert(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 1047, in _do_insert
+    return manager._insert(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 1790, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1660, in execute_sql
+    cursor.execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 103, in execute
+    return super().execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 67, in execute
+    return self._execute_with_wrappers(
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 80, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 84, in _execute
+    with self.db.wrap_database_errors:
+  File "/usr/local/lib/python3.10/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+django.db.utils.IntegrityError: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_3P8AKrJQ5QjlwW1L2Oi471Cf) already exists.
+
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+psycopg2.errors.UniqueViolation: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_3P8AKrJQ5QjlwW1L2Oi471Cf) already exists.
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/decorators/csrf.py", line 54, in wrapped_view
+    return view_func(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/generic/base.py", line 103, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/usr/src/app/payments/views.py", line 456, in post
+    StripeEvent.objects.create(stripe_event_id=event.id, status="failed")
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 671, in create
+    obj.save(force_insert=True, using=self.db)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 812, in save
+    self.save_base(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 863, in save_base
+    updated = self._save_table(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 1006, in _save_table
+    results = self._do_insert(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 1047, in _do_insert
+    return manager._insert(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 1790, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1660, in execute_sql
+    cursor.execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 103, in execute
+    return super().execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 67, in execute
+    return self._execute_with_wrappers(
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 80, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 84, in _execute
+    with self.db.wrap_database_errors:
+  File "/usr/local/lib/python3.10/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+django.db.utils.IntegrityError: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_3P8AKrJQ5QjlwW1L2Oi471Cf) already exists.
+
+ERROR 2024-04-21 19:02:19,895 basehttp "POST /stripe/webhook/ HTTP/1.1" 500 283783
+INFO 2024-04-21 19:02:19,902 views Stripe event customer.updated received with ID evt_1P8AKtJQ5QjlwW1LaXewVMHx
+INFO 2024-04-21 19:02:19,904 views Stripe event customer.updated received with ID evt_1P8AKtJQ5QjlwW1LaXewVMHx
+INFO 2024-04-21 19:02:19,911 views Processed new Stripe event evt_1P8AKtJQ5QjlwW1LaXewVMHx.
+INFO 2024-04-21 19:02:19,912 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+ERROR 2024-04-21 19:02:19,912 views Error processing Stripe webhook for event evt_1P8AKtJQ5QjlwW1LaXewVMHx: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_1P8AKtJQ5QjlwW1LaXewVMHx) already exists.
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+psycopg2.errors.UniqueViolation: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_1P8AKtJQ5QjlwW1LaXewVMHx) already exists.
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/src/app/payments/views.py", line 442, in post
+    StripeEvent.objects.create(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 671, in create
+    obj.save(force_insert=True, using=self.db)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 812, in save
+    self.save_base(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 863, in save_base
+    updated = self._save_table(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 1006, in _save_table
+    results = self._do_insert(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 1047, in _do_insert
+    return manager._insert(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 1790, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1660, in execute_sql
+    cursor.execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 103, in execute
+    return super().execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 67, in execute
+    return self._execute_with_wrappers(
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 80, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 84, in _execute
+    with self.db.wrap_database_errors:
+  File "/usr/local/lib/python3.10/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+django.db.utils.IntegrityError: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_1P8AKtJQ5QjlwW1LaXewVMHx) already exists.
+
+ERROR 2024-04-21 19:02:19,966 log Internal Server Error: /stripe/webhook/
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+psycopg2.errors.UniqueViolation: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_1P8AKtJQ5QjlwW1LaXewVMHx) already exists.
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/src/app/payments/views.py", line 442, in post
+    StripeEvent.objects.create(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 671, in create
+    obj.save(force_insert=True, using=self.db)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 812, in save
+    self.save_base(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 863, in save_base
+    updated = self._save_table(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 1006, in _save_table
+    results = self._do_insert(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 1047, in _do_insert
+    return manager._insert(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 1790, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1660, in execute_sql
+    cursor.execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 103, in execute
+    return super().execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 67, in execute
+    return self._execute_with_wrappers(
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 80, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 84, in _execute
+    with self.db.wrap_database_errors:
+  File "/usr/local/lib/python3.10/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+django.db.utils.IntegrityError: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_1P8AKtJQ5QjlwW1LaXewVMHx) already exists.
+
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+psycopg2.errors.UniqueViolation: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_1P8AKtJQ5QjlwW1LaXewVMHx) already exists.
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/decorators/csrf.py", line 54, in wrapped_view
+    return view_func(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/generic/base.py", line 103, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/usr/src/app/payments/views.py", line 456, in post
+    StripeEvent.objects.create(stripe_event_id=event.id, status="failed")
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 671, in create
+    obj.save(force_insert=True, using=self.db)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 812, in save
+    self.save_base(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 863, in save_base
+    updated = self._save_table(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 1006, in _save_table
+    results = self._do_insert(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 1047, in _do_insert
+    return manager._insert(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 1790, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1660, in execute_sql
+    cursor.execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 103, in execute
+    return super().execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 67, in execute
+    return self._execute_with_wrappers(
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 80, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 84, in _execute
+    with self.db.wrap_database_errors:
+  File "/usr/local/lib/python3.10/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+django.db.utils.IntegrityError: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_1P8AKtJQ5QjlwW1LaXewVMHx) already exists.
+
+ERROR 2024-04-21 19:02:19,967 basehttp "POST /stripe/webhook/ HTTP/1.1" 500 263723
+INFO 2024-04-21 19:02:20,080 views Stripe event customer.subscription.created received with ID evt_1P8AKtJQ5QjlwW1L1rOGPViQ
+INFO 2024-04-21 19:02:20,081 views Stripe event customer.subscription.created received with ID evt_1P8AKtJQ5QjlwW1L1rOGPViQ
+INFO 2024-04-21 19:02:20,091 views Processed new Stripe event evt_1P8AKtJQ5QjlwW1L1rOGPViQ.
+INFO 2024-04-21 19:02:20,092 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+ERROR 2024-04-21 19:02:20,092 views Error processing Stripe webhook for event evt_1P8AKtJQ5QjlwW1L1rOGPViQ: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_1P8AKtJQ5QjlwW1L1rOGPViQ) already exists.
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+psycopg2.errors.UniqueViolation: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_1P8AKtJQ5QjlwW1L1rOGPViQ) already exists.
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/src/app/payments/views.py", line 442, in post
+    StripeEvent.objects.create(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 671, in create
+    obj.save(force_insert=True, using=self.db)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 812, in save
+    self.save_base(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 863, in save_base
+    updated = self._save_table(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 1006, in _save_table
+    results = self._do_insert(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 1047, in _do_insert
+    return manager._insert(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 1790, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1660, in execute_sql
+    cursor.execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 103, in execute
+    return super().execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 67, in execute
+    return self._execute_with_wrappers(
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 80, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 84, in _execute
+    with self.db.wrap_database_errors:
+  File "/usr/local/lib/python3.10/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+django.db.utils.IntegrityError: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_1P8AKtJQ5QjlwW1L1rOGPViQ) already exists.
+
+ERROR 2024-04-21 19:02:20,165 log Internal Server Error: /stripe/webhook/
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+psycopg2.errors.UniqueViolation: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_1P8AKtJQ5QjlwW1L1rOGPViQ) already exists.
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/src/app/payments/views.py", line 442, in post
+    StripeEvent.objects.create(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 671, in create
+    obj.save(force_insert=True, using=self.db)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 812, in save
+    self.save_base(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 863, in save_base
+    updated = self._save_table(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 1006, in _save_table
+    results = self._do_insert(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 1047, in _do_insert
+    return manager._insert(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 1790, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1660, in execute_sql
+    cursor.execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 103, in execute
+    return super().execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 67, in execute
+    return self._execute_with_wrappers(
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 80, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 84, in _execute
+    with self.db.wrap_database_errors:
+  File "/usr/local/lib/python3.10/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+django.db.utils.IntegrityError: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_1P8AKtJQ5QjlwW1L1rOGPViQ) already exists.
+
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+psycopg2.errors.UniqueViolation: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_1P8AKtJQ5QjlwW1L1rOGPViQ) already exists.
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/decorators/csrf.py", line 54, in wrapped_view
+    return view_func(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/generic/base.py", line 103, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/usr/src/app/payments/views.py", line 456, in post
+    StripeEvent.objects.create(stripe_event_id=event.id, status="failed")
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 671, in create
+    obj.save(force_insert=True, using=self.db)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 812, in save
+    self.save_base(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 863, in save_base
+    updated = self._save_table(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 1006, in _save_table
+    results = self._do_insert(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 1047, in _do_insert
+    return manager._insert(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 1790, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1660, in execute_sql
+    cursor.execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 103, in execute
+    return super().execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 67, in execute
+    return self._execute_with_wrappers(
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 80, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 84, in _execute
+    with self.db.wrap_database_errors:
+  File "/usr/local/lib/python3.10/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+django.db.utils.IntegrityError: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_1P8AKtJQ5QjlwW1L1rOGPViQ) already exists.
+
+ERROR 2024-04-21 19:02:20,166 basehttp "POST /stripe/webhook/ HTTP/1.1" 500 296343
+INFO 2024-04-21 19:02:20,202 views Stripe event payment_intent.succeeded received with ID evt_3P8AKrJQ5QjlwW1L24PR7DHX
+INFO 2024-04-21 19:02:20,205 views Stripe event payment_intent.succeeded received with ID evt_3P8AKrJQ5QjlwW1L24PR7DHX
+INFO 2024-04-21 19:02:20,212 views Processed new Stripe event evt_3P8AKrJQ5QjlwW1L24PR7DHX.
+ERROR 2024-04-21 19:02:20,213 views Error processing Stripe webhook for event evt_3P8AKrJQ5QjlwW1L24PR7DHX: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_3P8AKrJQ5QjlwW1L24PR7DHX) already exists.
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+psycopg2.errors.UniqueViolation: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_3P8AKrJQ5QjlwW1L24PR7DHX) already exists.
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/src/app/payments/views.py", line 442, in post
+    StripeEvent.objects.create(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 671, in create
+    obj.save(force_insert=True, using=self.db)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 812, in save
+    self.save_base(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 863, in save_base
+    updated = self._save_table(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 1006, in _save_table
+    results = self._do_insert(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 1047, in _do_insert
+    return manager._insert(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 1790, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1660, in execute_sql
+    cursor.execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 103, in execute
+    return super().execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 67, in execute
+    return self._execute_with_wrappers(
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 80, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 84, in _execute
+    with self.db.wrap_database_errors:
+  File "/usr/local/lib/python3.10/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+django.db.utils.IntegrityError: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_3P8AKrJQ5QjlwW1L24PR7DHX) already exists.
+
+INFO 2024-04-21 19:02:20,214 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+ERROR 2024-04-21 19:02:20,254 log Internal Server Error: /stripe/webhook/
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+psycopg2.errors.UniqueViolation: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_3P8AKrJQ5QjlwW1L24PR7DHX) already exists.
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/src/app/payments/views.py", line 442, in post
+    StripeEvent.objects.create(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 671, in create
+    obj.save(force_insert=True, using=self.db)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 812, in save
+    self.save_base(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 863, in save_base
+    updated = self._save_table(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 1006, in _save_table
+    results = self._do_insert(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 1047, in _do_insert
+    return manager._insert(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 1790, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1660, in execute_sql
+    cursor.execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 103, in execute
+    return super().execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 67, in execute
+    return self._execute_with_wrappers(
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 80, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 84, in _execute
+    with self.db.wrap_database_errors:
+  File "/usr/local/lib/python3.10/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+django.db.utils.IntegrityError: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_3P8AKrJQ5QjlwW1L24PR7DHX) already exists.
+
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+psycopg2.errors.UniqueViolation: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_3P8AKrJQ5QjlwW1L24PR7DHX) already exists.
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/decorators/csrf.py", line 54, in wrapped_view
+    return view_func(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/generic/base.py", line 103, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/usr/src/app/payments/views.py", line 456, in post
+    StripeEvent.objects.create(stripe_event_id=event.id, status="failed")
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 671, in create
+    obj.save(force_insert=True, using=self.db)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 812, in save
+    self.save_base(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 863, in save_base
+    updated = self._save_table(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 1006, in _save_table
+    results = self._do_insert(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 1047, in _do_insert
+    return manager._insert(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 1790, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1660, in execute_sql
+    cursor.execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 103, in execute
+    return super().execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 67, in execute
+    return self._execute_with_wrappers(
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 80, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 84, in _execute
+    with self.db.wrap_database_errors:
+  File "/usr/local/lib/python3.10/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+django.db.utils.IntegrityError: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_3P8AKrJQ5QjlwW1L24PR7DHX) already exists.
+
+ERROR 2024-04-21 19:02:20,255 basehttp "POST /stripe/webhook/ HTTP/1.1" 500 283925
+INFO 2024-04-21 19:02:20,290 views Stripe event payment_intent.created received with ID evt_3P8AKrJQ5QjlwW1L2T5bIxdq
+INFO 2024-04-21 19:02:20,294 views Stripe event payment_intent.created received with ID evt_3P8AKrJQ5QjlwW1L2T5bIxdq
+INFO 2024-04-21 19:02:20,299 views Processed new Stripe event evt_3P8AKrJQ5QjlwW1L2T5bIxdq.
+INFO 2024-04-21 19:02:20,300 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 19:02:20,301 views Stripe event evt_3P8AKrJQ5QjlwW1L2T5bIxdq already processed.
+INFO 2024-04-21 19:02:20,301 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 19:02:20,427 views Stripe event invoice.created received with ID evt_1P8AKuJQ5QjlwW1LCriWQc0v
+INFO 2024-04-21 19:02:20,428 views Stripe event invoice.created received with ID evt_1P8AKuJQ5QjlwW1LCriWQc0v
+INFO 2024-04-21 19:02:20,439 views Processed new Stripe event evt_1P8AKuJQ5QjlwW1LCriWQc0v.
+ERROR 2024-04-21 19:02:20,440 views Error processing Stripe webhook for event evt_1P8AKuJQ5QjlwW1LCriWQc0v: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_1P8AKuJQ5QjlwW1LCriWQc0v) already exists.
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+psycopg2.errors.UniqueViolation: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_1P8AKuJQ5QjlwW1LCriWQc0v) already exists.
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/src/app/payments/views.py", line 442, in post
+    StripeEvent.objects.create(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 671, in create
+    obj.save(force_insert=True, using=self.db)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 812, in save
+    self.save_base(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 863, in save_base
+    updated = self._save_table(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 1006, in _save_table
+    results = self._do_insert(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 1047, in _do_insert
+    return manager._insert(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 1790, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1660, in execute_sql
+    cursor.execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 103, in execute
+    return super().execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 67, in execute
+    return self._execute_with_wrappers(
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 80, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 84, in _execute
+    with self.db.wrap_database_errors:
+  File "/usr/local/lib/python3.10/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+django.db.utils.IntegrityError: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_1P8AKuJQ5QjlwW1LCriWQc0v) already exists.
+
+INFO 2024-04-21 19:02:20,440 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+ERROR 2024-04-21 19:02:20,515 log Internal Server Error: /stripe/webhook/
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+psycopg2.errors.UniqueViolation: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_1P8AKuJQ5QjlwW1LCriWQc0v) already exists.
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/src/app/payments/views.py", line 442, in post
+    StripeEvent.objects.create(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 671, in create
+    obj.save(force_insert=True, using=self.db)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 812, in save
+    self.save_base(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 863, in save_base
+    updated = self._save_table(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 1006, in _save_table
+    results = self._do_insert(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 1047, in _do_insert
+    return manager._insert(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 1790, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1660, in execute_sql
+    cursor.execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 103, in execute
+    return super().execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 67, in execute
+    return self._execute_with_wrappers(
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 80, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 84, in _execute
+    with self.db.wrap_database_errors:
+  File "/usr/local/lib/python3.10/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+django.db.utils.IntegrityError: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_1P8AKuJQ5QjlwW1LCriWQc0v) already exists.
+
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+psycopg2.errors.UniqueViolation: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_1P8AKuJQ5QjlwW1LCriWQc0v) already exists.
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/decorators/csrf.py", line 54, in wrapped_view
+    return view_func(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/generic/base.py", line 103, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/usr/src/app/payments/views.py", line 456, in post
+    StripeEvent.objects.create(stripe_event_id=event.id, status="failed")
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 671, in create
+    obj.save(force_insert=True, using=self.db)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 812, in save
+    self.save_base(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 863, in save_base
+    updated = self._save_table(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 1006, in _save_table
+    results = self._do_insert(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 1047, in _do_insert
+    return manager._insert(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 1790, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1660, in execute_sql
+    cursor.execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 103, in execute
+    return super().execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 67, in execute
+    return self._execute_with_wrappers(
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 80, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 84, in _execute
+    with self.db.wrap_database_errors:
+  File "/usr/local/lib/python3.10/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+django.db.utils.IntegrityError: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_1P8AKuJQ5QjlwW1LCriWQc0v) already exists.
+
+ERROR 2024-04-21 19:02:20,516 basehttp "POST /stripe/webhook/ HTTP/1.1" 500 284937
+INFO 2024-04-21 19:02:20,525 views Stripe event invoice.finalized received with ID evt_1P8AKuJQ5QjlwW1Lax0bPu9F
+INFO 2024-04-21 19:02:20,527 views Stripe event invoice.finalized received with ID evt_1P8AKuJQ5QjlwW1Lax0bPu9F
+INFO 2024-04-21 19:02:20,534 views Processed new Stripe event evt_1P8AKuJQ5QjlwW1Lax0bPu9F.
+INFO 2024-04-21 19:02:20,535 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+ERROR 2024-04-21 19:02:20,535 views Error processing Stripe webhook for event evt_1P8AKuJQ5QjlwW1Lax0bPu9F: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_1P8AKuJQ5QjlwW1Lax0bPu9F) already exists.
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+psycopg2.errors.UniqueViolation: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_1P8AKuJQ5QjlwW1Lax0bPu9F) already exists.
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/src/app/payments/views.py", line 442, in post
+    StripeEvent.objects.create(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 671, in create
+    obj.save(force_insert=True, using=self.db)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 812, in save
+    self.save_base(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 863, in save_base
+    updated = self._save_table(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 1006, in _save_table
+    results = self._do_insert(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 1047, in _do_insert
+    return manager._insert(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 1790, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1660, in execute_sql
+    cursor.execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 103, in execute
+    return super().execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 67, in execute
+    return self._execute_with_wrappers(
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 80, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 84, in _execute
+    with self.db.wrap_database_errors:
+  File "/usr/local/lib/python3.10/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+django.db.utils.IntegrityError: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_1P8AKuJQ5QjlwW1Lax0bPu9F) already exists.
+
+ERROR 2024-04-21 19:02:20,576 log Internal Server Error: /stripe/webhook/
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+psycopg2.errors.UniqueViolation: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_1P8AKuJQ5QjlwW1Lax0bPu9F) already exists.
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/src/app/payments/views.py", line 442, in post
+    StripeEvent.objects.create(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 671, in create
+    obj.save(force_insert=True, using=self.db)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 812, in save
+    self.save_base(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 863, in save_base
+    updated = self._save_table(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 1006, in _save_table
+    results = self._do_insert(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 1047, in _do_insert
+    return manager._insert(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 1790, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1660, in execute_sql
+    cursor.execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 103, in execute
+    return super().execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 67, in execute
+    return self._execute_with_wrappers(
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 80, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 84, in _execute
+    with self.db.wrap_database_errors:
+  File "/usr/local/lib/python3.10/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+django.db.utils.IntegrityError: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_1P8AKuJQ5QjlwW1Lax0bPu9F) already exists.
+
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+psycopg2.errors.UniqueViolation: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_1P8AKuJQ5QjlwW1Lax0bPu9F) already exists.
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/decorators/csrf.py", line 54, in wrapped_view
+    return view_func(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/generic/base.py", line 103, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/usr/src/app/payments/views.py", line 456, in post
+    StripeEvent.objects.create(stripe_event_id=event.id, status="failed")
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 671, in create
+    obj.save(force_insert=True, using=self.db)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 812, in save
+    self.save_base(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 863, in save_base
+    updated = self._save_table(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 1006, in _save_table
+    results = self._do_insert(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 1047, in _do_insert
+    return manager._insert(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 1790, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1660, in execute_sql
+    cursor.execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 103, in execute
+    return super().execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 67, in execute
+    return self._execute_with_wrappers(
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 80, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 84, in _execute
+    with self.db.wrap_database_errors:
+  File "/usr/local/lib/python3.10/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+django.db.utils.IntegrityError: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_1P8AKuJQ5QjlwW1Lax0bPu9F) already exists.
+
+ERROR 2024-04-21 19:02:20,576 basehttp "POST /stripe/webhook/ HTTP/1.1" 500 285121
+INFO 2024-04-21 19:02:20,623 views Stripe event invoice.paid received with ID evt_1P8AKuJQ5QjlwW1L8OjMBzeH
+INFO 2024-04-21 19:02:20,626 views Stripe event invoice.paid received with ID evt_1P8AKuJQ5QjlwW1L8OjMBzeH
+INFO 2024-04-21 19:02:20,631 views Processed new Stripe event evt_1P8AKuJQ5QjlwW1L8OjMBzeH.
+INFO 2024-04-21 19:02:20,632 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 19:02:20,635 views Stripe event evt_1P8AKuJQ5QjlwW1L8OjMBzeH already processed.
+INFO 2024-04-21 19:02:20,636 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 19:02:20,765 views Stripe event invoice.payment_succeeded received with ID evt_1P8AKuJQ5QjlwW1Lsd0JE9Sm
+INFO 2024-04-21 19:02:20,770 views Stripe event invoice.payment_succeeded received with ID evt_1P8AKuJQ5QjlwW1Lsd0JE9Sm
+INFO 2024-04-21 19:02:21,357 views Invoice payment email sent for invoice in_1P8AKrJQ5QjlwW1LS9CrejWy to oscara1706cl@gmail.com
+INFO 2024-04-21 19:02:21,359 views Invoice payment email sent for invoice in_1P8AKrJQ5QjlwW1LS9CrejWy to oscara1706cl@gmail.com
+INFO 2024-04-21 19:02:21,360 views Processed new Stripe event evt_1P8AKuJQ5QjlwW1Lsd0JE9Sm.
+INFO 2024-04-21 19:02:21,361 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+ERROR 2024-04-21 19:02:21,361 views Error processing Stripe webhook for event evt_1P8AKuJQ5QjlwW1Lsd0JE9Sm: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_1P8AKuJQ5QjlwW1Lsd0JE9Sm) already exists.
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+psycopg2.errors.UniqueViolation: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_1P8AKuJQ5QjlwW1Lsd0JE9Sm) already exists.
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/src/app/payments/views.py", line 442, in post
+    StripeEvent.objects.create(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 671, in create
+    obj.save(force_insert=True, using=self.db)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 812, in save
+    self.save_base(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 863, in save_base
+    updated = self._save_table(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 1006, in _save_table
+    results = self._do_insert(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 1047, in _do_insert
+    return manager._insert(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 1790, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1660, in execute_sql
+    cursor.execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 103, in execute
+    return super().execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 67, in execute
+    return self._execute_with_wrappers(
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 80, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 84, in _execute
+    with self.db.wrap_database_errors:
+  File "/usr/local/lib/python3.10/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+django.db.utils.IntegrityError: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_1P8AKuJQ5QjlwW1Lsd0JE9Sm) already exists.
+
+ERROR 2024-04-21 19:02:21,440 log Internal Server Error: /stripe/webhook/
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+psycopg2.errors.UniqueViolation: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_1P8AKuJQ5QjlwW1Lsd0JE9Sm) already exists.
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/src/app/payments/views.py", line 442, in post
+    StripeEvent.objects.create(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 671, in create
+    obj.save(force_insert=True, using=self.db)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 812, in save
+    self.save_base(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 863, in save_base
+    updated = self._save_table(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 1006, in _save_table
+    results = self._do_insert(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 1047, in _do_insert
+    return manager._insert(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 1790, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1660, in execute_sql
+    cursor.execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 103, in execute
+    return super().execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 67, in execute
+    return self._execute_with_wrappers(
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 80, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 84, in _execute
+    with self.db.wrap_database_errors:
+  File "/usr/local/lib/python3.10/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+django.db.utils.IntegrityError: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_1P8AKuJQ5QjlwW1Lsd0JE9Sm) already exists.
+
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+psycopg2.errors.UniqueViolation: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_1P8AKuJQ5QjlwW1Lsd0JE9Sm) already exists.
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/usr/local/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/decorators/csrf.py", line 54, in wrapped_view
+    return view_func(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/views/generic/base.py", line 103, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/usr/local/lib/python3.10/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/usr/src/app/payments/views.py", line 456, in post
+    StripeEvent.objects.create(stripe_event_id=event.id, status="failed")
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 671, in create
+    obj.save(force_insert=True, using=self.db)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 812, in save
+    self.save_base(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 863, in save_base
+    updated = self._save_table(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 1006, in _save_table
+    results = self._do_insert(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/base.py", line 1047, in _do_insert
+    return manager._insert(
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/query.py", line 1790, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+  File "/usr/local/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1660, in execute_sql
+    cursor.execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 103, in execute
+    return super().execute(sql, params)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 67, in execute
+    return self._execute_with_wrappers(
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 80, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 84, in _execute
+    with self.db.wrap_database_errors:
+  File "/usr/local/lib/python3.10/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/usr/local/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+django.db.utils.IntegrityError: duplicate key value violates unique constraint "payments_stripeevent_stripe_event_id_key"
+DETAIL:  Key (stripe_event_id)=(evt_1P8AKuJQ5QjlwW1Lsd0JE9Sm) already exists.
+
+ERROR 2024-04-21 19:02:21,445 basehttp "POST /stripe/webhook/ HTTP/1.1" 500 297997
+INFO 2024-04-21 19:02:21,638 views Subscription details retrieved for user 1
+INFO 2024-04-21 19:02:21,639 basehttp "GET /api/create_subscription/1/ HTTP/1.1" 200 193
+INFO 2024-04-21 19:02:21,917 views Retrieved payment methods for user 1
+INFO 2024-04-21 19:02:21,918 basehttp "GET /api/payment_method/1/ HTTP/1.1" 200 1502
+INFO 2024-04-21 19:22:00,923 autoreload /usr/src/app/payments/views.py changed, reloading.
+INFO 2024-04-21 19:22:01,526 autoreload Watching for file changes with StatReloader
+INFO 2024-04-21 19:22:03,053 views Retrieved all trial days.
+INFO 2024-04-21 19:22:03,059 basehttp "GET /api/trial-days/ HTTP/1.1" 200 2
+INFO 2024-04-21 19:22:03,307 views Retrieved all trial days.
+INFO 2024-04-21 19:22:03,313 basehttp "GET /api/trial-days/ HTTP/1.1" 200 2
+INFO 2024-04-21 19:28:01,520 autoreload /usr/src/app/payments/views.py changed, reloading.
+INFO 2024-04-21 19:28:02,046 autoreload Watching for file changes with StatReloader
+INFO 2024-04-21 19:28:45,394 autoreload /usr/src/app/payments/views.py changed, reloading.
+INFO 2024-04-21 19:28:45,922 autoreload Watching for file changes with StatReloader
+INFO 2024-04-21 19:29:45,713 autoreload /usr/src/app/payments/views.py changed, reloading.
+INFO 2024-04-21 19:29:46,239 autoreload Watching for file changes with StatReloader
+INFO 2024-04-21 19:29:52,709 autoreload /usr/src/app/payments/views.py changed, reloading.
+INFO 2024-04-21 19:29:53,229 autoreload Watching for file changes with StatReloader
+INFO 2024-04-21 19:30:00,717 autoreload /usr/src/app/payments/views.py changed, reloading.
+INFO 2024-04-21 19:30:01,226 autoreload Watching for file changes with StatReloader
+INFO 2024-04-21 19:30:03,630 autoreload /usr/src/app/payments/views.py changed, reloading.
+INFO 2024-04-21 19:30:04,135 autoreload Watching for file changes with StatReloader
+INFO 2024-04-21 19:52:31,265 autoreload Watching for file changes with StatReloader
+INFO 2024-04-21 19:59:22,899 views Stripe event customer.created received with ID evt_1P8BE6JQ5QjlwW1LZdx5whxM
+INFO 2024-04-21 19:59:22,902 views Stripe event customer.created received with ID evt_1P8BE6JQ5QjlwW1LZdx5whxM
+INFO 2024-04-21 19:59:22,910 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 19:59:22,911 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 19:59:22,930 views New user registered successfully.
+INFO 2024-04-21 19:59:22,931 basehttp "POST /api/sign_up/ HTTP/1.1" 201 216
+INFO 2024-04-21 19:59:43,114 autoreload /usr/src/app/payments/views.py changed, reloading.
+INFO 2024-04-21 19:59:43,628 autoreload Watching for file changes with StatReloader
+INFO 2024-04-21 20:00:48,262 autoreload /usr/src/app/payments/views.py changed, reloading.
+INFO 2024-04-21 20:00:48,796 autoreload Watching for file changes with StatReloader
+INFO 2024-04-21 20:10:12,937 autoreload /usr/src/app/payments/views.py changed, reloading.
+INFO 2024-04-21 20:10:13,457 autoreload Watching for file changes with StatReloader
+INFO 2024-04-21 20:10:17,896 autoreload /usr/src/app/payments/views.py changed, reloading.
+INFO 2024-04-21 20:10:18,397 autoreload Watching for file changes with StatReloader
+INFO 2024-04-21 20:11:03,875 autoreload Watching for file changes with StatReloader
+INFO 2024-04-21 20:11:25,798 views Stripe event customer.created received with ID evt_1P8BPlJQ5QjlwW1LMUjAwOZw
+INFO 2024-04-21 20:11:25,801 views Stripe event customer.created received with ID evt_1P8BPlJQ5QjlwW1LMUjAwOZw
+INFO 2024-04-21 20:11:25,808 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 20:11:25,809 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 20:11:25,825 views New user registered successfully.
+INFO 2024-04-21 20:11:25,825 basehttp "POST /api/sign_up/ HTTP/1.1" 201 216
+INFO 2024-04-21 20:11:31,658 basehttp "POST /api/log_in/ HTTP/1.1" 200 1070
+INFO 2024-04-21 20:11:31,677 views Retrieved all trial days.
+INFO 2024-04-21 20:11:31,683 basehttp "GET /api/trial-days/ HTTP/1.1" 200 2
+INFO 2024-04-21 20:11:36,345 views Retrieved product prices successfully.
+INFO 2024-04-21 20:11:36,346 basehttp "GET /api/get_product_prices/ HTTP/1.1" 200 1399
+INFO 2024-04-21 20:11:36,348 views Retrieved payment methods for user 1
+INFO 2024-04-21 20:11:36,349 basehttp "GET /api/payment_method/1/ HTTP/1.1" 200 56
+INFO 2024-04-21 20:11:50,495 views Stripe event payment_method.attached received with ID evt_1P8BQAJQ5QjlwW1LiC5AI0fA
+INFO 2024-04-21 20:11:50,496 views Stripe event payment_method.attached received with ID evt_1P8BQAJQ5QjlwW1LiC5AI0fA
+INFO 2024-04-21 20:11:50,505 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 20:11:50,506 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 20:11:50,792 views Stripe event customer.updated received with ID evt_1P8BQAJQ5QjlwW1L9FBIBW0H
+INFO 2024-04-21 20:11:50,794 views Stripe event customer.updated received with ID evt_1P8BQAJQ5QjlwW1L9FBIBW0H
+INFO 2024-04-21 20:11:50,804 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 20:11:50,806 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 20:11:52,956 views New subscription created for user 1
+INFO 2024-04-21 20:11:52,956 basehttp "POST /api/create_subscription/1/ HTTP/1.1" 201 132
+INFO 2024-04-21 20:11:52,989 basehttp "GET /api/users/1/ HTTP/1.1" 200 241
+INFO 2024-04-21 20:11:53,135 views Stripe event charge.succeeded received with ID evt_3P8BQBJQ5QjlwW1L18zNbTI8
+INFO 2024-04-21 20:11:53,137 views Stripe event charge.succeeded received with ID evt_3P8BQBJQ5QjlwW1L18zNbTI8
+INFO 2024-04-21 20:11:53,148 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 20:11:53,150 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 20:11:53,214 views Stripe event customer.updated received with ID evt_1P8BQDJQ5QjlwW1LWUPHr3zW
+INFO 2024-04-21 20:11:53,214 views Stripe event customer.updated received with ID evt_1P8BQDJQ5QjlwW1LWUPHr3zW
+INFO 2024-04-21 20:11:53,225 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 20:11:53,227 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 20:11:53,358 views Stripe event customer.subscription.created received with ID evt_1P8BQDJQ5QjlwW1Ln4u3h4x7
+INFO 2024-04-21 20:11:53,368 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 20:11:53,371 views Stripe event customer.subscription.created received with ID evt_1P8BQDJQ5QjlwW1Ln4u3h4x7
+INFO 2024-04-21 20:11:53,378 views Stripe event evt_1P8BQDJQ5QjlwW1Ln4u3h4x7 already processed.
+INFO 2024-04-21 20:11:53,378 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 20:11:53,478 views Stripe event payment_intent.succeeded received with ID evt_3P8BQBJQ5QjlwW1L1Tw0zdxX
+INFO 2024-04-21 20:11:53,480 views Stripe event payment_intent.succeeded received with ID evt_3P8BQBJQ5QjlwW1L1Tw0zdxX
+INFO 2024-04-21 20:11:53,490 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 20:11:53,492 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 20:11:53,540 views Stripe event payment_intent.created received with ID evt_3P8BQBJQ5QjlwW1L1JplZKu8
+INFO 2024-04-21 20:11:53,542 views Stripe event payment_intent.created received with ID evt_3P8BQBJQ5QjlwW1L1JplZKu8
+INFO 2024-04-21 20:11:53,550 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 20:11:53,552 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 20:11:53,662 views Stripe event invoice.created received with ID evt_1P8BQDJQ5QjlwW1LOS0uzkFm
+INFO 2024-04-21 20:11:53,663 views Stripe event invoice.created received with ID evt_1P8BQDJQ5QjlwW1LOS0uzkFm
+INFO 2024-04-21 20:11:53,675 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 20:11:53,677 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 20:11:53,775 views Stripe event invoice.finalized received with ID evt_1P8BQDJQ5QjlwW1LMjZnnfWG
+INFO 2024-04-21 20:11:53,778 views Stripe event invoice.finalized received with ID evt_1P8BQDJQ5QjlwW1LMjZnnfWG
+INFO 2024-04-21 20:11:53,784 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 20:11:53,786 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 20:11:53,894 views Stripe event invoice.paid received with ID evt_1P8BQDJQ5QjlwW1LNJSdPqiq
+INFO 2024-04-21 20:11:53,895 views Stripe event invoice.paid received with ID evt_1P8BQDJQ5QjlwW1LNJSdPqiq
+INFO 2024-04-21 20:11:53,906 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 20:11:53,908 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 20:11:54,005 views Stripe event invoice.payment_succeeded received with ID evt_1P8BQDJQ5QjlwW1LoJL0F7e7
+INFO 2024-04-21 20:11:54,008 views Stripe event invoice.payment_succeeded received with ID evt_1P8BQDJQ5QjlwW1LoJL0F7e7
+INFO 2024-04-21 20:11:54,570 views Invoice payment email sent for invoice in_1P8BQAJQ5QjlwW1Lonvllllt to oscara1706cl@gmail.com
+INFO 2024-04-21 20:11:54,572 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 20:11:54,572 views Stripe event evt_1P8BQDJQ5QjlwW1LoJL0F7e7 already processed.
+INFO 2024-04-21 20:11:54,573 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-04-21 20:11:54,955 views Subscription details retrieved for user 1
+INFO 2024-04-21 20:11:54,956 basehttp "GET /api/create_subscription/1/ HTTP/1.1" 200 193
+INFO 2024-04-21 20:11:55,236 views Retrieved payment methods for user 1
+INFO 2024-04-21 20:11:55,237 basehttp "GET /api/payment_method/1/ HTTP/1.1" 200 1502
+INFO 2024-04-21 20:31:31,049 views Retrieved all trial days.
+INFO 2024-04-21 20:31:31,055 basehttp "GET /api/trial-days/ HTTP/1.1" 200 2
+INFO 2024-04-21 20:31:31,295 views Retrieved all trial days.
+INFO 2024-04-21 20:31:31,302 basehttp "GET /api/trial-days/ HTTP/1.1" 200 2
+INFO 2024-04-21 22:56:26,916 autoreload /usr/src/app/satnam/settings.py changed, reloading.
+INFO 2024-04-21 22:56:27,532 autoreload Watching for file changes with StatReloader
+INFO 2024-04-21 22:56:54,512 autoreload /usr/src/app/satnam/settings.py changed, reloading.
+INFO 2024-04-21 22:56:55,074 autoreload Watching for file changes with StatReloader
+INFO 2024-04-21 22:57:48,439 autoreload /usr/src/app/satnam/settings.py changed, reloading.
+INFO 2024-04-21 22:57:48,978 autoreload Watching for file changes with StatReloader

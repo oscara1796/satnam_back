@@ -1,6 +1,8 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+
 # Create your models here.
+
 
 class CustomUser(AbstractUser):
     telephone = models.CharField(max_length=20, blank=True, null=True)
@@ -12,13 +14,10 @@ class CustomUser(AbstractUser):
 
     def __str__(self):
         return self.username
-    
 
 
 class TrialDays(models.Model):
-    days = models.IntegerField(default=0) 
+    days = models.IntegerField(default=0)
 
     def __str__(self):
-        return str(self.days)  
-
-
+        return str(self.days)

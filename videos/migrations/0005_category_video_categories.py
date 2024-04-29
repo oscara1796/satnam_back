@@ -6,22 +6,37 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('videos', '0004_alter_video_id'),
+        ("videos", "0004_alter_video_id"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Category',
+            name="Category",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('title', models.CharField(max_length=255)),
-                ('description', models.TextField()),
-                ('videos', models.ManyToManyField(related_name='video_categories', to='videos.video')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("title", models.CharField(max_length=255)),
+                ("description", models.TextField()),
+                (
+                    "videos",
+                    models.ManyToManyField(
+                        related_name="video_categories", to="videos.video"
+                    ),
+                ),
             ],
         ),
         migrations.AddField(
-            model_name='video',
-            name='categories',
-            field=models.ManyToManyField(related_name='category_videos', to='videos.category'),
+            model_name="video",
+            name="categories",
+            field=models.ManyToManyField(
+                related_name="category_videos", to="videos.category"
+            ),
         ),
     ]

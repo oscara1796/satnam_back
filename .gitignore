@@ -1,0 +1,93 @@
+.env.dev
+.dockerignore
+
+*.env
+
+*.pyc
+*.pyo
+*.db
+*.sqlite3
+__pycache__/
+db.sqlite3
+db.sqlite3-journal
+media/
+
+# If you are using a virtual environment (recommended)
+# env/
+venv/
+ENV/
+
+# Ignore the local settings file
+*/settings_local.py
+*/settings_local/*.py
+*/local_settings.py
+
+# .env file for environment variables
+.env
+
+# Ignore static files as they will be collected with collectstatic
+/static/
+/staticfiles/
+/assets/
+
+# The directory where `collectstatic` will collect static files for deployment.
+collected_static/
+
+# Ignore the default SQLite database if you're using a different database
+*/db.sqlite3
+*/db.sqlite3-journal
+
+# Ignore media files as they should be stored separately from code
+media/
+
+# Cache
+*.cache
+*.log
+*.bak
+*.swp
+
+# Ignore the secrets directory
+secrets/
+
+# Ignore migrations
+*/migrations/
+!*/migrations/__init__.py
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDE specific files
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
+
+# Node modules if you're using frontend package managers like npm or yarn
+node_modules/
+
+# Python bytecode
+__pycache__/
+
+# pyenv local version management
+.python-version
+
+# pytest cache directory
+.cache
+.pytest_cache/
+
+# mypy cache directory
+.mypy_cache/
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+*.cover
+.coverage.xml
+coverage.xml
+coverage_html_report/
+
+# Jupyter Notebook files
+.ipynb_checkpoints
+

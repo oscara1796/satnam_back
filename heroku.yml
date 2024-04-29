@@ -1,0 +1,8 @@
+setup:
+  addons:
+    - plan: heroku-postgresql
+build:
+  docker:
+    web: satnam_prod_dockerfile
+run:
+  web: gunicorn satnam.wsgi:application --bind 0.0.0.0:$PORT

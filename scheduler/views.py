@@ -1,16 +1,19 @@
-
+from rest_framework import permissions, status, viewsets
 from rest_framework.response import Response
+
 from .models import Event
 from .serializers import EventSerializer
-from rest_framework import viewsets, status, permissions
 
 
 class IsStaffOrReadOnly(permissions.BasePermission):
     def has_permission(self, request, view):
-        if request.method in permissions.SAFE_METHODS:  # Allow GET, HEAD, OPTIONS requests
+        if (
+            request.method in permissions.SAFE_METHODS
+        ):  # Allow GET, HEAD, OPTIONS requests
             return True
-        
+
         return request.user.is_staff
+
 
 class EventViewSet(viewsets.ModelViewSet):
     queryset = Event.objects.all()
@@ -35,4 +38,6 @@ class EventViewSet(viewsets.ModelViewSet):
         self.perform_create(serializer)
 
         headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )

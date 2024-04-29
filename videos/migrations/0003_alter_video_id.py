@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('videos', '0002_video_free'),
+        ("videos", "0002_video_free"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='video',
-            name='id',
+            model_name="video",
+            name="id",
             field=models.AutoField(default=1, primary_key=True, serialize=False),
         ),
     ]

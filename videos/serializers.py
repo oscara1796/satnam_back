@@ -1,18 +1,12 @@
 from rest_framework import serializers
-from .models import Video, Category
-from django.core.files.base import ContentFile
-from django.core.files.uploadedfile import InMemoryUploadedFile
-import base64
-from PIL import Image
-from io import BytesIO
+
+from .models import Category, Video
 
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = ['id', 'title', 'description']
-
-
+        fields = ["id", "title", "description"]
 
 
 class VideoSerializer(serializers.ModelSerializer):
@@ -30,8 +24,17 @@ class VideoSerializer(serializers.ModelSerializer):
             setattr(instance, key, value)
         instance.save()
         return instance
-    
+
     class Meta:
         model = Video
-        fields = ('id', 'title', 'image', 'description', 'url', 'free','date_of_creation', 'date_of_modification', 'categories')
-
+        fields = (
+            "id",
+            "title",
+            "image",
+            "description",
+            "url",
+            "free",
+            "date_of_creation",
+            "date_of_modification",
+            "categories",
+        )
