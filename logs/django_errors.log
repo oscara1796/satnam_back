@@ -2732,3 +2732,65 @@ INFO 2024-04-21 22:56:54,512 autoreload /usr/src/app/satnam/settings.py changed,
 INFO 2024-04-21 22:56:55,074 autoreload Watching for file changes with StatReloader
 INFO 2024-04-21 22:57:48,439 autoreload /usr/src/app/satnam/settings.py changed, reloading.
 INFO 2024-04-21 22:57:48,978 autoreload Watching for file changes with StatReloader
+INFO 2024-05-02 11:00:17,525 autoreload Watching for file changes with StatReloader
+INFO 2024-05-02 11:00:53,014 views Retrieved all trial days.
+INFO 2024-05-02 11:00:53,019 basehttp "GET /api/trial-days/ HTTP/1.1" 200 2
+INFO 2024-05-02 11:01:41,135 views Stripe event customer.created received with ID evt_1PC24nJQ5QjlwW1LBpGzSUhu
+INFO 2024-05-02 11:01:41,145 views New user registered successfully.
+INFO 2024-05-02 11:01:41,145 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-05-02 11:01:41,145 basehttp "POST /api/sign_up/ HTTP/1.1" 201 227
+INFO 2024-05-02 11:02:19,120 basehttp "OPTIONS /api/log_in/ HTTP/1.1" 200 0
+INFO 2024-05-02 11:02:19,258 basehttp "POST /api/log_in/ HTTP/1.1" 200 1099
+INFO 2024-05-02 11:02:19,299 views Retrieved all trial days.
+INFO 2024-05-02 11:02:19,305 basehttp "GET /api/trial-days/ HTTP/1.1" 200 2
+INFO 2024-05-02 11:02:20,807 basehttp "OPTIONS /api/get_product_prices/ HTTP/1.1" 200 0
+INFO 2024-05-02 11:02:20,807 basehttp "OPTIONS /api/payment_method/1/ HTTP/1.1" 200 0
+INFO 2024-05-02 11:02:21,380 views Retrieved payment methods for user 1
+INFO 2024-05-02 11:02:21,381 basehttp "GET /api/payment_method/1/ HTTP/1.1" 200 56
+INFO 2024-05-02 11:02:21,421 views Retrieved product prices successfully.
+INFO 2024-05-02 11:02:21,422 basehttp "GET /api/get_product_prices/ HTTP/1.1" 200 1399
+INFO 2024-05-02 11:02:37,144 basehttp "OPTIONS /api/create_subscription/1/ HTTP/1.1" 200 0
+INFO 2024-05-02 11:02:38,367 views Stripe event payment_method.attached received with ID evt_1PC25iJQ5QjlwW1LK5SpvieJ
+INFO 2024-05-02 11:02:38,377 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-05-02 11:02:38,725 views Stripe event customer.updated received with ID evt_1PC25iJQ5QjlwW1LQnrJbBWF
+INFO 2024-05-02 11:02:38,734 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-05-02 11:02:41,065 views New subscription created for user 1
+INFO 2024-05-02 11:02:41,066 basehttp "POST /api/create_subscription/1/ HTTP/1.1" 201 132
+INFO 2024-05-02 11:02:41,107 basehttp "OPTIONS /api/users/1/ HTTP/1.1" 200 0
+INFO 2024-05-02 11:02:41,116 basehttp "GET /api/users/1/ HTTP/1.1" 200 252
+INFO 2024-05-02 11:02:41,272 views Stripe event charge.succeeded received with ID evt_3PC25jJQ5QjlwW1L1xME2m5n
+INFO 2024-05-02 11:02:41,283 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-05-02 11:02:41,371 views Stripe event customer.updated received with ID evt_1PC25lJQ5QjlwW1LKEc7kuaw
+INFO 2024-05-02 11:02:41,379 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-05-02 11:02:41,541 views Stripe event customer.subscription.created received with ID evt_1PC25lJQ5QjlwW1LsPEzWvdn
+INFO 2024-05-02 11:02:41,552 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-05-02 11:02:41,672 views Stripe event payment_intent.succeeded received with ID evt_3PC25jJQ5QjlwW1L1QCIW7Qm
+INFO 2024-05-02 11:02:41,683 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-05-02 11:02:41,792 views Stripe event payment_intent.created received with ID evt_3PC25jJQ5QjlwW1L1fDE9uFm
+INFO 2024-05-02 11:02:41,801 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-05-02 11:02:42,025 views Stripe event invoice.created received with ID evt_1PC25lJQ5QjlwW1LF1rJEAtu
+INFO 2024-05-02 11:02:42,037 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-05-02 11:02:42,043 views Stripe event invoice.finalized received with ID evt_1PC25lJQ5QjlwW1LGxYnp8d9
+INFO 2024-05-02 11:02:42,052 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-05-02 11:02:42,145 views Stripe event invoice.paid received with ID evt_1PC25lJQ5QjlwW1LAQZWQZEp
+INFO 2024-05-02 11:02:42,157 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-05-02 11:02:42,251 views Stripe event invoice.payment_succeeded received with ID evt_1PC25mJQ5QjlwW1LadogGrh9
+INFO 2024-05-02 11:02:42,884 views Invoice payment email sent for invoice in_1PC25iJQ5QjlwW1LKbrYJ3Xt to oscar.carrillo2941@alumnos.udg.mx
+INFO 2024-05-02 11:02:42,886 basehttp "POST /stripe/webhook/ HTTP/1.1" 200 0
+INFO 2024-05-02 11:02:43,064 views Subscription details retrieved for user 1
+INFO 2024-05-02 11:02:43,065 basehttp "GET /api/create_subscription/1/ HTTP/1.1" 200 193
+INFO 2024-05-02 11:02:43,348 views Retrieved payment methods for user 1
+INFO 2024-05-02 11:02:43,348 basehttp "GET /api/payment_method/1/ HTTP/1.1" 200 1502
+INFO 2024-05-02 11:22:19,036 views Retrieved all trial days.
+INFO 2024-05-02 11:22:19,042 basehttp "GET /api/trial-days/ HTTP/1.1" 200 2
+INFO 2024-05-02 11:22:19,332 views Retrieved all trial days.
+INFO 2024-05-02 11:22:19,338 basehttp "GET /api/trial-days/ HTTP/1.1" 200 2
+INFO 2024-05-02 11:42:15,008 basehttp "OPTIONS /api/video_list/?page=1&page_size=9 HTTP/1.1" 200 0
+WARNING 2024-05-02 11:42:15,016 log Unauthorized: /api/video_list/
+WARNING 2024-05-02 11:42:15,016 basehttp "GET /api/video_list/?page=1&page_size=9 HTTP/1.1" 401 183
+INFO 2024-05-02 11:42:15,767 basehttp "GET /api/events/ HTTP/1.1" 200 2
+INFO 2024-05-03 23:46:10,965 autoreload Watching for file changes with StatReloader
+INFO 2024-05-03 23:50:54,587 autoreload Watching for file changes with StatReloader
+INFO 2024-05-03 23:51:37,431 autoreload /usr/src/app/payments/workers.py changed, reloading.
+INFO 2024-05-03 23:51:38,016 autoreload Watching for file changes with StatReloader
+INFO 2024-05-03 23:51:51,893 autoreload Watching for file changes with StatReloader
