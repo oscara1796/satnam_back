@@ -7,6 +7,7 @@ from django.conf import settings
 from payments.processing import process_event
 import stripe
 import logging
+from .models import StripeEvent
 
 env_vars = dotenv_values(".env.dev")
 stripe.api_key = env_vars["STRIPE_SECRET_KEY"]
@@ -14,6 +15,9 @@ stripe.api_key = env_vars["STRIPE_SECRET_KEY"]
 logger = logging.getLogger("django")
 
 class RedisWorker:
+    
+
+
     def __init__(self):
         self.redis_conn = redis.Redis.from_url(settings.REDIS_URL)
         self.thread_count = 2
@@ -25,6 +29,7 @@ class RedisWorker:
         self.event_lock = threading.Lock()
         self.processing_events = set() 
         self.monitor_thread = None 
+        self.MAX_RETRIES = 3
         logger.info("RedisWorker initialized with settings: "
                     f"thread_count={self.thread_count}, max_threads={self.max_threads}, min_threads={self.min_threads}")
 
@@ -56,14 +61,20 @@ class RedisWorker:
                             process_it = True 
                     
                     if process_it:
-                        try:
-                            process_event(event)
-                        except Exception as e:
-                            # Log the exception
-                            logger.error(f"Error processing Stripe webhook for event {event.id}: {e}", exc_info=True)
-                        finally:
-                            with self.event_lock:
-                                self.processing_events.remove(event.id)
+                        retries = 0
+                        while retries < self.MAX_RETRIES:
+                            try:
+                                process_event(event)
+                                self.update_event_status(event.id, 'processed')
+                                logger.info(f"Event {event.id} processed successfully")
+                                break
+                            except Exception as e:
+                                retries += 1
+                                logger.error(f"Error processing Stripe webhook for event {event.id}: {e}. Retry {retries}/{self.MAX_RETRIES}", exc_info=True)
+                                if retries == self.MAX_RETRIES:
+                                    self.update_event_status(event.id, 'failed')
+                        with self.event_lock:
+                            self.processing_events.remove(event.id)
                     else:
                         logger.info(f"{thread_name} skipped event {event_id} (already being processed)")
 
@@ -72,6 +83,19 @@ class RedisWorker:
                 continue
             except Exception as e:
                 logger.error(f"Error processing event: {e}", exc_info=True)
+    
+    def update_event_status(self, event_id, status):
+        try:
+            event, created = StripeEvent.objects.get_or_create(
+                stripe_event_id=event.id,
+                defaults={'status': 'processing'}
+            )
+            event.status = status
+            event.save()
+            self.redis_conn.hset('task_status', event_id, status)
+        except StripeEvent.DoesNotExist:
+            logger.error(f"Stripe event {event_id} does not exist in the database")
+
     
     def add_thread(self):
         unique_id = str(uuid.uuid4())
