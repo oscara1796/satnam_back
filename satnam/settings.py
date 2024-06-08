@@ -276,7 +276,10 @@ AWS_SES_REGION_ENDPOINT = 'email.us-east-2.amazonaws.com'
 
 TESTING = True
 
-
+# logging logic 
+log_directory = os.path.join(BASE_DIR, 'logs')
+if not os.path.exists(log_directory):
+    os.makedirs(log_directory)
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -285,7 +288,7 @@ LOGGING = {
             "level": "INFO",
             "class": "logging.handlers.RotatingFileHandler",
             "filename": os.path.join(BASE_DIR, "logs", "django_errors.log"),
-            'maxBytes': 1024*1024*5,
+            'maxBytes': 1024 * 1024 * 5,
             'backupCount': 5,
             'formatter': 'verbose'
         },
@@ -298,7 +301,17 @@ LOGGING = {
         "django": {
             "handlers": ["file", "console"],
             "level": "INFO",
-            "propagate": True,
+            "propagate": False,
+        },
+        "workers": {
+            "handlers": ["file", "console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "payments": {
+            "handlers": ["file", "console"],
+            "level": "INFO",
+            "propagate": False,
         },
     },
     'formatters': {
@@ -308,3 +321,4 @@ LOGGING = {
         },
     },
 }
+

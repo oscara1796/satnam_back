@@ -3,6 +3,7 @@ import logging
 from datetime import datetime, timezone
 
 import stripe
+import redis
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
@@ -358,207 +359,19 @@ class StripeWebhookView(APIView):
             event = stripe.Event.construct_from(payload_data, stripe.api_key)
             logger.info(f"Stripe event {event.type} received with ID {event.id}")
         except ValueError as e:
-            # Invalid payload
             logger.error(f"Invalid payload received: {str(e)}")
             return JsonResponse({"error": str(e)}, status=400)
 
-        
-        with transaction.atomic():
-            existing_event, created = StripeEvent.objects.get_or_create(
-                stripe_event_id=event.id,
-                defaults={'status': 'processing'}
-            )
-            if not created and existing_event.status == "processed":
-                # Event already processed successfully
-                logger.info(f"Stripe event {event.id} already processed.")
-                return Response(status=200)
+        redis_conn = redis.Redis.from_url(settings.REDIS_URL)
 
-            try:
-
-                # Handle the event based on its type
-                if event.type == "invoice.payment_succeeded":
-                    invoice = event.data.object
-                    customer_id = invoice.customer
-                    # Retrieve customer's email from your database
-                    customer_email = self.get_customer_email(customer_id)
-                    if customer_email:
-                        self.send_invoice_email(customer_email, invoice)
-                        logger.info(f"Invoice payment email sent for invoice {invoice.id} to {customer_email}")
-                    existing_event.status = 'processed'
-
-                elif event.type == "invoice.payment_failed":
-                    invoice = event.data.object
-                    customer_id = invoice.customer
-
-                    # Retrieve customer's email from your database
-                    customer_email = self.get_customer_email(customer_id)
-                    if customer_email:
-                        self.send_payment_failed_email(customer_email, invoice)
-                        logger.info(f"Payment failed email sent for invoice {invoice.id} to {customer_email}")
-                    existing_event.status = 'processed'
-
-                elif event.type == "customer.subscription.created":
-                    subscription = event.data.object
-                    if subscription.trial_end:
-                        customer_id = subscription.customer
-                        customer_email = self.get_customer_email(customer_id)
-                        if customer_email:
-                            self.send_trial_start_email(customer_email, subscription)
-                            logger.info(f"Trial start email sent for subscription {subscription.id} to {customer_email}")
-                    existing_event.status = 'processed'
-
-                elif event.type == "customer.subscription.updated":
-                    """
-                    Occurs whenever a subscription changes (e.g., switching from one plan to another, or changing the status from trial to active).
-                    """
-                    pass
-
-                elif event.type == "customer.subscription.deleted":
-                    subscription = event.data.object
-                    customer_id = subscription.customer
-                    # Retrieve customer's email from your database
-                    customer_email = self.get_customer_email(customer_id)
-                    if customer_email:
-                        self.send_subscription_deleted_email(customer_email)
-                        logger.info(f"Subscription deleted email sent for subscription {subscription.id} to {customer_email}")
-
-                    try:
-                        user = CustomUser.objects.get(stripe_customer_id=customer_id)
-                        user.active = False
-                        user.stripe_subscription_id = None
-                        user.save()
-                        logger.info(f"User {user.id} deactivated after subscription deletion")
-                    except CustomUser.DoesNotExist:
-                        return JsonResponse({"status": "user not found"}, status=404)
-
-                    existing_event.status = 'processed'
-
-                elif event.type == "customer.subscription.trial_will_end":
-                    subscription = event.data.object
-                    customer_id = subscription.customer
-                    customer_email = self.get_customer_email(customer_id)
-                    if customer_email:
-                        self.send_trial_will_end_email(customer_email, subscription)
-                    existing_event.status = 'processed'
-                else:
-                    existing_event.status = 'unhandled'
-
-            except Exception as e:
-                # Log the exception
-                logger.error(f"Error processing Stripe webhook for event {event.id}: {e}", exc_info=True)
-                # If processing fails, record the event as failed
-                existing_event.status = "failed"
-            finally:
-                if existing_event.status != 'unhandled':
-                    existing_event.save()
-                return Response(status=200)
-
-
-    def get_customer_email(self, customer_id):
-        # Implement logic to retrieve customer's email from your database
         try:
-            user = get_user_model().objects.get(stripe_customer_id=customer_id)
-            customer_email = user.email
-            return customer_email
+            redis_conn.rpush('task_queue', json.dumps(payload_data))
+            logger.info(f"Event {event.id} added to Redis queue")
         except Exception as e:
-            logger.error(f"Error retrieving email for customer {customer_id}: {str(e)}", exc_info=True)
+            logger.error(f"Error adding event to Redis queue: {e}", exc_info=True)
+            return JsonResponse({"error": str(e)}, status=500)
 
-        return None
+        return Response(status=200)
 
-    def send_invoice_email(self, customer_email, invoice):
-        subject = "Pago Sat Nam Yoga Notificación"
-        message = """
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>Suscripción pagada</title>
-                <style>
-                    body {{
-                        font-family: Arial, sans-serif;
-                        background-color: #f0f0f0;
-                        margin: 0;
-                        padding: 0;
-                    }}
 
-                    .container {{
-                        max-width: 600px;
-                        margin: 0 auto;
-                        padding: 20px;
-                        background-color: #ffffff;
-                        border-radius: 5px;
-                        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-                    }}
-
-                    h1 {{
-                        color: #3165f5;
-                    }}
-
-                    p {{
-                        color: #333333;
-                    }}
-
-                    b {{
-                        font-weight: bold;
-                    }}
-                </style>
-            </head>
-            <body>
-                <div class="container">
-                    <h1>Suscripción pagada</h1>
-                    <p>Hola,</p>
-                    <p>Has pagado tu suscripción de Sat Nam Yoga.</p>
-                    <p>Pago ID: <b>{}</b></p>
-                    <p>Monto: <b>{:.2f} {}</b></p>
-                    <p>Gracias por tu apoyo.</p>
-                    <p>Saludos,</p>
-                    <p>El equipo de Sat Nam Yoga</p>
-                </div>
-            </body>
-            </html>
-            """.format(
-            invoice.id, invoice.amount_due / 100, invoice.currency
-        )
-        from_email = "satnamyogajal@gmail.com"  # Replace with your email address
-        recipient_list = [customer_email]
-
-        send_mail(
-            subject,
-            message,
-            from_email,
-            recipient_list,
-            fail_silently=False,
-            html_message=message,
-        )
-
-    def send_trial_start_email(self, customer_email, subscription):
-        # Convert to a readable format, timezone-aware
-        readable_date = datetime.fromtimestamp(
-            subscription.trial_end, timezone.utc
-        ).strftime("%Y-%m-%d %H:%M:%S")
-        # Set the timezone to UTC using `replace`
-        subject = "Bienvenido a tu período de prueba! Sat Nam Yoga Estudio"
-        message = f"Estimado cliente,\n\n¡Gracias por comenzar un período de prueba con nosotros! Esperamos que disfrutes de todo lo que tenemos para ofrecer. Tu período de prueba termina el {readable_date}."
-        self.send_email(customer_email, subject, message)
-
-    def send_payment_failed_email(self, customer_email, invoice):
-        subject = "Notificación de Pago Fallido"
-        message = f"Hola,\n\nTu pago para el ID de factura: {invoice.id} ha fallado.\nPor favor, actualiza tu información de pago o contacta al soporte."
-        self.send_email(customer_email, subject, message)
-
-    def send_subscription_deleted_email(self, customer_email):
-        subject = (
-            "Vamos a extrañarte! Subscripción ha sido eliminado (Sat Nam yoga Estudio)"
-        )
-        message = "Estimado cliente,\n\nHemos notado que tu suscripción ha sido eliminada. ¡Vamos a extrañarte! Si tienes algún comentario o necesitas asistencia, no dudes en contactarnos."
-        from_email = "satnamyogajal@gmail.com"  # Replace with your email address
-        self.send_email(customer_email, subject, message)
-
-    def send_trial_will_end_email(self, customer_email, subscription):
-        subject = "Tu período de prueba está por terminar"
-        message = f"Estimado cliente,\n\nSolo un aviso de que tu período de prueba está por terminar. Se te cobrará después del {subscription.trial_end}. ¡Esperamos que hayas disfrutado tu prueba!"
-        self.send_email(customer_email, subject, message)
-    
-    def send_email(self, to_email, subject, message):
-        from_email = "satnamyogajal@gmail.com"
-        send_mail(subject, message, from_email, [to_email], fail_silently=False)
-        logger.info(f"Email sent to {to_email} with subject '{subject}'")
+        
