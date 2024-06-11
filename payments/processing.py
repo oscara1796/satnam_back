@@ -1,10 +1,11 @@
 from django.core.mail import send_mail
 from datetime import datetime, timezone
 import logging
-from django.db import transaction
-from core.models import CustomUser
+from django.contrib.auth import get_user_model
 
 logger = logging.getLogger("django")
+
+User = get_user_model()
 
 def process_event(event):
     try:
@@ -35,7 +36,7 @@ def process_event(event):
     except Exception as e:
         logger.error(f"PROCESSING Error processing event {event.id}: {e}", exc_info=True)
 
-@transaction.atomic
+
 def handle_invoice_payment_succeeded(event):
     invoice = event.data.object
     customer_id = invoice.customer
@@ -44,7 +45,7 @@ def handle_invoice_payment_succeeded(event):
         if send_invoice_email(customer_email, invoice):
             logger.info(f"Invoice payment email sent for invoice {invoice.id} to {customer_email}")
 
-@transaction.atomic
+
 def handle_invoice_payment_failed(event):
     invoice = event.data.object
     customer_id = invoice.customer
@@ -53,7 +54,7 @@ def handle_invoice_payment_failed(event):
         if send_payment_failed_email(customer_email, invoice):
             logger.info(f"Payment failed email sent for invoice {invoice.id} to {customer_email}")
 
-@transaction.atomic
+
 def handle_subscription_created(event):
     subscription = event.data.object
     if subscription.trial_end:
@@ -67,7 +68,7 @@ def handle_subscription_updated(event):
     # Implement logic for handling subscription updates if needed
     pass
 
-@transaction.atomic
+
 def handle_subscription_deleted(event):
     subscription = event.data.object
     customer_id = subscription.customer
@@ -77,15 +78,27 @@ def handle_subscription_deleted(event):
             logger.info(f"Subscription deleted email sent for subscription {subscription.id} to {customer_email}")
 
     try:
-        user = CustomUser.objects.get(stripe_customer_id=customer_id)
+        user = User.objects.select_for_update().get(stripe_customer_id=customer_id)
+        logger.debug(f"Fetched user {user.id} with stripe_customer_id {customer_id}")
+        
         user.active = False
         user.stripe_subscription_id = None
         user.save()
+        logger.debug(f"User {user.id} status after save: active={user.active}, stripe_subscription_id={user.stripe_subscription_id}")
+
+        # Refresh the user object from the database
+        user.refresh_from_db()
         logger.info(f"User {user.id} deactivated after subscription deletion")
-    except CustomUser.DoesNotExist:
+        logger.debug(f"User {user.id} status after refresh: active={user.active}, stripe_subscription_id={user.stripe_subscription_id}")
+        
+        # Log the final state of the user
+        final_user = User.objects.get(id=user.id)
+        logger.debug(f"Final user state: active={final_user.active}, stripe_subscription_id={final_user.stripe_subscription_id}")
+
+    except User.DoesNotExist:
         logger.error(f"User with Stripe customer ID {customer_id} not found")
 
-@transaction.atomic
+
 def handle_trial_will_end(event):
     subscription = event.data.object
     customer_id = subscription.customer
@@ -96,9 +109,9 @@ def handle_trial_will_end(event):
 
 def get_customer_email(customer_id):
     try:
-        user = CustomUser.objects.get(stripe_customer_id=customer_id)
+        user = User.objects.get(stripe_customer_id=customer_id)
         return user.email
-    except CustomUser.DoesNotExist:
+    except User.DoesNotExist:
         logger.error(f"Error retrieving email for customer {customer_id}: User does not exist")
         return None
 

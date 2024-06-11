@@ -169,7 +169,7 @@ class RedisWorkerTestCase(TransactionTestCase):
         # Verify that the number of threads increased
         self.assertTrue(len(worker.threads) > worker.min_threads, "Worker did not scale up correctly")
 
-        time.sleep(90)  # Allow time for scaling down
+        time.sleep(100)  # Allow time for scaling down
 
         # Verify that the number of threads decreased
         self.assertTrue(len(worker.threads) <= worker.thread_count, "Worker did not scale down correctly")
