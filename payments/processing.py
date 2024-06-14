@@ -1,34 +1,35 @@
-from django.core.mail import send_mail
 from datetime import datetime, timezone
 import logging
 from django.contrib.auth import get_user_model
+import psycopg2
+from django.core.mail import send_mail
 
 logger = logging.getLogger("django")
 
 User = get_user_model()
 
-def process_event(event):
+def process_event(event, cur):
     try:
         event_type = event.type
         logger.info(f"Processing event type: {event_type}")
 
         if event_type == "invoice.payment_succeeded":
-            handle_invoice_payment_succeeded(event)
+            handle_invoice_payment_succeeded(event, cur)
 
         elif event_type == "invoice.payment_failed":
-            handle_invoice_payment_failed(event)
+            handle_invoice_payment_failed(event, cur)
 
         elif event_type == "customer.subscription.created":
-            handle_subscription_created(event)
+            handle_subscription_created(event, cur)
 
         elif event_type == "customer.subscription.updated":
-            handle_subscription_updated(event)
+            handle_subscription_updated(event, cur)
 
         elif event_type == "customer.subscription.deleted":
-            handle_subscription_deleted(event)
+            handle_subscription_deleted(event, cur)
 
         elif event_type == "customer.subscription.trial_will_end":
-            handle_trial_will_end(event)
+            handle_trial_will_end(event, cur)
 
         else:
             logger.info(f"Unhandled event type: {event_type}")
@@ -36,83 +37,80 @@ def process_event(event):
     except Exception as e:
         logger.error(f"PROCESSING Error processing event {event.id}: {e}", exc_info=True)
 
-
-def handle_invoice_payment_succeeded(event):
+def handle_invoice_payment_succeeded(event, cur):
     invoice = event.data.object
     customer_id = invoice.customer
-    customer_email = get_customer_email(customer_id)
+    customer_email = get_customer_email(customer_id, cur)
     if customer_email:
         if send_invoice_email(customer_email, invoice):
             logger.info(f"Invoice payment email sent for invoice {invoice.id} to {customer_email}")
 
-
-def handle_invoice_payment_failed(event):
+def handle_invoice_payment_failed(event, cur):
     invoice = event.data.object
     customer_id = invoice.customer
-    customer_email = get_customer_email(customer_id)
+    customer_email = get_customer_email(customer_id, cur)
     if customer_email:
         if send_payment_failed_email(customer_email, invoice):
             logger.info(f"Payment failed email sent for invoice {invoice.id} to {customer_email}")
 
-
-def handle_subscription_created(event):
+def handle_subscription_created(event, cur):
     subscription = event.data.object
     if subscription.trial_end:
         customer_id = subscription.customer
-        customer_email = get_customer_email(customer_id)
+        customer_email = get_customer_email(customer_id, cur)
         if customer_email:
             if send_trial_start_email(customer_email, subscription):
                 logger.info(f"Trial start email sent for subscription {subscription.id} to {customer_email}")
 
-def handle_subscription_updated(event):
-    # Implement logic for handling subscription updates if needed
+def handle_subscription_updated(event, cur):
     pass
 
-
-def handle_subscription_deleted(event):
+def handle_subscription_deleted(event, cur):
     subscription = event.data.object
     customer_id = subscription.customer
-    customer_email = get_customer_email(customer_id)
+    customer_email = get_customer_email(customer_id, cur)
     if customer_email:
         if send_subscription_deleted_email(customer_email):
             logger.info(f"Subscription deleted email sent for subscription {subscription.id} to {customer_email}")
 
     try:
-        user = User.objects.select_for_update().get(stripe_customer_id=customer_id)
-        logger.debug(f"Fetched user {user.id} with stripe_customer_id {customer_id}")
-        
-        user.active = False
-        user.stripe_subscription_id = None
-        user.save()
-        logger.debug(f"User {user.id} status after save: active={user.active}, stripe_subscription_id={user.stripe_subscription_id}")
+        cur.execute("SELECT * FROM core_customuser WHERE stripe_customer_id = %s FOR UPDATE", (customer_id,))
+        user = cur.fetchone()
+        if user:
+            user_id = user['id']
+            cur.execute(
+                """
+                UPDATE core_customuser
+                SET active = %s, stripe_subscription_id = %s
+                WHERE id = %s
+                """,
+                (False, None, user_id)
+            )
+            logger.info(f"User {user_id} deactivated after subscription deletion")
+        else:
+            logger.error(f"User with Stripe customer ID {customer_id} not found")
+    except psycopg2.Error as e:
+        logger.error(f"Database error: {e}")
 
-        # Refresh the user object from the database
-        user.refresh_from_db()
-        logger.info(f"User {user.id} deactivated after subscription deletion")
-        logger.debug(f"User {user.id} status after refresh: active={user.active}, stripe_subscription_id={user.stripe_subscription_id}")
-        
-        # Log the final state of the user
-        final_user = User.objects.get(id=user.id)
-        logger.debug(f"Final user state: active={final_user.active}, stripe_subscription_id={final_user.stripe_subscription_id}")
-
-    except User.DoesNotExist:
-        logger.error(f"User with Stripe customer ID {customer_id} not found")
-
-
-def handle_trial_will_end(event):
+def handle_trial_will_end(event, cur):
     subscription = event.data.object
     customer_id = subscription.customer
-    customer_email = get_customer_email(customer_id)
+    customer_email = get_customer_email(customer_id, cur)
     if customer_email:
         if send_trial_will_end_email(customer_email, subscription):
             logger.info(f"Trial end email sent for subscription {subscription.id} to {customer_email}")
 
-def get_customer_email(customer_id):
+def get_customer_email(customer_id, cur):
     try:
-        user = User.objects.get(stripe_customer_id=customer_id)
-        return user.email
-    except User.DoesNotExist:
-        logger.error(f"Error retrieving email for customer {customer_id}: User does not exist")
+        cur.execute("SELECT email FROM core_customuser WHERE stripe_customer_id = %s", (customer_id,))
+        user = cur.fetchone()
+        if user:
+            return user['email']
+        else:
+            logger.error(f"Error retrieving email for customer {customer_id}: User does not exist")
+            return None
+    except psycopg2.Error as e:
+        logger.error(f"Database error: {e}")
         return None
 
 def send_invoice_email(customer_email, invoice):
@@ -129,7 +127,6 @@ def send_invoice_email(customer_email, invoice):
                     margin: 0;
                     padding: 0;
                 }}
-
                 .container {{
                     max-width: 600px;
                     margin: 0 auto;
@@ -138,15 +135,12 @@ def send_invoice_email(customer_email, invoice):
                     border-radius: 5px;
                     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
                 }}
-
                 h1 {{
                     color: #3165f5;
                 }}
-
                 p {{
                     color: #333333;
                 }}
-
                 b {{
                     font-weight: bold;
                 }}
