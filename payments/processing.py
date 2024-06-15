@@ -15,27 +15,36 @@ def process_event(event, cur):
 
         if event_type == "invoice.payment_succeeded":
             handle_invoice_payment_succeeded(event, cur)
+            return True
 
         elif event_type == "invoice.payment_failed":
             handle_invoice_payment_failed(event, cur)
+            return True
 
         elif event_type == "customer.subscription.created":
             handle_subscription_created(event, cur)
+            return True
 
         elif event_type == "customer.subscription.updated":
             handle_subscription_updated(event, cur)
+            return True
 
         elif event_type == "customer.subscription.deleted":
             handle_subscription_deleted(event, cur)
+            return True
 
         elif event_type == "customer.subscription.trial_will_end":
             handle_trial_will_end(event, cur)
+            return True
 
         else:
             logger.info(f"Unhandled event type: {event_type}")
+        
 
     except Exception as e:
         logger.error(f"PROCESSING Error processing event {event.id}: {e}", exc_info=True)
+    
+    return False
 
 def handle_invoice_payment_succeeded(event, cur):
     invoice = event.data.object

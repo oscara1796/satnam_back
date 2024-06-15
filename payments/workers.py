@@ -10,6 +10,10 @@ from django.conf import settings
 from payments.processing import process_event
 import stripe
 import logging
+from dotenv import dotenv_values
+
+env_vars = dotenv_values(".env.dev")
+stripe.api_key = env_vars["STRIPE_SECRET_KEY"]
 
 logger = logging.getLogger("django")
 
@@ -78,17 +82,17 @@ class RedisWorker:
                             while retries < self.MAX_RETRIES:
                                 try:
                                     cur.execute("BEGIN;")
-                                    process_event(event, cur)
-                                    cur.execute(
-                                        """
-                                        INSERT INTO payments_stripeevent (stripe_event_id, created_at, status)
-                                        VALUES (%s, %s, %s)
-                                        ON CONFLICT (stripe_event_id) DO UPDATE SET status = EXCLUDED.status
-                                        """,
-                                        (event.id, datetime.now(timezone.utc), 'processed')
-                                    )
-                                    cur.execute("COMMIT;")
-                                    logger.info(f"Event {event.id} processed successfully")
+                                    if process_event(event, cur):
+                                        cur.execute(
+                                            """
+                                            INSERT INTO payments_stripeevent (stripe_event_id, created_at, status)
+                                            VALUES (%s, %s, %s)
+                                            ON CONFLICT (stripe_event_id) DO UPDATE SET status = EXCLUDED.status
+                                            """,
+                                            (event.id, datetime.now(timezone.utc), 'processed')
+                                        )
+                                        cur.execute("COMMIT;")
+                                        logger.info(f"Event {event.id} processed successfully")
                                     break
                                 except Exception as e:
                                     retries += 1

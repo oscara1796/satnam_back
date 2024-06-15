@@ -13,6 +13,12 @@ from django.db import connections, close_old_connections
 from payments.workers import RedisWorker
 from payments.models import StripeEvent
 from queue import Queue, Empty
+import stripe
+from dotenv import dotenv_values
+
+env_vars = dotenv_values(".env.dev")
+stripe.api_key = env_vars["STRIPE_SECRET_KEY"]
+
 
 logger = logging.getLogger('django')
 
@@ -110,19 +116,10 @@ class RedisWorkerTestCase(TransactionTestCase):
         self.assertEqual(len(worker.threads), 0)
 
     @patch('redis.Redis.blpop', side_effect=lambda *args, **kwargs: next(mock_blpop_generator()))
-    @patch('stripe.Event.construct_from')
     @patch('payments.processing.get_customer_email')
-    @patch.object(RedisWorker, 'update_event_status')
-    def test_worker_process_event(self, mock_update_event_status, mock_get_customer_email, mock_stripe_event_construct_from, mock_redis_blpop):
+    def test_worker_process_event(self, mock_update_event_status, mock_get_customer_email):
         # Setup mock return values
-        mock_event = MagicMock()
-        mock_event.id = 'evt_123'
-        mock_event.type = 'invoice.payment_succeeded'
-        mock_event.data.object.id = 'in_123'
-        mock_event.data.object.amount_due = 2000
-        mock_event.data.object.currency = 'usd'
-        mock_event.data.object.customer = 'cus_123'
-        mock_stripe_event_construct_from.return_value = mock_event
+        
         mock_get_customer_email.return_value = 'oscara1706cl@gmail.com'
 
         # Initialize RedisWorker and start workers
@@ -141,15 +138,19 @@ class RedisWorkerTestCase(TransactionTestCase):
         # Ensure all connections are closed before checking database state
         close_old_connections()
 
-        # Check if the update_event_status was called with the correct parameters
-        mock_update_event_status.assert_called_with(mock_event.id, 'processed')
-
         # Check if Redis queue is empty
         redis_conn = redis.Redis.from_url(settings.REDIS_URL)
         self.assertEqual(redis_conn.llen('task_queue'), 0)
 
         # Check if the number of threads is correct
         self.assertEqual(len(worker.threads), worker.thread_count)
+
+        # Assert that the event was saved in the database with the status 'processed'
+        try:
+            stripe_event = StripeEvent.objects.get(stripe_event_id='evt_123')
+            self.assertEqual(stripe_event.status, 'processed')
+        except StripeEvent.DoesNotExist:
+            self.fail(f"StripeEvent with ID evt_123 does not exist in the database")
 
     @patch('redis.Redis.from_url')
     @patch('redis.Redis.llen')
