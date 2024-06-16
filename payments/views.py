@@ -33,7 +33,7 @@ logger = logging.getLogger("django")
 
 
 class PricesListView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    
 
     def get(self, request):
         # extract pagination parameters from query params
