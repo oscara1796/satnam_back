@@ -29,6 +29,7 @@ services:
       - POSTGRES_USER=oscar
       - POSTGRES_PASSWORD=17dejunio
       - POSTGRES_DB=core_dev
+      - POSTGRES_INITDB_ARGS=--max-connections=200
   satnam-client:
     build:
       context: ../satnam_front
