@@ -230,18 +230,18 @@ SUBSCRIPTION_FAILED_URL = "http://localhost:8009/subscription/failed/"
 # ]
 
 CORS_ALLOWED_ORIGINS = [
-    "https://192.168.100.162:3001",  # The origin of your React app
-    "https://localhost:3001",  # The origin of your React app
-    "https://127.0.0.1:3001",  # The origin of your React app
-    "http://127.0.0.1:3001",  
-    "http://localhost:3001", 
+    "https://192.168.100.162:3001",
+    "http://192.168.100.162:3001",
+    "https://localhost:3001",
+    "https://127.0.0.1:3001",
+    "http://127.0.0.1:3001",
+    "http://localhost:3001",
     "https://satnam-client-4754c00a2e7d.herokuapp.com",
     "http://www.satnamyogaestudio.com.mx",
     "https://www.satnamyogaestudio.com.mx"
 ]
 
-# CORS_ORIGIN_ALLOW_ALL = True
-
+CORS_ORIGIN_ALLOW_ALL = False
 CORS_ALLOW_CREDENTIALS = True
 
 SESSION_ENGINE = "django.contrib.sessions.backends.db"
