@@ -50,7 +50,6 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "captcha",
     "sslserver",
     "rest_framework",
     "corsheaders",
@@ -206,7 +205,7 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": datetime.timedelta(minutes=20),
+    "ACCESS_TOKEN_LIFETIME": datetime.timedelta(minutes=120),
     "REFRESH_TOKEN_LIFETIME": datetime.timedelta(days=1),
     "USER_ID_CLAIM": "id",
     "SLIDING_TOKEN_REFRESH_RESET": True,
@@ -287,7 +286,7 @@ LOGGING = {
     "disable_existing_loggers": False,
     "handlers": {
         "file": {
-            "level": "DEBUG",
+            "level": "INFO",
             "class": "logging.handlers.RotatingFileHandler",
             "filename": os.path.join(BASE_DIR, "logs", "django_errors.log"),
             'maxBytes': 1024 * 1024 * 5,
@@ -295,19 +294,19 @@ LOGGING = {
             'formatter': 'verbose'
         },
         "console": {
-            "level": "DEBUG",
+            "level": "INFO",
             "class": "logging.StreamHandler",
         },
     },
     "loggers": {
         "django": {
             "handlers": ["file", "console"],
-            "level": "DEBUG",
+            "level": "INFO",
             "propagate": False,
         },
         "django.db.backends": {
             "handlers": ["file"],
-            "level": "DEBUG",
+            "level": "INFO",
             "propagate": False,
         },
         "workers": {

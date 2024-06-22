@@ -189,6 +189,7 @@ class PaymentDetailView(APIView):
         try:
             user = get_user_model().objects.get(id=pk)
             # Retrieve the customer's Stripe subscription
+            print(user.stripe_subscription_id)
             subscription = stripe.Subscription.retrieve(user.stripe_subscription_id)
 
             product = stripe.Product.retrieve(subscription.plan.product)
