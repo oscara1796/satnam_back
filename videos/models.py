@@ -1,4 +1,9 @@
 from django.db import models
+from django.db.models.signals import post_delete
+from django.dispatch import receiver
+from django.conf import settings
+import boto3
+import os
 
 
 class Video(models.Model):
@@ -23,3 +28,30 @@ class Category(models.Model):
 
     def __str__(self):
         return self.title
+
+
+@receiver(post_delete, sender=Category)
+def delete_related_videos(sender, instance, **kwargs):
+    videos = instance.videos.all()
+    for video in videos:
+        video.delete()
+
+
+@receiver(post_delete, sender=Video)
+def delete_video_image(sender, instance, **kwargs):
+    if instance.image:
+        if settings.DEBUG:
+            # Delete image locally
+            if os.path.isfile(instance.image.path):
+                os.remove(instance.image.path)
+        else:
+            # Delete image from S3
+            s3 = boto3.client(
+                's3',
+                aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+                aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
+            )
+            try:
+                s3.delete_object(Bucket=settings.AWS_STORAGE_BUCKET_NAME, Key=instance.image.name)
+            except Exception as e:
+                print(f"Error deleting image from S3: {e}")
