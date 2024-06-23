@@ -1,11 +1,12 @@
 from locust import HttpUser, TaskSet, task, between
 import json
 import stripe
-from dotenv import dotenv_values
 import uuid
 
-env_vars = dotenv_values(".env.dev")
-stripe.api_key = env_vars["STRIPE_SECRET_KEY"]
+from dotenv import load_dotenv
+
+load_dotenv(".env.dev")
+stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
 
 class UserBehavior(TaskSet):
     

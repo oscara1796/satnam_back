@@ -11,7 +11,6 @@ from django.utils.decorators import method_decorator
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django_ratelimit.decorators import ratelimit
-from dotenv import dotenv_values
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -23,8 +22,10 @@ from satnam.settings import EMAIL_HOST_USER
 from .models import TrialDays
 from .serializers import LogInSerializer, TrialDaysSerializer, UserSerializer
 
-env_vars = dotenv_values(".env.dev")
-stripe.api_key = env_vars["STRIPE_SECRET_KEY"]
+from dotenv import load_dotenv
+
+load_dotenv(".env.dev")
+stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
 
 logger = logging.getLogger("django")
 

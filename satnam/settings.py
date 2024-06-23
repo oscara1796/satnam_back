@@ -236,7 +236,7 @@ CORS_ALLOWED_ORIGINS = [
     "https://127.0.0.1:3001",
     "http://127.0.0.1:3001",
     "http://localhost:3001",
-    "https://satnam-client-4754c00a2e7d.herokuapp.com",
+    "https://satnam-client-4754c00a2e7d.herokuapp.com/",
     "http://www.satnamyogaestudio.com.mx",
     "https://www.satnamyogaestudio.com.mx"
 ]

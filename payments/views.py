@@ -10,7 +10,6 @@ from django.core.mail import send_mail
 from django.db import transaction
 from django.http import JsonResponse
 from django.shortcuts import redirect
-from dotenv import dotenv_values
 from rest_framework import permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -21,8 +20,10 @@ from core.models import CustomUser
 from .models import StripeEvent
 from .serializers import PaymentMethodSerializer
 
-env_vars = dotenv_values(".env.dev")
-stripe.api_key = env_vars["STRIPE_SECRET_KEY"]
+from dotenv import load_dotenv
+
+load_dotenv(".env.dev")
+stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
 # Create your views here.
 FRONTEND_SUBSCRIPTION_SUCCESS_URL = settings.SUBSCRIPTION_SUCCESS_URL
 FRONTEND_SUBSCRIPTION_CANCEL_URL = settings.SUBSCRIPTION_FAILED_URL
