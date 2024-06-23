@@ -10,11 +10,11 @@ from django.conf import settings
 from payments.processing import process_event
 import stripe
 import logging
-from dotenv import dotenv_values
+from dotenv import load_dotenv
 import os
 
-env_vars = dotenv_values(".env.dev")
-stripe.api_key = env_vars["STRIPE_SECRET_KEY"]
+load_dotenv(".env.dev")
+stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
 
 logger = logging.getLogger("django")
 
