@@ -3,6 +3,7 @@ import logging
 from django.contrib.auth import get_user_model
 import psycopg2
 from django.core.mail import send_mail
+from django.conf import settings
 
 logger = logging.getLogger("django")
 
@@ -124,6 +125,7 @@ def get_customer_email(customer_id, cur):
 
 def send_invoice_email(customer_email, invoice):
     subject = "Pago Sat Nam Yoga Notificación"
+    logo_url = f"https://satnam-bucket.s3.us-east-2.amazonaws.com/logo.png"
     message = f"""
         <!DOCTYPE html>
         <html>
@@ -132,39 +134,75 @@ def send_invoice_email(customer_email, invoice):
             <style>
                 body {{
                     font-family: Arial, sans-serif;
-                    background-color: #f0f0f0;
+                    background-color: #f4f4f4;
                     margin: 0;
                     padding: 0;
+                    color: #333;
                 }}
                 .container {{
                     max-width: 600px;
-                    margin: 0 auto;
+                    margin: 20px auto;
                     padding: 20px;
                     background-color: #ffffff;
-                    border-radius: 5px;
-                    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                    border-radius: 8px;
+                    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+                    overflow: hidden;
                 }}
-                h1 {{
+                .header {{
+                    background-color: #3165f5;
+                    color: #ffffff;
+                    padding: 20px;
+                    text-align: center;
+                }}
+                .header h1 {{
+                    margin: 0;
+                }}
+                .content {{
+                    padding: 20px;
+                    line-height: 1.6;
+                }}
+                .content p {{
+                    margin: 0 0 10px;
+                }}
+                .content p b {{
                     color: #3165f5;
                 }}
-                p {{
-                    color: #333333;
+                .footer {{
+                    margin-top: 20px;
+                    text-align: center;
+                    padding: 20px;
+                    background-color: #f4f4f4;
+                    color: #888888;
                 }}
-                b {{
-                    font-weight: bold;
+                .footer img {{
+                    width: 150px;
+                    height: auto;
+                    margin-bottom: 10px;
+                }}
+                .footer p {{
+                    margin: 5px 0 0;
+                    font-size: 12px;
                 }}
             </style>
         </head>
         <body>
             <div class="container">
-                <h1>Suscripción pagada</h1>
-                <p>Hola,</p>
-                <p>Has pagado tu suscripción de Sat Nam Yoga.</p>
-                <p>Pago ID: <b>{invoice.id}</b></p>
-                <p>Monto: <b>{invoice.amount_due / 100:.2f} {invoice.currency}</b></p>
-                <p>Gracias por tu apoyo.</p>
-                <p>Saludos,</p>
-                <p>El equipo de Sat Nam Yoga</p>
+                <div class="header">
+                    <h1>Suscripción pagada</h1>
+                </div>
+                <div class="content">
+                    <p>Hola,</p>
+                    <p>Has pagado tu suscripción de Sat Nam Yoga.</p>
+                    <p>Pago ID: <b>{invoice.id}</b></p>
+                    <p>Monto: <b>{invoice.amount_due / 100:.2f} {invoice.currency.upper()}</b></p>
+                    <p>Gracias por tu apoyo.</p>
+                    <p>Saludos,</p>
+                    <p>El equipo de Sat Nam Yoga</p>
+                </div>
+                <div class="footer">
+                    <img src="{logo_url}" alt="Sat Nam Yoga Logo" />
+                    <p>© 2023 Sat Nam Yoga Estudio. Todos los derechos reservados.</p>
+                </div>
             </div>
         </body>
         </html>
@@ -177,23 +215,341 @@ def send_invoice_email(customer_email, invoice):
 def send_trial_start_email(customer_email, subscription):
     readable_date = datetime.fromtimestamp(subscription.trial_end, timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
     subject = "Bienvenido a tu período de prueba! Sat Nam Yoga Estudio"
-    message = f"Estimado cliente,\n\n¡Gracias por comenzar un período de prueba con nosotros! Esperamos que disfrutes de todo lo que tenemos para ofrecer. Tu período de prueba termina el {readable_date}."
+    logo_url = f"https://satnam-bucket.s3.us-east-2.amazonaws.com/logo.png"
+    message = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Período de prueba</title>
+            <style>
+                body {{
+                    font-family: Arial, sans-serif;
+                    background-color: #f4f4f4;
+                    margin: 0;
+                    padding: 0;
+                    color: #333;
+                }}
+                .container {{
+                    max-width: 600px;
+                    margin: 20px auto;
+                    padding: 20px;
+                    background-color: #ffffff;
+                    border-radius: 8px;
+                    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+                    overflow: hidden;
+                }}
+                .header {{
+                    background-color: #3165f5;
+                    color: #ffffff;
+                    padding: 20px;
+                    text-align: center;
+                }}
+                .header h1 {{
+                    margin: 0;
+                }}
+                .content {{
+                    padding: 20px;
+                    line-height: 1.6;
+                }}
+                .content p {{
+                    margin: 0 0 10px;
+                }}
+                .content p b {{
+                    color: #3165f5;
+                }}
+                .footer {{
+                    margin-top: 20px;
+                    text-align: center;
+                    padding: 20px;
+                    background-color: #f4f4f4;
+                    color: #888888;
+                }}
+                .footer img {{
+                    width: 150px;
+                    height: auto;
+                    margin-bottom: 10px;
+                }}
+                .footer p {{
+                    margin: 5px 0 0;
+                    font-size: 12px;
+                }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>Bienvenido a tu período de prueba!</h1>
+                </div>
+                <div class="content">
+                    <p>Estimado cliente,</p>
+                    <p>¡Gracias por comenzar un período de prueba con nosotros! Esperamos que disfrutes de todo lo que tenemos para ofrecer.</p>
+                    <p>Tu período de prueba termina el <b>{readable_date}</b>.</p>
+                    <p>Saludos,</p>
+                    <p>El equipo de Sat Nam Yoga</p>
+                </div>
+                <div class="footer">
+                    <img src="{logo_url}" alt="Sat Nam Yoga Logo" />
+                    <p>© 2023 Sat Nam Yoga Estudio. Todos los derechos reservados.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+    """
     return send_email(subject, message, "satnamyogajal@gmail.com", [customer_email])
+
 
 def send_payment_failed_email(customer_email, invoice):
     subject = "Notificación de Pago Fallido"
-    message = f"Hola,\n\nTu pago para el ID de factura: {invoice.id} ha fallado.\nPor favor, actualiza tu información de pago o contacta al soporte."
+    logo_url = f"https://satnam-bucket.s3.us-east-2.amazonaws.com/logo.png"
+    message = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Pago Fallido</title>
+            <style>
+                body {{
+                    font-family: Arial, sans-serif;
+                    background-color: #f4f4f4;
+                    margin: 0;
+                    padding: 0;
+                    color: #333;
+                }}
+                .container {{
+                    max-width: 600px;
+                    margin: 20px auto;
+                    padding: 20px;
+                    background-color: #ffffff;
+                    border-radius: 8px;
+                    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+                    overflow: hidden;
+                }}
+                .header {{
+                    background-color: #d9534f;
+                    color: #ffffff;
+                    padding: 20px;
+                    text-align: center;
+                }}
+                .header h1 {{
+                    margin: 0;
+                }}
+                .content {{
+                    padding: 20px;
+                    line-height: 1.6;
+                }}
+                .content p {{
+                    margin: 0 0 10px;
+                }}
+                .content p b {{
+                    color: #d9534f;
+                }}
+                .footer {{
+                    margin-top: 20px;
+                    text-align: center;
+                    padding: 20px;
+                    background-color: #f4f4f4;
+                    color: #888888;
+                }}
+                .footer img {{
+                    width: 150px;
+                    height: auto;
+                    margin-bottom: 10px;
+                }}
+                .footer p {{
+                    margin: 5px 0 0;
+                    font-size: 12px;
+                }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>Pago Fallido</h1>
+                </div>
+                <div class="content">
+                    <p>Hola,</p>
+                    <p>Tu pago para el ID de factura: <b>{invoice.id}</b> ha fallado.</p>
+                    <p>Por favor, actualiza tu información de pago o contacta al soporte.</p>
+                    <p>Saludos,</p>
+                    <p>El equipo de Sat Nam Yoga</p>
+                </div>
+                <div class="footer">
+                    <img src="{logo_url}" alt="Sat Nam Yoga Logo" />
+                    <p>© 2023 Sat Nam Yoga Estudio. Todos los derechos reservados.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+    """
     return send_email(subject, message, "satnamyogajal@gmail.com", [customer_email])
 
 def send_subscription_deleted_email(customer_email):
-    subject = "Vamos a extrañarte! Subscripción ha sido eliminado (Sat Nam yoga Estudio)"
-    message = "Estimado cliente,\n\nHemos notado que tu suscripción ha sido eliminada. ¡Vamos a extrañarte! Si tienes algún comentario o necesitas asistencia, no dudes en contactarnos."
+    subject = "Vamos a extrañarte! Subscripción ha sido eliminada (Sat Nam Yoga Estudio)"
+    logo_url = f"https://satnam-bucket.s3.us-east-2.amazonaws.com/logo.png"
+    message = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Subscripción Eliminada</title>
+            <style>
+                body {{
+                    font-family: Arial, sans-serif;
+                    background-color: #f4f4f4;
+                    margin: 0;
+                    padding: 0;
+                    color: #333;
+                }}
+                .container {{
+                    max-width: 600px;
+                    margin: 20px auto;
+                    padding: 20px;
+                    background-color: #ffffff;
+                    border-radius: 8px;
+                    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+                    overflow: hidden;
+                }}
+                .header {{
+                    background-color: #114c9e;
+                    color: #ffffff;
+                    padding: 20px;
+                    text-align: center;
+                }}
+                .header h1 {{
+                    margin: 0;
+                }}
+                .content {{
+                    padding: 20px;
+                    line-height: 1.6;
+                }}
+                .content p {{
+                    margin: 0 0 10px;
+                }}
+                .content p b {{
+                    color: #114c9e;
+                }}
+                .footer {{
+                    margin-top: 20px;
+                    text-align: center;
+                    padding: 20px;
+                    background-color: #f4f4f4;
+                    color: #888888;
+                }}
+                .footer img {{
+                    width: 150px;
+                    height: auto;
+                    margin-bottom: 10px;
+                }}
+                .footer p {{
+                    margin: 5px 0 0;
+                    font-size: 12px;
+                }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>Vamos a extrañarte!</h1>
+                </div>
+                <div class="content">
+                    <p>Estimado cliente,</p>
+                    <p>Hemos notado que tu suscripción ha sido eliminada. ¡Vamos a extrañarte! Si tienes algún comentario o necesitas asistencia, no dudes en contactarnos.</p>
+                    <p>Saludos,</p>
+                    <p>El equipo de Sat Nam Yoga</p>
+                </div>
+                <div class="footer">
+                    <img src="{logo_url}" alt="Sat Nam Yoga Logo" />
+                    <p>© 2023 Sat Nam Yoga Estudio. Todos los derechos reservados.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+    """
     return send_email(subject, message, "satnamyogajal@gmail.com", [customer_email])
+
 
 def send_trial_will_end_email(customer_email, subscription):
     subject = "Tu período de prueba está por terminar"
-    message = f"Estimado cliente,\n\nSolo un aviso de que tu período de prueba está por terminar. Se te cobrará después del {subscription.trial_end}. ¡Esperamos que hayas disfrutado tu prueba!"
+    logo_url = f"https://satnam-bucket.s3.us-east-2.amazonaws.com/logo.png"
+    readable_date = datetime.fromtimestamp(subscription.trial_end, timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+    message = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Período de prueba por terminar</title>
+            <style>
+                body {{
+                    font-family: Arial, sans-serif;
+                    background-color: #f4f4f4;
+                    margin: 0;
+                    padding: 0;
+                    color: #333;
+                }}
+                .container {{
+                    max-width: 600px;
+                    margin: 20px auto;
+                    padding: 20px;
+                    background-color: #ffffff;
+                    border-radius: 8px;
+                    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+                    overflow: hidden;
+                }}
+                .header {{
+                    background-color: #3165f5;
+                    color: #ffffff;
+                    padding: 20px;
+                    text-align: center;
+                }}
+                .header h1 {{
+                    margin: 0;
+                }}
+                .content {{
+                    padding: 20px;
+                    line-height: 1.6;
+                }}
+                .content p {{
+                    margin: 0 0 10px;
+                }}
+                .content p b {{
+                    color: #3165f5;
+                }}
+                .footer {{
+                    margin-top: 20px;
+                    text-align: center;
+                    padding: 20px;
+                    background-color: #f4f4f4;
+                    color: #888888;
+                }}
+                .footer img {{
+                    width: 150px;
+                    height: auto;
+                    margin-bottom: 10px;
+                }}
+                .footer p {{
+                    margin: 5px 0 0;
+                    font-size: 12px;
+                }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>Tu período de prueba está por terminar</h1>
+                </div>
+                <div class="content">
+                    <p>Estimado cliente,</p>
+                    <p>Solo un aviso de que tu período de prueba está por terminar. Se te cobrará después del <b>{readable_date}</b>. ¡Esperamos que hayas disfrutado tu prueba!</p>
+                    <p>Saludos,</p>
+                    <p>El equipo de Sat Nam Yoga</p>
+                </div>
+                <div class="footer">
+                    <img src="{logo_url}" alt="Sat Nam Yoga Logo" />
+                    <p>© 2023 Sat Nam Yoga Estudio. Todos los derechos reservados.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+    """
     return send_email(subject, message, "satnamyogajal@gmail.com", [customer_email])
+
 
 def send_email(subject, message, from_email, recipient_list):
     try:
