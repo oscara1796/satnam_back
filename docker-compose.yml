@@ -32,19 +32,19 @@ services:
  
   satnam-client:
     build:
-      context: ../satnam_front
+      context: ../client
     command:   yarn start
     container_name: satnam-client
     depends_on:
       - core
     environment:
       - CHOKIDAR_USEPOLLING=true
-      - REACT_APP_BASE_URL=http://127.0.0.1:8009 
+      - REACT_APP_BASE_URL=http://192.168.100.162:8009 
     ports:
       - 3001:3000
     stdin_open: true
     volumes: 
-      - ../satnam_front:/usr/src/app
+      - ../client:/usr/src/app
 
 volumes:
   postgres_data:

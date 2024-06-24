@@ -260,7 +260,7 @@ class CategoryAPIView(APIView):
 
     def delete(self, request, pk):
         category = self.get_object(pk)
-        category.delete()
+        category.delete_with_videos()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     def get_object(self, pk):
@@ -274,7 +274,6 @@ class CategoryAPIView(APIView):
 
         # Check if the request data is a list of videos or a single video
         is_many = isinstance(request.data, list)
-        print(request.data)
         serializer = VideoSerializer(data=request.data, many=is_many)
 
         if serializer.is_valid():

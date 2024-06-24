@@ -10,10 +10,11 @@ from django.conf import settings
 from payments.processing import process_event
 import stripe
 import logging
-from dotenv import dotenv_values
+import os
+from dotenv import load_dotenv
 
-env_vars = dotenv_values(".env.dev")
-stripe.api_key = env_vars["STRIPE_SECRET_KEY"]
+load_dotenv(".env.dev")
+stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
 
 logger = logging.getLogger("django")
 
@@ -47,13 +48,17 @@ class RedisWorker:
         conn = None
         cur = None
         try:
-            conn = psycopg2.connect(
-                dbname=settings.DATABASES['default']['NAME'],
-                user=settings.DATABASES['default']['USER'],
-                password=settings.DATABASES['default']['PASSWORD'],
-                host=settings.DATABASES['default']['HOST'],
-                port=settings.DATABASES['default']['PORT']
-            )
+            if settings.DEBUG:
+                conn = psycopg2.connect(
+                    dbname=settings.DATABASES['default']['NAME'],
+                    user=settings.DATABASES['default']['USER'],
+                    password=settings.DATABASES['default']['PASSWORD'],
+                    host=settings.DATABASES['default']['HOST'],
+                    port=settings.DATABASES['default']['PORT']
+                )
+            else:
+                database_url = os.environ.get('DATABASE_URL')
+                conn = psycopg2.connect(database_url)
             conn.autocommit = True
             cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
             self.thread_connections[thread_name] = conn

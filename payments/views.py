@@ -4,13 +4,13 @@ from datetime import datetime, timezone
 
 import stripe
 import redis
+import os
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.db import transaction
 from django.http import JsonResponse
 from django.shortcuts import redirect
-from dotenv import dotenv_values
 from rest_framework import permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -21,8 +21,10 @@ from core.models import CustomUser
 from .models import StripeEvent
 from .serializers import PaymentMethodSerializer
 
-env_vars = dotenv_values(".env.dev")
-stripe.api_key = env_vars["STRIPE_SECRET_KEY"]
+from dotenv import load_dotenv
+
+load_dotenv(".env.dev")
+stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
 # Create your views here.
 FRONTEND_SUBSCRIPTION_SUCCESS_URL = settings.SUBSCRIPTION_SUCCESS_URL
 FRONTEND_SUBSCRIPTION_CANCEL_URL = settings.SUBSCRIPTION_FAILED_URL
@@ -189,6 +191,7 @@ class PaymentDetailView(APIView):
         try:
             user = get_user_model().objects.get(id=pk)
             # Retrieve the customer's Stripe subscription
+            
             subscription = stripe.Subscription.retrieve(user.stripe_subscription_id)
 
             product = stripe.Product.retrieve(subscription.plan.product)

@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     "sslserver",
     "rest_framework",
     "corsheaders",
+    "storages",
     "core",
     "videos",
     "payments",
@@ -205,7 +206,7 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": datetime.timedelta(minutes=20),
+    "ACCESS_TOKEN_LIFETIME": datetime.timedelta(minutes=120),
     "REFRESH_TOKEN_LIFETIME": datetime.timedelta(days=1),
     "USER_ID_CLAIM": "id",
     "SLIDING_TOKEN_REFRESH_RESET": True,
@@ -230,18 +231,18 @@ SUBSCRIPTION_FAILED_URL = "http://localhost:8009/subscription/failed/"
 # ]
 
 CORS_ALLOWED_ORIGINS = [
-    "https://192.168.100.162:3001",  # The origin of your React app
-    "https://localhost:3001",  # The origin of your React app
-    "https://127.0.0.1:3001",  # The origin of your React app
-    "http://127.0.0.1:3001",  
-    "http://localhost:3001", 
+    "https://192.168.100.162:3001",
+    "http://192.168.100.162:3001",
+    "https://localhost:3001",
+    "https://127.0.0.1:3001",
+    "http://127.0.0.1:3001",
+    "http://localhost:3001",
     "https://satnam-client-4754c00a2e7d.herokuapp.com",
     "http://www.satnamyogaestudio.com.mx",
     "https://www.satnamyogaestudio.com.mx"
 ]
 
-# CORS_ORIGIN_ALLOW_ALL = True
-
+CORS_ORIGIN_ALLOW_ALL = False
 CORS_ALLOW_CREDENTIALS = True
 
 SESSION_ENGINE = "django.contrib.sessions.backends.db"
@@ -273,7 +274,24 @@ EMAIL_HOST_USER = "satnamyogajal@gmail.com"
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
 AWS_SES_REGION_NAME = 'us-east-2' 
-AWS_SES_REGION_ENDPOINT = 'email.us-east-2.amazonaws.com'  
+AWS_SES_REGION_ENDPOINT = 'email.us-east-2.amazonaws.com' 
+
+# AMAZON BUCKET 
+
+AWS_STORAGE_BUCKET_NAME = 'satnam-bucket'
+
+if not DEBUG:
+    DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+    AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.us-east-2.amazonaws.com'
+    AWS_S3_OBJECT_PARAMETERS = {
+        'CacheControl': 'max-age=86400',
+    }
+    STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/static/'
+    MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
+else:
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 
 TESTING = True
 
@@ -286,7 +304,7 @@ LOGGING = {
     "disable_existing_loggers": False,
     "handlers": {
         "file": {
-            "level": "DEBUG",
+            "level": "INFO",
             "class": "logging.handlers.RotatingFileHandler",
             "filename": os.path.join(BASE_DIR, "logs", "django_errors.log"),
             'maxBytes': 1024 * 1024 * 5,
@@ -294,19 +312,19 @@ LOGGING = {
             'formatter': 'verbose'
         },
         "console": {
-            "level": "DEBUG",
+            "level": "INFO",
             "class": "logging.StreamHandler",
         },
     },
     "loggers": {
         "django": {
             "handlers": ["file", "console"],
-            "level": "DEBUG",
+            "level": "INFO",
             "propagate": False,
         },
         "django.db.backends": {
             "handlers": ["file"],
-            "level": "DEBUG",
+            "level": "INFO",
             "propagate": False,
         },
         "workers": {
@@ -327,4 +345,5 @@ LOGGING = {
         },
     },
 }
+
 

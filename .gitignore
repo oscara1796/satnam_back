@@ -12,6 +12,8 @@ db.sqlite3
 db.sqlite3-journal
 media/
 
+logs/django_errors.log*
+
 # If you are using a virtual environment (recommended)
 # env/
 venv/

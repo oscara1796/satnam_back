@@ -11,7 +11,6 @@ from django.utils.decorators import method_decorator
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django_ratelimit.decorators import ratelimit
-from dotenv import dotenv_values
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -23,8 +22,11 @@ from satnam.settings import EMAIL_HOST_USER
 from .models import TrialDays
 from .serializers import LogInSerializer, TrialDaysSerializer, UserSerializer
 
-env_vars = dotenv_values(".env.dev")
-stripe.api_key = env_vars["STRIPE_SECRET_KEY"]
+from dotenv import load_dotenv
+import os
+
+load_dotenv(".env.dev")
+stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
 
 logger = logging.getLogger("django")
 
@@ -197,6 +199,18 @@ class UserDetailView(APIView):
         else:
             errors = {"message": serializer.errors}
             logger.error(f"Update user failed: {errors}")
+            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def patch(self, request, pk):
+        user = get_user_model().objects.get(id=pk)
+        
+        serializer = UserSerializer(user, data=request.data, partial=True) 
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        else:
+            errors = {"message": serializer.errors}
+            logger.error(f"Partial update user failed: {errors}")
             return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk):
