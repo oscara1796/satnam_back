@@ -149,7 +149,7 @@ def send_invoice_email(customer_email, invoice):
                     overflow: hidden;
                 }}
                 .header {{
-                    background-color: #3165f5;
+                    background-color: #114c9e;
                     color: #ffffff;
                     padding: 20px;
                     text-align: center;
@@ -165,7 +165,7 @@ def send_invoice_email(customer_email, invoice):
                     margin: 0 0 10px;
                 }}
                 .content p b {{
-                    color: #3165f5;
+                    color: #114c9e;
                 }}
                 .footer {{
                     margin-top: 20px;
