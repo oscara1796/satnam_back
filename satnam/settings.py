@@ -14,7 +14,7 @@ import datetime
 import os
 import redis
 from pathlib import Path
-
+import paypalrestsdk
 import dj_database_url
 from django.core.management.utils import get_random_secret_key
 from dotenv import load_dotenv
@@ -291,6 +291,18 @@ if not DEBUG:
 else:
     MEDIA_URL = '/media/'
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+#PAYPAL CONFIG
+
+PAYPAL_CLIENT_ID = os.environ.get('PAYPAL_CLIENT_ID')
+PAYPAL_CLIENT_SECRET = os.environ.get('PAYPAL_CLIENT_SECRET')
+
+# Configure PayPal SDK
+paypalrestsdk.configure({
+    "mode": "sandbox",  # Change to "live" for production
+    "client_id": PAYPAL_CLIENT_ID,
+    "client_secret": PAYPAL_CLIENT_SECRET
+})
 
 
 TESTING = True
