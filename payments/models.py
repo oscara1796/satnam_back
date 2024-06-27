@@ -18,6 +18,8 @@ class SubscriptionPlan(models.Model):
     image = models.URLField(null=True, blank=True)
     features = models.JSONField()
     metadata = models.JSONField()
+    frequency_type = models.CharField(max_length=10)
+    price = models.DecimalField(max_digits=21, decimal_places=2)
     paypal_plan_id = models.CharField(max_length=255, null=True, blank=True)
     stripe_product_id = models.CharField(max_length=255, null=True, blank=True)
     stripe_price_id = models.CharField(max_length=255, null=True, blank=True)

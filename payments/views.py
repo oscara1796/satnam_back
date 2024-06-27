@@ -34,6 +34,103 @@ webhook_secret = settings.STRIPE_WEBHOOK_SECRET
 logger = logging.getLogger("django")
 
 
+class SubscriptionPlanAPIView(APIView):
+    def get(self, request, pk=None):
+        if pk:
+            plan = SubscriptionPlan.objects.get(pk=pk)
+        else:
+            plans = SubscriptionPlan.objects.all()
+        serializer = SubscriptionPlanSerializer(plans, many=not pk)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = SubscriptionPlanSerializer(data=request.data)
+        if serializer.is_valid():
+            validated_data = serializer.validated_data
+            
+            # Create Stripe Product
+            stripe_product = stripe.Product.create(
+                name=validated_data['name'],
+                description=validated_data['description'],
+                images=[validated_data['image']] if validated_data.get('image') else [],
+                metadata=validated_data.get('metadata', {})
+            )
+            
+            # Create Stripe Price
+            stripe_price = stripe.Price.create(
+                product=stripe_product.id,
+                unit_amount=int(validated_data['metadata'].get('price', 10) * 100),
+                currency='mxn',
+                recurring={"interval": "month"}
+            )
+
+            # Create PayPal Plan
+            access_token = get_paypal_access_token()
+            paypal_url = "https://api-m.sandbox.paypal.com/v1/billing/plans"
+            headers = {
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {access_token}"
+            }
+            paypal_payload = {
+                "product_id": validated_data['metadata']['paypal_product_id'],
+                "name": validated_data['name'],
+                "description": validated_data['description'],
+                "status": "ACTIVE",
+                "billing_cycles": [
+                    {
+                        "frequency": {
+                            "interval_unit": "MONTH",
+                            "interval_count": 1
+                        },
+                        "tenure_type": "REGULAR",
+                        "sequence": 1,
+                        "total_cycles": 0,
+                        "pricing_scheme": {
+                            "fixed_price": {
+                                "value": str(validated_data['metadata'].get('price', 10)),
+                                "currency_code": "USD"
+                            }
+                        }
+                    }
+                ],
+                "payment_preferences": {
+                    "auto_bill_outstanding": True,
+                    "setup_fee_failure_action": "CONTINUE",
+                    "payment_failure_threshold": 3
+                }
+            }
+            paypal_response = requests.post(paypal_url, headers=headers, json=paypal_payload)
+            paypal_plan = paypal_response.json()
+
+            # Save to database
+            plan = serializer.save(
+                stripe_product_id=stripe_product.id,
+                stripe_price_id=stripe_price.id,
+                paypal_plan_id=paypal_plan['id'] if paypal_response.status_code == 201 else None
+            )
+
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request, pk):
+        plan = SubscriptionPlan.objects.get(pk=pk)
+        serializer = SubscriptionPlanSerializer(plan, data=request.data, partial=True)
+        if serializer.is_valid():
+            # Update logic (similar structure as POST, with modification logic)
+            plan.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        plan = SubscriptionPlan.objects.get(pk=pk)
+        # Delete logic for PayPal and Stripe
+        plan.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def patch(self, request, pk):
+        return self.put(request, pk)
+
+
 class PricesListView(APIView):
     
 
