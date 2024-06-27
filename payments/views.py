@@ -56,26 +56,26 @@ class PricesListView(APIView):
             return Response({"errors": e}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class SubscriptionDetailView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+# class SubscriptionDetailView(APIView):
+#     permission_classes = [permissions.IsAuthenticated]
 
-    def post(self, request):
-        data = request.data
-        try:
-            checkout_session = stripe.checkout.Session.create(
-                line_items=[{"price": data["price_id"], "quantity": 1}],
-                mode="subscription",
-                success_url=FRONTEND_SUBSCRIPTION_SUCCESS_URL
-                + "?session_id={CHECKOUT_SESSION_ID}",
-                cancel_url=FRONTEND_SUBSCRIPTION_CANCEL_URL,
-            )
-            logger.info("Checkout session created successfully.")
-            return redirect(checkout_session.url, code=303)
-        except Exception as err:
-            logger.error(f"Failed to create checkout session: {err}", exc_info=True)
-            return Response(
-                {"errors": err}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+#     def post(self, request):
+#         data = request.data
+#         try:
+#             checkout_session = stripe.checkout.Session.create(
+#                 line_items=[{"price": data["price_id"], "quantity": 1}],
+#                 mode="subscription",
+#                 success_url=FRONTEND_SUBSCRIPTION_SUCCESS_URL
+#                 + "?session_id={CHECKOUT_SESSION_ID}",
+#                 cancel_url=FRONTEND_SUBSCRIPTION_CANCEL_URL,
+#             )
+#             logger.info("Checkout session created successfully.")
+#             return redirect(checkout_session.url, code=303)
+#         except Exception as err:
+#             logger.error(f"Failed to create checkout session: {err}", exc_info=True)
+#             return Response(
+#                 {"errors": err}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+#             )
 
 
 class PaymentMethodView(APIView):

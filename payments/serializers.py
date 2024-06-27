@@ -1,4 +1,6 @@
 from rest_framework import serializers
+from .models import SubscriptionPlan
+
 
 
 class PaymentMethodSerializer(serializers.Serializer):
@@ -17,3 +19,9 @@ class StripePriceSerializer(serializers.Serializer):
             raise serializers.ValidationError("Invalid Stripe price ID")
 
         return value
+    
+class SubscriptionPlanSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SubscriptionPlan
+        fields = '__all__'
+
