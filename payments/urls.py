@@ -5,6 +5,7 @@ from .views import (
     PaymentMethodView,
     PricesListView,
     StripeWebhookView,
+    SubscriptionPlanAPIView
 )
 
 urlpatterns = [
@@ -22,5 +23,15 @@ urlpatterns = [
         "api/create_subscription/<int:pk>/",
         PaymentDetailView.as_view(),
         name="create_subscription",
+    ),
+    path(
+        "api/subscription_plan/",
+        SubscriptionPlanAPIView.as_view(),
+        name="subscription_plan",
+    ),
+    path(
+        "api/subscription_plan/<int:pk>/",
+        SubscriptionPlanAPIView.as_view(),
+        name="subscription_plan",
     )
 ]

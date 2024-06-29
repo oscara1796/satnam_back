@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 import stripe
 import redis
 import os
+import requests
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
@@ -19,9 +20,11 @@ from stripe.error import StripeError
 from core.models import CustomUser
 
 from .models import StripeEvent
-from .serializers import PaymentMethodSerializer
+from .serializers import PaymentMethodSerializer, SubscriptionPlanSerializer
 
 from dotenv import load_dotenv
+
+from payments.paypal_functions import get_paypal_access_token
 
 load_dotenv(".env.dev")
 stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
@@ -33,8 +36,15 @@ webhook_secret = settings.STRIPE_WEBHOOK_SECRET
 
 logger = logging.getLogger("django")
 
+class IsStaff(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return request.user.is_staff
+
 
 class SubscriptionPlanAPIView(APIView):
+    permission_classes = [IsStaff]
+
+
     def get(self, request, pk=None):
         if pk:
             plan = SubscriptionPlan.objects.get(pk=pk)
@@ -48,21 +58,28 @@ class SubscriptionPlanAPIView(APIView):
         if serializer.is_valid():
             validated_data = serializer.validated_data
             
-            # Create Stripe Product
-            stripe_product = stripe.Product.create(
-                name=validated_data['name'],
-                description=validated_data['description'],
-                images=[validated_data['image']] if validated_data.get('image') else [],
-                metadata=validated_data.get('metadata', {})
+            try:
+                # Create Stripe Product with corrected metadata and marketing_features
+                stripe_product = stripe.Product.create(
+                    name=validated_data['name'],
+                    description=validated_data['description'],
+                    images=[validated_data['image']] if validated_data.get('image') else [],
+                    metadata={k: str(v) for k, v in validated_data.get('metadata', {}).items()},
+                    marketing_features= validated_data.get('features', [])
+                )
+
+                
+
+                # Create Stripe Price with correct price handling
+                stripe_price = stripe.Price.create(
+                    product=stripe_product.id,
+                    unit_amount=int(validated_data['price'] * 100),
+                    currency='mxn',
+                    recurring={"interval": validated_data['frequency_type']}
             )
-            
-            # Create Stripe Price
-            stripe_price = stripe.Price.create(
-                product=stripe_product.id,
-                unit_amount=int(validated_data['metadata'].get('price', 10) * 100),
-                currency='mxn',
-                recurring={"interval": "month"}
-            )
+
+            except stripe.error.StripeError as e:
+                return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
             # Create PayPal Plan
             access_token = get_paypal_access_token()
@@ -72,14 +89,14 @@ class SubscriptionPlanAPIView(APIView):
                 "Authorization": f"Bearer {access_token}"
             }
             paypal_payload = {
-                "product_id": validated_data['metadata']['paypal_product_id'],
+                "product_id": os.environ.get("PAYPAL_PRODUCT_ID"),
                 "name": validated_data['name'],
                 "description": validated_data['description'],
                 "status": "ACTIVE",
                 "billing_cycles": [
                     {
                         "frequency": {
-                            "interval_unit": "MONTH",
+                            "interval_unit": validated_data['frequency_type'].upper(), # MONTH OR ANUAL
                             "interval_count": 1
                         },
                         "tenure_type": "REGULAR",
@@ -87,8 +104,8 @@ class SubscriptionPlanAPIView(APIView):
                         "total_cycles": 0,
                         "pricing_scheme": {
                             "fixed_price": {
-                                "value": str(validated_data['metadata'].get('price', 10)),
-                                "currency_code": "USD"
+                                "value": str(validated_data['price']),
+                                "currency_code": "MXN"
                             }
                         }
                     }
@@ -116,14 +133,90 @@ class SubscriptionPlanAPIView(APIView):
         plan = SubscriptionPlan.objects.get(pk=pk)
         serializer = SubscriptionPlanSerializer(plan, data=request.data, partial=True)
         if serializer.is_valid():
-            # Update logic (similar structure as POST, with modification logic)
-            plan.save()
+            validated_data = serializer.validated_data
+            
+            # Detect changes
+            changes = {field: validated_data[field] for field in validated_data if validated_data[field] != getattr(plan, field)}
+
+            if 'name' in changes or 'description' in changes or 'image' in changes or 'metadata' in changes or 'features' in changes:
+                # Update Stripe Product if relevant fields are modified
+                stripe_update_params = {
+                    "name": validated_data.get('name', plan.name),
+                    "description": validated_data.get('description', plan.description),
+                    "images": [validated_data['image']] if validated_data.get('image', None) else [],
+                    "metadata": validated_data.get('metadata', plan.metadata),
+                    "marketing_features": validated_data.get('features', [])
+                }
+                stripe.Product.modify(
+                    plan.stripe_product_id,
+                    **stripe_update_params
+                )
+
+            if 'price' in changes or 'frequency_type' in changes:
+                # Update Stripe Price if 'price' or 'frequency_type' is modified
+                stripe_price = stripe.Price.create(
+                    product=plan.stripe_product_id,
+                    unit_amount=int(validated_data['price'] * 100),
+                    currency='mxn',
+                    recurring={"interval": validated_data['frequency_type']}
+                )
+                plan.stripe_price_id = stripe_price.id
+
+            if any(field in changes for field in ['name', 'description', 'price', 'frequency_type']):
+                paypal_update_payload = {
+                    "name": validated_data.get('name', plan.name),
+                    "description": validated_data.get('description', plan.description),
+                    "billing_cycles": [
+                        {
+                            "frequency": {
+                                "interval_unit": validated_data.get('frequency_type', plan.frequency_type).upper(),  # Update interval unit based on frequency_type
+                                "interval_count": 1
+                            },
+                            "tenure_type": "REGULAR",
+                            "sequence": 1,
+                            "total_cycles": 0,
+                            "pricing_scheme": {
+                                "fixed_price": {
+                                    "value": str(validated_data.get('price', plan.price)),
+                                    "currency_code": "MXN"
+                                }
+                            }
+                        }
+                    ],
+                    "payment_preferences": {
+                        "auto_bill_outstanding": True,
+                        "setup_fee_failure_action": "CONTINUE",
+                        "payment_failure_threshold": 3
+                    }
+                }
+                access_token = get_paypal_access_token()
+                headers = {
+                    "Content-Type": "application/json",
+                    "Authorization": f"Bearer {access_token}"
+                }
+                paypal_url = f"https://api-m.sandbox.paypal.com/v1/billing/plans/{plan.paypal_plan_id}"
+                requests.patch(paypal_url, headers=headers, json={"patches": [paypal_update_payload]})
+
+            # Save the updated plan to the database
+            plan = serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk):
         plan = SubscriptionPlan.objects.get(pk=pk)
-        # Delete logic for PayPal and Stripe
+        
+        # Delete Stripe product
+        stripe.Product.modify(plan.stripe_product_id, active = False)
+        
+        # Deactivate PayPal Plan
+        access_token = get_paypal_access_token()
+        paypal_url = f"https://api-m.sandbox.paypal.com/v1/billing/plans/{plan.paypal_plan_id}/deactivate"
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {access_token}"
+        }
+        requests.post(paypal_url, headers=headers)
+        
         plan.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 

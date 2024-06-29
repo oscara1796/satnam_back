@@ -1,0 +1,137 @@
+
+
+from django.urls import reverse
+from django.contrib.auth import get_user_model
+from rest_framework.test import APITestCase
+from rest_framework import status
+from payments.models import SubscriptionPlan
+from payments.paypal_functions import get_paypal_access_token
+import stripe
+import json
+from dotenv import load_dotenv
+import os
+import requests
+
+load_dotenv(".env.dev")
+stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
+
+class SubscriptionPlanAPITests(APITestCase):
+
+    def setUp(self):
+        # Create a staff user
+        self.staff_user = get_user_model().objects.create_user(username='staff', email = "staff@gmail.com", is_staff=True)
+        self.client.force_authenticate(user=self.staff_user)
+
+        # Create a non-staff user
+        self.non_staff_user = get_user_model().objects.create_user(username='nonstaff', email = "nonstaff@gmail.com", is_staff=False)
+
+       
+
+    def test_create_subscription_plan_integration(self):
+        url = reverse('subscription_plan')
+        data = {
+            "name": "Premium Plan",
+            "description": "A premium plan for advanced users.",
+            "image": "http://example.com/image.png",
+            "features":[
+                    {"name": "Feature 1 Description"},
+                    {"name": "Feature 2 Description"}
+                ],
+            "metadata": {"meta1": "data1"},
+            "frequency_type": "month",
+            "price": 20.00
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # Verify local database update
+        plan = SubscriptionPlan.objects.get(name="Premium Plan")
+        self.assertIsNotNone(plan)
+
+        # Verify Stripe product creation
+        stripe_product = stripe.Product.retrieve(plan.stripe_product_id)
+        self.assertEqual(stripe_product.name, data['name'])
+
+        # Verify Stripe price creation
+        stripe_price = stripe.Price.retrieve(plan.stripe_price_id)
+        self.assertEqual(stripe_price.unit_amount, 2000)  # Since Stripe stores amounts in cents
+
+        # Verify PayPal Plan creation
+        access_token = get_paypal_access_token()
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json"
+        }
+        paypal_response = requests.get(f'https://api-m.sandbox.paypal.com/v1/billing/plans/{plan.paypal_plan_id}', headers=headers)
+        paypal_plan_details = paypal_response.json()
+        self.assertEqual(paypal_plan_details['status'], 'ACTIVE')
+        self.assertEqual(paypal_plan_details['name'], data['name'])
+
+        # You should add more assertions here to check Stripe and PayPal API calls if possible
+
+    def test_update_subscription_plan_as_staff(self):
+        url = reverse('subscription_plan', kwargs={'pk': self.plan.pk})
+        new_data = {
+            'name': 'Updated Plan',
+            'price': 20.00
+        }
+        response = self.client.put(url, new_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        updated_plan = SubscriptionPlan.objects.get(pk=self.plan.pk)
+        self.assertEqual(updated_plan.name, 'Updated Plan')
+        self.assertEqual(updated_plan.price, 20.00)
+
+        # Assertions to verify Stripe and PayPal updates go here
+
+    def test_delete_subscription_plan_as_staff(self):
+        url = reverse('subscription_plan', kwargs={'pk': self.plan.pk})
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(SubscriptionPlan.objects.count(), 0)
+
+        # Verify that Stripe and PayPal resources are also deleted
+
+    def test_access_denied_for_non_staff(self):
+        self.client.force_authenticate(user=self.non_staff_user)
+        url = reverse('subscription_plan')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        url = reverse('subscription_plan', kwargs={'pk': self.plan.pk})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        # Add more tests for POST, PUT, DELETE to ensure non-staff users cannot access these methods
+
+    def deactivate_paypal_plan(self, plan_id):
+        """Send a request to PayPal to deactivate a billing plan."""
+        access_token = get_paypal_access_token()  # Ensure this method retrieves a valid access token
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json"
+        }
+        paypal_url = f'https://api-m.sandbox.paypal.com/v1/billing/plans/{plan_id}/deactivate'
+        response = requests.post(paypal_url, headers=headers)
+        if response.status_code not in (200, 204):
+            raise Exception(f"Failed to deactivate PayPal plan {plan_id}: {response.text}")
+
+    
+    def tearDown(self):
+        # Cleanup Stripe and PayPal resources if necessary
+        plans = SubscriptionPlan.objects.all()
+        for plan in plans:
+
+            try:
+                stripe.Product.modify(plan.stripe_product_id, active = False)
+                print(f"Successfully deleted Stripe product {plan.stripe_product_id}")
+            except stripe.error.StripeError as e:
+                print(f"Failed to delete Stripe product {plan.stripe_product_id}: {e}")
+
+            # Deactivate PayPal plan if applicable
+            if plan.paypal_plan_id:
+                self.deactivate_paypal_plan(plan.paypal_plan_id)
+
+            # Clean up database
+            plan.delete()
+        get_user_model().objects.all().delete()
+
