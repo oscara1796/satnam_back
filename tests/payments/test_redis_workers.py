@@ -6,7 +6,7 @@ import time
 import stripe
 from unittest.mock import patch, MagicMock
 from rest_framework.test import APIClient
-from django.test import TransactionTestCase
+from django.test import TransactionTestCase, override_settings
 from django.urls import reverse
 from django.conf import settings
 from django.db import connections, close_old_connections
@@ -115,6 +115,8 @@ class RedisWorkerTestCase(TransactionTestCase):
         self.assertFalse(worker.shutdown_event.is_set())
         self.assertEqual(len(worker.threads), 0)
 
+
+    @override_settings(DEBUG=True)
     @patch('redis.Redis.blpop', side_effect=lambda *args, **kwargs: next(mock_blpop_generator()))
     @patch('payments.processing.get_customer_email')
     def test_worker_process_event(self, mock_update_event_status, mock_get_customer_email):
@@ -152,6 +154,7 @@ class RedisWorkerTestCase(TransactionTestCase):
         except StripeEvent.DoesNotExist:
             self.fail(f"StripeEvent with ID evt_123 does not exist in the database")
 
+    @override_settings(DEBUG=True)
     @patch('redis.Redis.from_url')
     @patch('redis.Redis.llen')
     def test_worker_scaling_up_and_down(self, mock_redis_llen, mock_redis_from_url):
@@ -177,6 +180,7 @@ class RedisWorkerTestCase(TransactionTestCase):
 
         worker.stop_workers()
 
+    @override_settings(DEBUG=True)
     @patch('redis.Redis.from_url')
     @patch('redis.Redis.llen')
     def test_worker_scaling_down(self, mock_redis_llen, mock_redis_from_url):

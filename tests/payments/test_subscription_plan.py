@@ -70,36 +70,162 @@ class SubscriptionPlanAPITests(APITestCase):
         # You should add more assertions here to check Stripe and PayPal API calls if possible
 
     def test_update_subscription_plan_as_staff(self):
-        url = reverse('subscription_plan', kwargs={'pk': self.plan.pk})
-        new_data = {
-            'name': 'Updated Plan',
-            'price': 20.00
+        url = reverse('subscription_plan')
+        data = {
+            "name": "Premium Plan",
+            "description": "A premium plan for advanced users.",
+            "image": "http://example.com/image.png",
+            "features":[
+                    {"name": "Feature 1 Description"},
+                    {"name": "Feature 2 Description"}
+                ],
+            "metadata": {"meta1": "data1"},
+            "frequency_type": "month",
+            "price": 20.00
         }
-        response = self.client.put(url, new_data, format='json')
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # Verify local database update
+        plan = SubscriptionPlan.objects.get(name="Premium Plan")
+        self.assertIsNotNone(plan)
+
+        
+        # Endpoint and new data
+        url = reverse('subscription_plan', kwargs={'pk': plan.pk})
+        updated_data = {
+            "name": "Updated Plan",
+            "description": "An updated plan for advanced users.",
+            "price": 40.00,
+            "frequency_type": "year"
+        }
+        
+        # Perform update operation
+        response = self.client.put(url, updated_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        updated_plan = SubscriptionPlan.objects.get(pk=self.plan.pk)
+
+        # Verify update in the database
+        updated_plan = SubscriptionPlan.objects.get(pk=plan.pk)
         self.assertEqual(updated_plan.name, 'Updated Plan')
-        self.assertEqual(updated_plan.price, 20.00)
+        self.assertEqual(updated_plan.price, 40.00)
+        self.assertEqual(updated_plan.frequency_type, 'year')
+
+        # Verify update in Stripe (assuming you have a function or mock to update Stripe details)
+        stripe_product = stripe.Product.retrieve(updated_plan.stripe_product_id)
+        self.assertEqual(stripe_product.name, updated_data['name'])
+
+        stripe_price = stripe.Price.retrieve(updated_plan.stripe_price_id)
+        self.assertEqual(stripe_price.unit_amount, 4000)  # Since Stripe stores amounts in cents
+        self.assertEqual(stripe_price.recurring.interval, updated_data['frequency_type'])
+
+
+        # Verify update in PayPal (assuming functionality to check PayPal plan updates)
+        access_token = get_paypal_access_token()
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json"
+        }
+        paypal_response = requests.get(f'https://api-m.sandbox.paypal.com/v1/billing/plans/{updated_plan.paypal_plan_id}', headers=headers)
+        paypal_plan_details = paypal_response.json()
+        self.assertEqual(paypal_plan_details['name'], updated_data['name'])
+        self.assertEqual(paypal_plan_details['status'], 'ACTIVE')
+
+        # Verify the old plan is deactivated (if applicable)
+        old_paypal_response = requests.get(f'https://api-m.sandbox.paypal.com/v1/billing/plans/{plan.paypal_plan_id}', headers=headers)
+        old_paypal_plan_details = old_paypal_response.json()
+        self.assertEqual(old_paypal_plan_details['status'], 'INACTIVE')
 
         # Assertions to verify Stripe and PayPal updates go here
 
     def test_delete_subscription_plan_as_staff(self):
-        url = reverse('subscription_plan', kwargs={'pk': self.plan.pk})
+
+        url = reverse('subscription_plan')
+        data = {
+            "name": "Premium Plan",
+            "description": "A premium plan for advanced users.",
+            "image": "http://example.com/image.png",
+            "features":[
+                    {"name": "Feature 1 Description"},
+                    {"name": "Feature 2 Description"}
+                ],
+            "metadata": {"meta1": "data1"},
+            "frequency_type": "month",
+            "price": 20.00
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+
+        # Verify local database update
+        plan = SubscriptionPlan.objects.get(name="Premium Plan")
+        self.assertIsNotNone(plan)
+
+        url = reverse('subscription_plan', kwargs={'pk': plan.pk})
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(SubscriptionPlan.objects.count(), 0)
 
+
+         # Verify that Stripe product is deactivated
+        try:
+            stripe_product = stripe.Product.retrieve(plan.stripe_product_id)
+            self.assertFalse(stripe_product.active)
+        except stripe.error.StripeError as e:
+            self.fail(f"Stripe product deletion failed: {str(e)}")
+
+        
+        # Verify PayPal plan deactivation
+        access_token = get_paypal_access_token()
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json"
+        }
+        paypal_url = f'https://api-m.sandbox.paypal.com/v1/billing/plans/{plan.paypal_plan_id}'
+        paypal_response = requests.get(paypal_url, headers=headers)
+        paypal_plan_details = paypal_response.json()
+        self.assertEqual(paypal_plan_details['status'], 'INACTIVE')
+
         # Verify that Stripe and PayPal resources are also deleted
 
     def test_access_denied_for_non_staff(self):
+
+        url = reverse('subscription_plan')
+        data = {
+            "name": "Premium Plan",
+            "description": "A premium plan for advanced users.",
+            "image": "http://example.com/image.png",
+            "features":[
+                    {"name": "Feature 1 Description"},
+                    {"name": "Feature 2 Description"}
+                ],
+            "metadata": {"meta1": "data1"},
+            "frequency_type": "month",
+            "price": 20.00
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+
+        # Verify local database update
+        plan = SubscriptionPlan.objects.get(name="Premium Plan")
+        self.assertIsNotNone(plan)
+
         self.client.force_authenticate(user=self.non_staff_user)
         url = reverse('subscription_plan')
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-        url = reverse('subscription_plan', kwargs={'pk': self.plan.pk})
-        response = self.client.get(url)
+        url = reverse('subscription_plan', kwargs={'pk': plan.pk})
+        response = self.client.post(url, {})
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        response = self.client.put(url, {})
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        self.client.force_authenticate(user=self.staff_user)
 
         # Add more tests for POST, PUT, DELETE to ensure non-staff users cannot access these methods
 

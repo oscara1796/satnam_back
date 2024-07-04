@@ -19,14 +19,13 @@ from stripe.error import StripeError
 
 from core.models import CustomUser
 
-from .models import StripeEvent
+from .models import StripeEvent, SubscriptionPlan
 from .serializers import PaymentMethodSerializer, SubscriptionPlanSerializer
 
-from dotenv import load_dotenv
+
 
 from payments.paypal_functions import get_paypal_access_token
 
-load_dotenv(".env.dev")
 stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
 # Create your views here.
 FRONTEND_SUBSCRIPTION_SUCCESS_URL = settings.SUBSCRIPTION_SUCCESS_URL
@@ -129,78 +128,117 @@ class SubscriptionPlanAPIView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
     def put(self, request, pk):
         plan = SubscriptionPlan.objects.get(pk=pk)
         serializer = SubscriptionPlanSerializer(plan, data=request.data, partial=True)
+        
         if serializer.is_valid():
             validated_data = serializer.validated_data
-            
+
+           
             # Detect changes
             changes = {field: validated_data[field] for field in validated_data if validated_data[field] != getattr(plan, field)}
+             # Apply changes from serializer to the plan instance
+            serializer.save()
+            try:
+                # Deactivate the existing PayPal plan if it exists
+                if plan.paypal_plan_id:
+                    self.deactivate_paypal_plan(plan.paypal_plan_id)
+                    
+                # Formulate the new PayPal plan data
+                paypal_payload = self.formulate_paypal_payload(plan, validated_data, changes)
 
-            if 'name' in changes or 'description' in changes or 'image' in changes or 'metadata' in changes or 'features' in changes:
+                # Create a new PayPal plan with the merged details
+                new_paypal_plan = self.create_paypal_plan(paypal_payload)
+                plan.paypal_plan_id = new_paypal_plan['id']
+
                 # Update Stripe Product if relevant fields are modified
-                stripe_update_params = {
-                    "name": validated_data.get('name', plan.name),
-                    "description": validated_data.get('description', plan.description),
-                    "images": [validated_data['image']] if validated_data.get('image', None) else [],
-                    "metadata": validated_data.get('metadata', plan.metadata),
-                    "marketing_features": validated_data.get('features', [])
-                }
-                stripe.Product.modify(
-                    plan.stripe_product_id,
-                    **stripe_update_params
-                )
+                if any(field in changes for field in ['name', 'description', 'image', 'metadata', 'features']):
+                    stripe_update_params = {
+                        "name": validated_data.get('name', plan.name),
+                        "description": validated_data.get('description', plan.description),
+                        "images": [validated_data['image']] if validated_data.get('image', None) else [],
+                        "metadata": validated_data.get('metadata', plan.metadata),
+                        "marketing_features": validated_data.get('features', [])
+                    }
+                    stripe.Product.modify(plan.stripe_product_id, **stripe_update_params)
 
-            if 'price' in changes or 'frequency_type' in changes:
-                # Update Stripe Price if 'price' or 'frequency_type' is modified
-                stripe_price = stripe.Price.create(
-                    product=plan.stripe_product_id,
-                    unit_amount=int(validated_data['price'] * 100),
-                    currency='mxn',
-                    recurring={"interval": validated_data['frequency_type']}
-                )
-                plan.stripe_price_id = stripe_price.id
+                # Update or create a new Stripe price
+                if 'price' in changes or 'frequency_type' in changes:
+                    stripe_price = stripe.Price.create(
+                        product=plan.stripe_product_id,
+                        unit_amount=int(validated_data['price'] * 100),
+                        currency='mxn',
+                        recurring={"interval": validated_data['frequency_type']}
+                    )
+                    plan.stripe_price_id = stripe_price.id
 
-            if any(field in changes for field in ['name', 'description', 'price', 'frequency_type']):
-                paypal_update_payload = {
-                    "name": validated_data.get('name', plan.name),
-                    "description": validated_data.get('description', plan.description),
-                    "billing_cycles": [
-                        {
-                            "frequency": {
-                                "interval_unit": validated_data.get('frequency_type', plan.frequency_type).upper(),  # Update interval unit based on frequency_type
-                                "interval_count": 1
-                            },
-                            "tenure_type": "REGULAR",
-                            "sequence": 1,
-                            "total_cycles": 0,
-                            "pricing_scheme": {
-                                "fixed_price": {
-                                    "value": str(validated_data.get('price', plan.price)),
-                                    "currency_code": "MXN"
-                                }
-                            }
-                        }
-                    ],
-                    "payment_preferences": {
-                        "auto_bill_outstanding": True,
-                        "setup_fee_failure_action": "CONTINUE",
-                        "payment_failure_threshold": 3
+                # Save the updated plan to the database
+                plan.save()
+
+                return Response(serializer.data)
+            except Exception as e:
+                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def formulate_paypal_payload(self, plan, validated_data, changes):
+        """Create or update PayPal plan payload with data merged from existing plan and new changes."""
+        paypal_payload = {
+            "product_id": os.environ.get("PAYPAL_PRODUCT_ID", plan.metadata.get('paypal_product_id')),  # default to existing if not set in env
+            "name": validated_data.get('name', plan.name),
+            "description": validated_data.get('description', plan.description),
+            "status": "ACTIVE",
+            "billing_cycles": [{
+                "frequency": {
+                    "interval_unit": validated_data.get('frequency_type', plan.frequency_type).upper(),
+                    "interval_count": 1
+                },
+                "tenure_type": "REGULAR",
+                "sequence": 1,
+                "total_cycles": 0,
+                "pricing_scheme": {
+                    "fixed_price": {
+                        "value": str(validated_data.get('price', plan.price)),
+                        "currency_code": "MXN"
                     }
                 }
-                access_token = get_paypal_access_token()
-                headers = {
-                    "Content-Type": "application/json",
-                    "Authorization": f"Bearer {access_token}"
-                }
-                paypal_url = f"https://api-m.sandbox.paypal.com/v1/billing/plans/{plan.paypal_plan_id}"
-                requests.patch(paypal_url, headers=headers, json={"patches": [paypal_update_payload]})
+            }],
+            "payment_preferences": {
+                "auto_bill_outstanding": True,
+                "setup_fee_failure_action": "CONTINUE",
+                "payment_failure_threshold": 3
+            }
+        }
+        return paypal_payload
 
-            # Save the updated plan to the database
-            plan = serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def create_paypal_plan(self, data):
+        """Create a new PayPal plan based on the provided data."""
+        access_token = get_paypal_access_token()
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {access_token}"
+        }
+        paypal_url = "https://api-m.sandbox.paypal.com/v1/billing/plans"
+        response = requests.post(paypal_url, headers=headers, json=data)
+        if response.status_code == 201:
+            return response.json()
+        else:
+            raise Exception(f"Failed to create new PayPal plan: {response.status_code}, {response.text}")
+    
+    def deactivate_paypal_plan(self, plan_id):
+        """Send a request to PayPal to deactivate a billing plan."""
+        access_token = get_paypal_access_token()  # Retrieve a valid access token
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json"
+        }
+        paypal_url = f'https://api-m.sandbox.paypal.com/v1/billing/plans/{plan_id}/deactivate'
+        response = requests.post(paypal_url, headers=headers)
+        if response.status_code not in (200, 204):
+            raise Exception(f"Failed to deactivate PayPal plan {plan_id}: {response.text}")
+
 
     def delete(self, request, pk):
         plan = SubscriptionPlan.objects.get(pk=pk)
@@ -222,6 +260,8 @@ class SubscriptionPlanAPIView(APIView):
 
     def patch(self, request, pk):
         return self.put(request, pk)
+    
+
 
 
 class PricesListView(APIView):
@@ -230,20 +270,26 @@ class PricesListView(APIView):
     def get(self, request):
         # extract pagination parameters from query params
         try:
-            data = stripe.Product.list()
+            # Retrieve only active products from Stripe
+            active_products = stripe.Product.list(active=True)
 
-            products = data.data
-
+            products = active_products.data
+            # Iterate through the list of active products
             for product in products:
+                # Retrieve the price details using the default_price ID
                 data_json_product = stripe.Price.retrieve(product.default_price)
+                # Append price and currency to each product's dictionary
                 product["price"] = data_json_product.unit_amount
                 product["currency"] = data_json_product.currency
+
+            # Convert the list of products to JSON string
             json_str = json.dumps(products)
             logger.info("Retrieved product prices successfully.")
-            return Response(json_str, status=200)
+            return Response(json_str, status=status.HTTP_200_OK)
         except Exception as e:
+            # Log the error and return a 500 Internal Server Error response
             logger.error("Failed to retrieve product prices", exc_info=True)
-            return Response({"errors": e}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"errors": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 # class SubscriptionDetailView(APIView):

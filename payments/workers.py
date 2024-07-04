@@ -11,9 +11,8 @@ from payments.processing import process_event
 import stripe
 import logging
 import os
-from dotenv import load_dotenv
 
-load_dotenv(".env.dev")
+
 stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
 
 logger = logging.getLogger("django")
@@ -47,6 +46,7 @@ class RedisWorker:
         logger.info(f"{thread_name} started processing")
         conn = None
         cur = None
+
         try:
             if settings.DEBUG:
                 conn = psycopg2.connect(
@@ -59,6 +59,7 @@ class RedisWorker:
             else:
                 database_url = os.environ.get('DATABASE_URL')
                 conn = psycopg2.connect(database_url)
+            
             conn.autocommit = True
             cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
             self.thread_connections[thread_name] = conn
