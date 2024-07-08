@@ -20,6 +20,8 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from satnam.settings import EMAIL_HOST_USER
 
 from .models import TrialDays
+from payments.models import SubscriptionPlan
+from payments.views import SubscriptionPlanAPIView
 from .serializers import LogInSerializer, TrialDaysSerializer, UserSerializer
 
 from dotenv import load_dotenv
@@ -264,11 +266,14 @@ class TrialDaysDetail(APIView):
         if serializer.is_valid():
             serializer.save()
             logger.info("Created a new trial day.")
+
+            # Update trial days in all existing subscription plans
+            self.update_subscription_plans_with_trial_days(serializer.validated_data['days'])
+
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             logger.warning(f"Failed to create a new trial day: {serializer.errors}")
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
     def put(self, request, pk, format=None):
         trial_day = self.get_object(pk)
@@ -276,18 +281,31 @@ class TrialDaysDetail(APIView):
         if serializer.is_valid():
             serializer.save()
             logger.info(f"Updated trial day with pk={pk}.")
+
+            # Update trial days in all existing subscription plans
+            self.update_subscription_plans_with_trial_days(serializer.validated_data['days'])
+
             return Response(serializer.data)
         else:
             logger.warning(f"Failed to update trial day with pk={pk}: {serializer.errors}")
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
     def delete(self, request, pk, format=None):
         trial_day = self.get_object(pk)
         try:
             trial_day.delete()
             logger.info(f"Deleted trial day with pk={pk}.")
+
+            # Set trial days to zero in all existing subscription plans
+            self.update_subscription_plans_with_trial_days(0)
+
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Exception as e:
             logger.error(f"Failed to delete trial day with pk={pk}: {str(e)}", exc_info=True)
             return Response({"error": "An error occurred while deleting the trial day."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    def update_subscription_plans_with_trial_days(self, days):
+        subscription_plans = SubscriptionPlan.objects.all()
+        subscription_plan_api_view = SubscriptionPlanAPIView()
+        for plan in subscription_plans:
+            subscription_plan_api_view.update_trial_days(plan.pk, days)

@@ -136,6 +136,7 @@ class StripeIntegrationTest(APITestCase):
         response = self.client.get(
             url, HTTP_AUTHORIZATION=f"Bearer {self.access}", format="json"
         )
+        print(response.data)
         response_obj = json.loads(response.data)
         self.assertEqual(response.status_code, 200)
         for product in response_obj:

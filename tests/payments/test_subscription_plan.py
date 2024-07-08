@@ -11,41 +11,46 @@ import json
 from dotenv import load_dotenv
 import os
 import requests
-
+from core.models import TrialDays
+from django.core.files.uploadedfile import SimpleUploadedFile
 load_dotenv(".env.dev")
 stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
+
 
 class SubscriptionPlanAPITests(APITestCase):
 
     def setUp(self):
         # Create a staff user
-        self.staff_user = get_user_model().objects.create_user(username='staff', email = "staff@gmail.com", is_staff=True)
+        self.staff_user = get_user_model().objects.create_user(username='staff', email="staff@gmail.com", is_staff=True)
         self.client.force_authenticate(user=self.staff_user)
 
         # Create a non-staff user
-        self.non_staff_user = get_user_model().objects.create_user(username='nonstaff', email = "nonstaff@gmail.com", is_staff=False)
+        self.non_staff_user = get_user_model().objects.create_user(username='nonstaff', email="nonstaff@gmail.com", is_staff=False)
 
-       
+    def test_create_subscription_plan_with_trial_days(self):
+        # Set up trial days
+        TrialDays.objects.create(days=7)
 
-    def test_create_subscription_plan_integration(self):
         url = reverse('subscription_plan')
-        data = {
-            "name": "Premium Plan",
-            "description": "A premium plan for advanced users.",
-            "image": "http://example.com/image.png",
-            "features":[
+        image_path = os.path.join(os.path.dirname(__file__), 'test_image.png')
+        with open(image_path, 'rb') as image_file:
+            data = {
+                "name": "Premium Plan with Trial",
+                "description": "A premium plan with trial days.",
+                "image": SimpleUploadedFile(name='test_image.png', content=image_file.read(), content_type='image/png'),
+                "features": json.dumps([
                     {"name": "Feature 1 Description"},
                     {"name": "Feature 2 Description"}
-                ],
-            "metadata": {"meta1": "data1"},
-            "frequency_type": "month",
-            "price": 20.00
-        }
-        response = self.client.post(url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+                ]),
+                "metadata": json.dumps({"meta1": "data1"}),
+                "frequency_type": "month",
+                "price": 20.00
+            }
+            response = self.client.post(url, data, format='multipart')
+            self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Verify local database update
-        plan = SubscriptionPlan.objects.get(name="Premium Plan")
+        plan = SubscriptionPlan.objects.get(name="Premium Plan with Trial")
         self.assertIsNotNone(plan)
 
         # Verify Stripe product creation
@@ -56,7 +61,7 @@ class SubscriptionPlanAPITests(APITestCase):
         stripe_price = stripe.Price.retrieve(plan.stripe_price_id)
         self.assertEqual(stripe_price.unit_amount, 2000)  # Since Stripe stores amounts in cents
 
-        # Verify PayPal Plan creation
+        # Verify PayPal Plan creation with trial days
         access_token = get_paypal_access_token()
         headers = {
             "Authorization": f"Bearer {access_token}",
@@ -67,30 +72,34 @@ class SubscriptionPlanAPITests(APITestCase):
         self.assertEqual(paypal_plan_details['status'], 'ACTIVE')
         self.assertEqual(paypal_plan_details['name'], data['name'])
 
-        # You should add more assertions here to check Stripe and PayPal API calls if possible
+        # Verify trial days in the billing cycles
+        trial_cycle = next((cycle for cycle in paypal_plan_details['billing_cycles'] if cycle['tenure_type'] == 'TRIAL'), None)
+        self.assertIsNotNone(trial_cycle)
+        self.assertEqual(trial_cycle['total_cycles'], 7)
 
     def test_update_subscription_plan_as_staff(self):
         url = reverse('subscription_plan')
-        data = {
-            "name": "Premium Plan",
-            "description": "A premium plan for advanced users.",
-            "image": "http://example.com/image.png",
-            "features":[
+        image_path = os.path.join(os.path.dirname(__file__), 'test_image.png')
+        with open(image_path, 'rb') as image_file:
+            data = {
+                "name": "Premium Plan",
+                "description": "A premium plan for advanced users.",
+                "image": SimpleUploadedFile(name='test_image.png', content=image_file.read(), content_type='image/png'),
+                "features": json.dumps([
                     {"name": "Feature 1 Description"},
                     {"name": "Feature 2 Description"}
-                ],
-            "metadata": {"meta1": "data1"},
-            "frequency_type": "month",
-            "price": 20.00
-        }
-        response = self.client.post(url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+                ]),
+                "metadata": json.dumps({"meta1": "data1"}),
+                "frequency_type": "month",
+                "price": 20.00
+            }
+            response = self.client.post(url, data, format='multipart')
+            self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Verify local database update
         plan = SubscriptionPlan.objects.get(name="Premium Plan")
         self.assertIsNotNone(plan)
 
-        
         # Endpoint and new data
         url = reverse('subscription_plan', kwargs={'pk': plan.pk})
         updated_data = {
@@ -99,7 +108,7 @@ class SubscriptionPlanAPITests(APITestCase):
             "price": 40.00,
             "frequency_type": "year"
         }
-        
+
         # Perform update operation
         response = self.client.put(url, updated_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -118,7 +127,6 @@ class SubscriptionPlanAPITests(APITestCase):
         self.assertEqual(stripe_price.unit_amount, 4000)  # Since Stripe stores amounts in cents
         self.assertEqual(stripe_price.recurring.interval, updated_data['frequency_type'])
 
-
         # Verify update in PayPal (assuming functionality to check PayPal plan updates)
         access_token = get_paypal_access_token()
         headers = {
@@ -135,26 +143,24 @@ class SubscriptionPlanAPITests(APITestCase):
         old_paypal_plan_details = old_paypal_response.json()
         self.assertEqual(old_paypal_plan_details['status'], 'INACTIVE')
 
-        # Assertions to verify Stripe and PayPal updates go here
-
     def test_delete_subscription_plan_as_staff(self):
-
         url = reverse('subscription_plan')
-        data = {
-            "name": "Premium Plan",
-            "description": "A premium plan for advanced users.",
-            "image": "http://example.com/image.png",
-            "features":[
+        image_path = os.path.join(os.path.dirname(__file__), 'test_image.png')
+        with open(image_path, 'rb') as image_file:
+            data = {
+                "name": "Premium Plan",
+                "description": "A premium plan for advanced users.",
+                "image": SimpleUploadedFile(name='test_image.png', content=image_file.read(), content_type='image/png'),
+                "features": json.dumps([
                     {"name": "Feature 1 Description"},
                     {"name": "Feature 2 Description"}
-                ],
-            "metadata": {"meta1": "data1"},
-            "frequency_type": "month",
-            "price": 20.00
-        }
-        response = self.client.post(url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
+                ]),
+                "metadata": json.dumps({"meta1": "data1"}),
+                "frequency_type": "month",
+                "price": 20.00
+            }
+            response = self.client.post(url, data, format='multipart')
+            self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Verify local database update
         plan = SubscriptionPlan.objects.get(name="Premium Plan")
@@ -165,15 +171,13 @@ class SubscriptionPlanAPITests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(SubscriptionPlan.objects.count(), 0)
 
-
-         # Verify that Stripe product is deactivated
+        # Verify that Stripe product is deactivated
         try:
             stripe_product = stripe.Product.retrieve(plan.stripe_product_id)
             self.assertFalse(stripe_product.active)
         except stripe.error.StripeError as e:
             self.fail(f"Stripe product deletion failed: {str(e)}")
 
-        
         # Verify PayPal plan deactivation
         access_token = get_paypal_access_token()
         headers = {
@@ -185,26 +189,24 @@ class SubscriptionPlanAPITests(APITestCase):
         paypal_plan_details = paypal_response.json()
         self.assertEqual(paypal_plan_details['status'], 'INACTIVE')
 
-        # Verify that Stripe and PayPal resources are also deleted
-
     def test_access_denied_for_non_staff(self):
-
         url = reverse('subscription_plan')
-        data = {
-            "name": "Premium Plan",
-            "description": "A premium plan for advanced users.",
-            "image": "http://example.com/image.png",
-            "features":[
+        image_path = os.path.join(os.path.dirname(__file__), 'test_image.png')
+        with open(image_path, 'rb') as image_file:
+            data = {
+                "name": "Premium Plan",
+                "description": "A premium plan for advanced users.",
+                "image": SimpleUploadedFile(name='test_image.png', content=image_file.read(), content_type='image/png'),
+                "features": json.dumps([
                     {"name": "Feature 1 Description"},
                     {"name": "Feature 2 Description"}
-                ],
-            "metadata": {"meta1": "data1"},
-            "frequency_type": "month",
-            "price": 20.00
-        }
-        response = self.client.post(url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
+                ]),
+                "metadata": json.dumps({"meta1": "data1"}),
+                "frequency_type": "month",
+                "price": 20.00
+            }
+            response = self.client.post(url, data, format='multipart')
+            self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Verify local database update
         plan = SubscriptionPlan.objects.get(name="Premium Plan")
@@ -241,14 +243,12 @@ class SubscriptionPlanAPITests(APITestCase):
         if response.status_code not in (200, 204):
             raise Exception(f"Failed to deactivate PayPal plan {plan_id}: {response.text}")
 
-    
     def tearDown(self):
         # Cleanup Stripe and PayPal resources if necessary
         plans = SubscriptionPlan.objects.all()
         for plan in plans:
-
             try:
-                stripe.Product.modify(plan.stripe_product_id, active = False)
+                stripe.Product.modify(plan.stripe_product_id, active=False)
                 print(f"Successfully deleted Stripe product {plan.stripe_product_id}")
             except stripe.error.StripeError as e:
                 print(f"Failed to delete Stripe product {plan.stripe_product_id}: {e}")
@@ -260,4 +260,3 @@ class SubscriptionPlanAPITests(APITestCase):
             # Clean up database
             plan.delete()
         get_user_model().objects.all().delete()
-

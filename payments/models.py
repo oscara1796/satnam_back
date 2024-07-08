@@ -15,7 +15,7 @@ class StripeEvent(models.Model):
 class SubscriptionPlan(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField()
-    image = models.URLField(null=True, blank=True)
+    image = models.ImageField(null=True, blank=True)
     features = models.JSONField()
     metadata = models.JSONField()
     frequency_type = models.CharField(max_length=10)
