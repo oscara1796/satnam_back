@@ -354,7 +354,10 @@ class VideoPaginationTest(APITestCase):
         # Assert that the uploaded image file name is contained within the video's image name
 
         # Remove the uploaded image file
-        os.remove(f"media/{video.image.name}")
+        try:
+            os.remove(f"media/{video.image.name}")
+        except:
+            print("videos is not in local media")
 
     def test_create_video(self):
         create_random_videos()
@@ -436,7 +439,10 @@ class VideoPaginationTest(APITestCase):
         self.assertEqual(actual_date, expected_date)
 
         # Remove the uploaded image file
-        os.remove(f"media/{video.image.name}")
+        try:
+            os.remove(f"media/{video.image.name}")
+        except:
+            print("videos is not in local media")
 
         # Delete all videos in the database
         Video.objects.all().delete()
@@ -498,7 +504,10 @@ class VideoPaginationTest(APITestCase):
         # Now compare the two datetime objects directly
         self.assertEqual(actual_date, expected_date)
         # Remove the uploaded image file
-        os.remove(f"media/{video.image.name}")
+        try:
+            os.remove(f"media/{video.image.name}")
+        except:
+            print("videos is not in local media")
 
         # Call the function to create random videos again
         create_random_videos()
@@ -801,7 +810,10 @@ class CategoryAPITestCase(APITestCase):
         self.assertEqual(video.url, data["url"])
         self.assertEqual(video.free, data["free"])
 
-        os.remove(f"media/{video.image.name}")
+        try:
+            os.remove(f"media/{video.image.name}")
+        except:
+            print("videos is not in local media")
 
 
 class SearchVideoAPITestCase(APITestCase):

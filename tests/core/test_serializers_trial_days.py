@@ -8,7 +8,8 @@ import json
 import os 
 import requests
 from django.core.files.uploadedfile import SimpleUploadedFile
-
+from django.test.utils import override_settings
+import stripe
 from core.models import TrialDays  # Replace with your actual import
 
 PASSWORD = "pAssw0rd!"
@@ -20,6 +21,7 @@ def create_user(
     return get_user_model().objects.create_user(
         username=username, password=password, email=email, is_staff=is_staff
     )
+
 
 class TrialDaysTests(APITestCase):
 

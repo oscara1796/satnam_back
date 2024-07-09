@@ -13,8 +13,11 @@ import os
 import requests
 from core.models import TrialDays
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test.utils import override_settings
+
 load_dotenv(".env.dev")
 stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
+
 
 
 class SubscriptionPlanAPITests(APITestCase):
@@ -190,6 +193,8 @@ class SubscriptionPlanAPITests(APITestCase):
         self.assertEqual(paypal_plan_details['status'], 'INACTIVE')
 
     def test_access_denied_for_non_staff(self):
+
+        
         url = reverse('subscription_plan')
         image_path = os.path.join(os.path.dirname(__file__), 'test_image.png')
         with open(image_path, 'rb') as image_file:
