@@ -35,21 +35,16 @@ class SubscriptionPlan(models.Model):
     def delete(self, *args, **kwargs):
         # Delete associated image file
         if self.image:
-            if settings.DEBUG:
-                # Delete image locally
-                if os.path.isfile(self.image.path):
-                    os.remove(self.image.path)
-            else:
-                # Delete image from S3
-                s3 = boto3.client(
-                    's3',
-                    aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-                    aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
-                )
-                try:
-                    s3.delete_object(Bucket=settings.AWS_STORAGE_BUCKET_NAME, Key=self.image.name)
-                except Exception as e:
-                    logger.error(f"Error deleting image from S3: {e}")
+            # Delete image from S3
+            s3 = boto3.client(
+                's3',
+                aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+                aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
+            )
+            try:
+                s3.delete_object(Bucket=settings.AWS_STORAGE_BUCKET_NAME, Key=self.image.name)
+            except Exception as e:
+                logger.error(f"Error deleting image from S3: {e}")
 
         super(SubscriptionPlan, self).delete(*args, **kwargs)
 

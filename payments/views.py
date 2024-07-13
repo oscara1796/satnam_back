@@ -1,4 +1,5 @@
 import json
+from django.http import JsonResponse
 import logging
 from datetime import datetime, timezone
 
@@ -36,13 +37,17 @@ webhook_secret = settings.STRIPE_WEBHOOK_SECRET
 
 logger = logging.getLogger("django")
 
-class IsStaff(permissions.BasePermission):
+class IsStaffOrReadOnly(permissions.BasePermission):
     def has_permission(self, request, view):
+        if (
+            request.method in permissions.SAFE_METHODS
+        ):  # Allow GET, HEAD, OPTIONS requests
+            return True
         return request.user.is_staff
 
 
 class SubscriptionPlanAPIView(APIView):
-    permission_classes = [IsStaff]
+    permission_classes = [IsStaffOrReadOnly]
 
     def get_trial_days(self):
         try:
@@ -63,7 +68,7 @@ class SubscriptionPlanAPIView(APIView):
 
     def post(self, request):
 
-        print(request.data)
+        
         serializer = SubscriptionPlanSerializer(data=request.data)
         if serializer.is_valid():
             validated_data = serializer.validated_data
@@ -413,26 +418,7 @@ class PricesListView(APIView):
             return Response({"errors": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-# class SubscriptionDetailView(APIView):
-#     permission_classes = [permissions.IsAuthenticated]
 
-#     def post(self, request):
-#         data = request.data
-#         try:
-#             checkout_session = stripe.checkout.Session.create(
-#                 line_items=[{"price": data["price_id"], "quantity": 1}],
-#                 mode="subscription",
-#                 success_url=FRONTEND_SUBSCRIPTION_SUCCESS_URL
-#                 + "?session_id={CHECKOUT_SESSION_ID}",
-#                 cancel_url=FRONTEND_SUBSCRIPTION_CANCEL_URL,
-#             )
-#             logger.info("Checkout session created successfully.")
-#             return redirect(checkout_session.url, code=303)
-#         except Exception as err:
-#             logger.error(f"Failed to create checkout session: {err}", exc_info=True)
-#             return Response(
-#                 {"errors": err}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-#             )
 
 
 class PaymentMethodView(APIView):
