@@ -1,5 +1,7 @@
 import json
-from django.http import JsonResponse
+from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 import logging
 from datetime import datetime, timezone
 
@@ -385,8 +387,89 @@ class SubscriptionPlanAPIView(APIView):
 
     def patch(self, request, pk):
         return self.put(request, pk)
-    
 
+
+    
+class PaypalSubscriptionView(APIView):
+    permission_classes = [IsStaffOrReadOnly]
+
+    def get(self, request, subscription_id=None):
+        """Retrieve details for a single PayPal subscription."""
+        if subscription_id is None:
+            return Response({"error": "No subscription ID provided"}, status=status.HTTP_400_BAD_REQUEST)
+
+        access_token = get_paypal_access_token()
+        url = f"https://api-m.sandbox.paypal.com/v1/billing/subscriptions/{subscription_id}"
+        headers = {
+            'Authorization': f'Bearer {access_token}',
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        }
+
+        response = requests.get(url, headers=headers)
+        if response.status_code == 200:
+            return Response(response.json(), status=status.HTTP_200_OK)
+        else:
+            return Response(response.json(), status=response.status_code)
+
+    def post(self, request):
+        """Create a subscription and save the subscription ID to a user."""
+        data = request.data
+        user_id = data.get('user_id')
+        subscription_id = data.get('subscriptionID')
+
+        try:
+            user = CustomUser.objects.get(pk=user_id)
+            user.paypal_subscription_id = subscription_id
+            user.active = True
+            user.save()
+            return Response({"message": "Subscription saved successfully."}, status=status.HTTP_201_CREATED)
+        except CustomUser.DoesNotExist:
+            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+    def patch(self, request, user_id):
+        """Partially update a user's PayPal subscription."""
+        try:
+            user = CustomUser.objects.get(pk=user_id)
+            subscription_id = request.data.get('subscriptionID')
+            if subscription_id:
+                user.paypal_subscription_id = subscription_id
+            user.save()
+            return Response({"message": "Subscription updated successfully."}, status=status.HTTP_200_OK)
+        except CustomUser.DoesNotExist:
+            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, user_id):
+        """Delete a user's PayPal subscription."""
+        try:
+            user = CustomUser.objects.get(pk=user_id)
+            if user.paypal_subscription_id:
+                self.deactivate_paypal_subscription(user.paypal_subscription_id)
+            user.paypal_subscription_id = None
+            user.save()
+            return Response({"message": "Subscription deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+        except CustomUser.DoesNotExist:
+            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    def deactivate_paypal_subscription(self, subscription_id):
+        """Deactivate a PayPal subscription."""
+        access_token = get_paypal_access_token()
+        url = f"https://api-m.sandbox.paypal.com/v1/billing/subscriptions/{subscription_id}/cancel"
+        headers = {
+            'Authorization': f'Bearer {access_token}',
+            'Content-Type': 'application/json'
+        }
+        response = requests.post(url, headers=headers)
+        if response.status_code not in (200, 204):
+            raise Exception(f"Failed to deactivate PayPal subscription {subscription_id}: {response.text}")
 
 
 class PricesListView(APIView):
@@ -720,4 +803,18 @@ class StripeWebhookView(APIView):
         return Response(status=200)
 
 
-        
+@csrf_exempt
+@require_POST
+def paypal_webhook(request):
+    try:
+        # Load the JSON data sent from PayPal
+        event = json.loads(request.body)
+
+        # Log or process the event as needed
+        print("Received PayPal event: ", event['event_type'])
+        # Optionally, save the event in your database or take action based on the event type
+
+        return HttpResponse(status=200)
+    except Exception as e:
+        print(f"Error processing PayPal webhook: {str(e)}")
+        return HttpResponse(status=500)

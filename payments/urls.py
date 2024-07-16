@@ -5,12 +5,16 @@ from .views import (
     PaymentMethodView,
     PricesListView,
     StripeWebhookView,
-    SubscriptionPlanAPIView
+    SubscriptionPlanAPIView,
+    PaypalSubscriptionView,
+    paypal_webhook
 )
 
 urlpatterns = [
 
     path("stripe/webhook/", StripeWebhookView.as_view(), name="stripe-webhook"),
+    path('paypal/webhook/', paypal_webhook, name='paypal_webhook'),
+    
     path(
         "api/get_product_prices/", PricesListView.as_view(), name="get_product_prices"
     ),
@@ -28,6 +32,11 @@ urlpatterns = [
         "api/subscription_plan/",
         SubscriptionPlanAPIView.as_view(),
         name="subscription_plan",
+    ),
+    path(
+        "api/subscription_plan_paypal/",
+            PaypalSubscriptionView.as_view(),
+        name="subscription_plan_paypal",
     ),
     path(
         "api/subscription_plan/<int:pk>/",
