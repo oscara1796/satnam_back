@@ -28,7 +28,7 @@ from .serializers import PaymentMethodSerializer, SubscriptionPlanSerializer
 
 
 
-from payments.paypal_functions import get_paypal_access_token
+from payments.paypal_functions import get_paypal_access_token, get_paypal_subscription
 
 stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
 # Create your views here.
@@ -391,7 +391,7 @@ class SubscriptionPlanAPIView(APIView):
 
     
 class PaypalSubscriptionView(APIView):
-    permission_classes = [IsStaffOrReadOnly]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, subscription_id=None):
         """Retrieve details for a single PayPal subscription."""
@@ -616,40 +616,58 @@ class PaymentDetailView(APIView):
     def get(self, request, pk):
         try:
             user = get_user_model().objects.get(id=pk)
-            # Retrieve the customer's Stripe subscription
+            response = {}
             
-            subscription = stripe.Subscription.retrieve(user.stripe_subscription_id)
+            if hasattr(user, 'stripe_subscription_id') and user.stripe_subscription_id:
+                # Retrieve the customer's Stripe subscription
+                subscription = stripe.Subscription.retrieve(user.stripe_subscription_id)
+                product = stripe.Product.retrieve(subscription.plan.product)
+                
+                response.update({
+                    "subscription_id": subscription.id,
+                    "status": subscription.status,
+                    "current_period_end": subscription.current_period_end,
+                    "product_price": subscription.plan.amount,
+                    "product_name": product.name,
+                    "cancel_at_period_end": subscription.cancel_at_period_end,
+                })
 
-            product = stripe.Product.retrieve(subscription.plan.product)
+                if subscription.status == "trialing":
+                    response.update({
+                        "trial_start": subscription.trial_start,
+                        "trial_end": subscription.trial_end
+                    })
+                
+                logger.info(f"Stripe subscription details retrieved for user {user.id}")
 
-            response = {
-                "subscription_id": subscription.id,
-                "status": subscription.status,
-                "current_period_end": subscription.current_period_end,
-                "product_price": subscription.plan.amount,
-                "product_name": product.name,
-                "cancel_at_period_end": subscription.cancel_at_period_end,
-            }
+            elif hasattr(user, 'paypal_subscription_id') and user.paypal_subscription_id:
+                # Retrieve the customer's PayPal subscription
+                paypal_subscription = get_paypal_subscription(user.paypal_subscription_id)
+                plan = SubscriptionPlan.objects.get(paypal_plan_id=paypal_subscription["plan_id"])
+                print("PLAN", plan)
+                print(type(paypal_subscription), paypal_subscription)
+                response.update({
+                    "subscription_id": paypal_subscription["id"],
+                    "status": paypal_subscription["status"],
+                    "current_period_end": paypal_subscription["billing_info"]["next_billing_time"],
+                    "product_price": paypal_subscription["billing_info"]["last_payment"]["amount"]["value"],
+                    "product_name": plan.name,
+                    "cancel_at_period_end": False,
+                })
+                
+                logger.info(f"PayPal subscription details retrieved for user {user.id}")
 
-            if subscription.status == "trialing":
-                response["trial_start"] = subscription.trial_start
-                response["trial_end"] = subscription.trial_end
+            if not response:
+                return Response({"message": "No subscription information available."}, status=status.HTTP_404_NOT_FOUND)
 
-            # print(subscription)
-            # Return the subscription details
-
-            logger.info(f"Subscription details retrieved for user {user.id}")
             return Response(response, status=status.HTTP_200_OK)
+
         except get_user_model().DoesNotExist:
             logger.error(f"User with ID {pk} not found.")
-            return Response(
-                {"message": "User not found."}, status=status.HTTP_404_NOT_FOUND
-            )
-        except StripeError as e:
-            logger.error(f"Stripe error while retrieving subscription for user {user.id}: {e}", exc_info=True)
-            return Response(
-                {"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return Response({"message": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:  # This catches any other exceptions including Stripe and PayPal specific ones
+            logger.error(f"Error while retrieving subscription for user {user.id}: {e}", exc_info=True)
+            return Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def post(self, request, pk):
         try:

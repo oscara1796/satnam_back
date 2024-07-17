@@ -22,6 +22,37 @@ def get_paypal_access_token():
     else:
         raise Exception(f"Failed to get access token: {response.status_code}, {response.text}")
 
+
+def get_paypal_subscription(subscription_id):
+    """
+    Retrieves details for a single PayPal subscription using the PayPal REST API.
+    
+    Args:
+        subscription_id (str): The unique identifier for the PayPal subscription.
+
+    Returns:
+        dict: The JSON response from PayPal if successful, or None if an error occurs.
+    """
+    try:
+        access_token = get_paypal_access_token()
+        url = f"https://api-m.sandbox.paypal.com/v1/billing/subscriptions/{subscription_id}"
+        headers = {
+            'Authorization': f'Bearer {access_token}',
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        }
+
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()  # Will raise an HTTPError for bad responses
+        return response.json()  # Return the parsed JSON data from the response
+    except requests.exceptions.HTTPError as e:
+        # Handle HTTP errors (e.g., response code 404, 401, etc.)
+        print(f"HTTPError: {str(e)}")
+    except requests.exceptions.RequestException as e:
+        # Handle other possible errors (e.g., network issues)
+        print(f"RequestException: {str(e)}")
+    return None
+
 # def create_paypal_product():
 #     access_token = get_paypal_access_token()
 #     print(access_token)
