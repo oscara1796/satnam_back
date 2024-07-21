@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "sslserver",
+    'django_apscheduler',
     "rest_framework",
     "corsheaders",
     "storages",

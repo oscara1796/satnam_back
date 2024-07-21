@@ -39,6 +39,11 @@ urlpatterns = [
         name="subscription_plan_paypal",
     ),
     path(
+        "api/subscription_plan_paypal/<int:pk>/",
+            PaypalSubscriptionView.as_view(),
+        name="subscription_plan_paypal",
+    ),
+    path(
         "api/subscription_plan/<int:pk>/",
         SubscriptionPlanAPIView.as_view(),
         name="subscription_plan",
