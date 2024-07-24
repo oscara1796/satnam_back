@@ -71,16 +71,25 @@ class RedisWorker:
                     if message:
                         _, data = message
                         task_data = json.loads(data)
-                        event = stripe.Event.construct_from(task_data, stripe.api_key)
-                        logger.info(f"Stripe event {event.type} received with ID {event.id}")
+                        event = {}
+                        type_of_event ="stripe"
+                        if 'type' in task_data:  # Stripe event structure
+                            event = stripe.Event.construct_from(task_data, stripe.api_key)
+                        else:  # Assume it's a PayPal event structure
+                            event = task_data
+                            type_of_event = "paypal"
+                        
+                        event_type = event.get('type', event.get('event_type', 'Unknown event type'))
+                        event_id = event_id if type_of_event == "stripe" else event["id"]
+                        logger.info(f"Payment {type_of_event} event {event_type} received with ID {event_id}")
 
                         process_it = False
 
                         with self.event_lock:
-                            cur.execute("SELECT EXISTS (SELECT 1 FROM payments_stripeevent WHERE stripe_event_id = %s AND status = 'processed')", (event.id,))
+                            cur.execute("SELECT EXISTS (SELECT 1 FROM payments_stripeevent WHERE stripe_event_id = %s AND status = 'processed')", (event_id,))
                             existing_event = cur.fetchone()[0]
-                            if not existing_event and event.id not in self.processing_events:
-                                self.processing_events.add(event.id)
+                            if not existing_event and event_id not in self.processing_events:
+                                self.processing_events.add(event_id)
                                 process_it = True
 
                         if process_it:
@@ -95,15 +104,15 @@ class RedisWorker:
                                             VALUES (%s, %s, %s)
                                             ON CONFLICT (stripe_event_id) DO UPDATE SET status = EXCLUDED.status
                                             """,
-                                            (event.id, datetime.now(timezone.utc), 'processed')
+                                            (event_id, datetime.now(timezone.utc), 'processed')
                                         )
                                         cur.execute("COMMIT;")
-                                        logger.info(f"Event {event.id} processed successfully")
+                                        logger.info(f"Event {event_id} processed successfully")
                                     break
                                 except Exception as e:
                                     retries += 1
                                     cur.execute("ROLLBACK;")
-                                    logger.error(f"Error processing Stripe webhook for event {event.id}: {e}. Retry {retries}/{self.MAX_RETRIES}", exc_info=True)
+                                    logger.error(f"Error processing Stripe webhook for event {event_id}: {e}. Retry {retries}/{self.MAX_RETRIES}", exc_info=True)
                                     if retries == self.MAX_RETRIES:
                                         cur.execute(
                                             """
@@ -111,12 +120,12 @@ class RedisWorker:
                                             VALUES (%s, %s, %s)
                                             ON CONFLICT (stripe_event_id) DO UPDATE SET status = EXCLUDED.status
                                             """,
-                                            (event.id, datetime.now(timezone.utc), 'failed')
+                                            (event_id, datetime.now(timezone.utc), 'failed')
                                         )
                             with self.event_lock:
-                                self.processing_events.remove(event.id)
+                                self.processing_events.remove(event_id)
                         else:
-                            logger.info(f"{thread_name} skipped event {event.id} (already being processed or already processed)")
+                            logger.info(f"{thread_name} skipped event {event_id} (already being processed or already processed)")
                     else:
                         time.sleep(1)
                 except redis.exceptions.TimeoutError:
@@ -126,8 +135,8 @@ class RedisWorker:
                     logger.error(f"Error processing event: {e}", exc_info=True)
                     if event is not None:
                         with self.event_lock:
-                            if event.id in self.processing_events:
-                                self.processing_events.remove(event.id)
+                            if event_id in self.processing_events:
+                                self.processing_events.remove(event_id)
         finally:
             if cur:
                 cur.close()

@@ -11,6 +11,8 @@ import os
 import requests
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.utils.dateparse import parse_datetime
+import pytz
 from django.core.mail import send_mail
 from django.db import transaction
 from django.http import JsonResponse
@@ -28,7 +30,7 @@ from .serializers import PaymentMethodSerializer, SubscriptionPlanSerializer
 
 
 
-from payments.paypal_functions import get_paypal_access_token, get_paypal_subscription, schedule_subscription_deletion, remove_scheduled_deletion
+from payments.paypal_functions import get_paypal_access_token, get_paypal_subscription, schedule_subscription_deletion, remove_scheduled_deletion, verify_paypal_webhook_signature
 
 stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
 # Create your views here.
@@ -479,6 +481,15 @@ class PaypalSubscriptionView(APIView):
             'Content-Type': 'application/json'
         }
         last_billing_date = self.get_last_billing_date(subscription_id) 
+        user = get_user_model().objects.get(paypal_subscription_id=subscription_id)
+        next_billing_time = parse_datetime(last_billing_date)
+
+        # Ensure the datetime is timezone-aware (UTC)
+        if next_billing_time and not next_billing_time.tzinfo:
+            next_billing_time = pytz.utc.localize(next_billing_time)
+        user.paypal_next_billing_time = next_billing_time
+        user.save()
+
         response = requests.post(url, headers=headers)
         if response.status_code in (200, 204):
              # Assuming you still need it after cancellation
@@ -693,7 +704,7 @@ class PaymentDetailView(APIView):
                 if paypal_subscription["status"] == "SUSPENDED":
                     cancel_at_period_end = True
 
-                next_billing_time = paypal_subscription.get("billing_info", {}).get("next_billing_time", "")
+                next_billing_time = paypal_subscription.get("billing_info", {}).get("next_billing_time", user.paypal_next_billing_time)
                 last_payment_amount = paypal_subscription.get("billing_info", {}).get("last_payment", {}).get("amount", {}).get("value", "")
 
                 response.update({
@@ -877,14 +888,21 @@ class StripeWebhookView(APIView):
 def paypal_webhook(request):
     try:
         # Load the JSON data sent from PayPal
-        event = json.loads(request.body)
+        event = json.loads(request.body.decode('utf-8'))
 
-        # Log or process the event as needed
-        print("Received PayPal event: ", event['event_type'])
-        print(event)
-        # Optionally, save the event in your database or take action based on the event type
+        if verify_paypal_webhook_signature(request):
+            logger.info(f"Verified PayPal event: {event['event_type']}, ID: {event.get('id', 'No ID')}")
 
-        return HttpResponse(status=200)
+            # Add event to Redis queue
+            redis_conn = redis.Redis.from_url(settings.REDIS_URL)
+            redis_conn.rpush('task_queue', json.dumps(event))
+            logger.info(f"PayPal event {event.get('id', 'No ID')} added to Redis queue")
+
+            return HttpResponse(status=200)
+        else:
+            logger.error("Failed to verify PayPal webhook signature.")
+            return JsonResponse({"error": "Failed to verify signature"}, status=403)
+
     except Exception as e:
-        print(f"Error processing PayPal webhook: {str(e)}")
-        return HttpResponse(status=500)
+        logger.error(f"Error processing PayPal webhook: {str(e)}")
+        return JsonResponse({"error": str(e)}, status=500)

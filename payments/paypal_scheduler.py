@@ -27,4 +27,6 @@ class SchedulerSingleton:
             replace_existing=True,
             kwargs={'max_age': timedelta(days=30)}  # max_age could be a timedelta object
         )
+
+    def start(self):
         self.scheduler.start()

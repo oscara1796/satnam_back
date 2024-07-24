@@ -16,6 +16,19 @@ import logging
 
 from core.models import CustomUser
 
+import paypalrestsdk
+from paypalrestsdk.notifications import WebhookEvent
+from django.conf import settings
+
+
+
+# This assumes you've configured the PayPal SDK as shown in settings.py
+paypalrestsdk.configure({
+    "mode": "sandbox",  # or "live" based on your environment
+    "client_id": settings.PAYPAL_CLIENT_ID,
+    "client_secret": settings.PAYPAL_CLIENT_SECRET
+})
+
 
 logger = logging.getLogger("payments")
 
@@ -139,3 +152,37 @@ def cancel_paypal_subscription(subscription_id):
         self.stdout.write(self.style.SUCCESS(f'Successfully cancelled PayPal subscription {subscription_id}'))
     else:
         self.stdout.write(self.style.ERROR(f'Failed to cancel subscription {subscription_id}: {response.text}'))
+
+
+def verify_paypal_webhook_signature(request):
+    """
+    Verifies the PayPal webhook signature using request data.
+
+    Args:
+    - request: Django request object containing the webhook data and headers.
+
+    Returns:
+    - bool: True if the signature is verified, False otherwise.
+    """
+    payload = request.body.decode('utf-8')
+    transmission_id = request.headers.get('Paypal-Transmission-Id')
+    timestamp = request.headers.get('Paypal-Transmission-Time')
+    signature = request.headers.get('Paypal-Transmission-Sig')
+    cert_url = request.headers.get('Paypal-Cert-Url')
+    auth_algo = request.headers.get('Paypal-Auth-Algo')
+    webhook_id = settings.PAYPAL_WEBHOOK_ID  # Replace with your actual webhook ID
+
+    try:
+        response = paypalrestsdk.WebhookEvent.verify(
+            transmission_id=transmission_id,
+            timestamp=timestamp,
+            webhook_id=webhook_id,
+            event_body=payload,
+            cert_url=cert_url,
+            actual_sig=signature,
+            auth_algo=auth_algo
+        )
+        return response
+    except Exception as e:
+        print("Error verifying PayPal webhook signature: ", e)
+        return False

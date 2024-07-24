@@ -11,6 +11,7 @@ class CustomUser(AbstractUser):
     stripe_customer_id = models.CharField(max_length=150, null=True)
     stripe_subscription_id = models.CharField(max_length=150, null=True)
     paypal_subscription_id = models.CharField(max_length=150, null=True)
+    paypal_next_billing_time = models.DateTimeField(null=True, blank=True)
     active = models.BooleanField(default=False)
 
     def __str__(self):
