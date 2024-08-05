@@ -80,7 +80,7 @@ class RedisWorker:
                             type_of_event = "paypal"
                         
                         event_type = event.get('type', event.get('event_type', 'Unknown event type'))
-                        event_id = event_id if type_of_event == "stripe" else event["id"]
+                        event_id = event.id if type_of_event == "stripe" else event["id"]
                         logger.info(f"Payment {type_of_event} event {event_type} received with ID {event_id}")
 
                         process_it = False
@@ -134,6 +134,8 @@ class RedisWorker:
                 except Exception as e:
                     logger.error(f"Error processing event: {e}", exc_info=True)
                     if event is not None:
+                        event_id = event.id if type_of_event == "stripe" else event["id"]
+                        
                         with self.event_lock:
                             if event_id in self.processing_events:
                                 self.processing_events.remove(event_id)

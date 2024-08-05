@@ -63,6 +63,7 @@ class UserSerializer(serializers.ModelSerializer):
             "telephone",
             "active",
             "stripe_customer_id",
+            "paypal_subscription_id",
             "stripe_subscription_id",
         )
         read_only_fields = ("id",)
