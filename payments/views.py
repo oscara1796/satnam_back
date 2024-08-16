@@ -3,7 +3,7 @@ from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 import logging
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 import stripe
 import redis
@@ -462,7 +462,16 @@ class PaypalSubscriptionView(APIView):
             if user.paypal_subscription_id:
                 last_billing_date = self.deactivate_paypal_subscription(user.paypal_subscription_id)
                 if last_billing_date:
-                    schedule_subscription_deletion(user.paypal_subscription_id, last_billing_date)
+
+                    #time used for testing 
+                    formatted_time = (datetime.now(timezone.utc) + timedelta(minutes=3)).strftime('%Y-%m-%dT%H:%M:%SZ')
+                    print(formatted_time)
+                    schedule_subscription_deletion(user.paypal_subscription_id, formatted_time) 
+                    # here ends the testing
+
+                    # real method with the next_billing_time
+                    #schedule_subscription_deletion(user.paypal_subscription_id, last_billing_date)
+                    
                     logger.info(f"tried  to schedule   paypal subscription  deletion of {user.paypal_subscription_id}")
 
             logger.info(f"Deactivated  paypal subscription {user.paypal_subscription_id}")

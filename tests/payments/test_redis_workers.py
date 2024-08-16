@@ -41,6 +41,64 @@ def mock_blpop_generator():
     while True:
         yield ('task_queue', payload_json)
 
+
+class PayPalWebhookTestCase(TransactionTestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.url = reverse('paypal_webhook')  # Make sure the URL name matches your urls.py
+
+    @patch('payments.views.verify_paypal_webhook_signature')
+    @patch('redis.Redis.from_url')
+    def test_paypal_webhook_success(self, mock_redis_from_url, mock_verify_signature):
+        # Configure mock objects
+        mock_verify_signature.return_value = True
+        mock_redis_instance = MagicMock()
+        mock_redis_from_url.return_value = mock_redis_instance
+
+        # Sample payload
+        event = {
+            'id': 'WH-123456',
+            'event_type': 'BILLING.SUBSCRIPTION.CREATED',
+            'resource': {
+                'billing_agreement_id': 'I-0LN988D3JACS'
+            }
+        }
+        payload_json = json.dumps(event)
+
+        # Perform POST request
+        response = self.client.post(self.url, data=payload_json, content_type='application/json')
+
+        # Verify the response
+        self.assertEqual(response.status_code, 200)
+        mock_redis_instance.rpush.assert_called_once_with('task_queue', payload_json)
+        mock_verify_signature.assert_called_once()
+
+    @patch('payments.views.verify_paypal_webhook_signature')
+    def test_paypal_webhook_failure_invalid_signature(self, mock_verify_signature):
+        # Configure mock objects
+        mock_verify_signature.return_value = False
+
+        # Sample payload
+        event = {
+            'id': 'WH-123456',
+            'event_type': 'BILLING.SUBSCRIPTION.CREATED',
+            'resource': {
+                'billing_agreement_id': 'I-0LN988D3JACS'
+            }
+        }
+        payload_json = json.dumps(event)
+
+        # Perform POST request
+        response = self.client.post(self.url, data=payload_json, content_type='application/json')
+
+        # Verify the response
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.json(), {"error": "Failed to verify signature"})
+
+    def tearDown(self):
+        # Any cleanup if necessary
+        close_connections()
+
 class StripeWebhookViewTestCase(TransactionTestCase):
     def setUp(self):
         self.client = APIClient()
