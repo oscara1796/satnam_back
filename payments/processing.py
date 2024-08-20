@@ -14,6 +14,8 @@ def process_event(event, cur):
         event_type = event.get('type', event.get('event_type', 'Unknown event type'))
         logger.info(f"Processing event type: {event_type}")
 
+        print(event)
+
         # Handle Stripe events
         if 'type' in event:
             if event_type == "invoice.payment_succeeded":
@@ -39,7 +41,7 @@ def process_event(event, cur):
 
         # Handle PayPal events
         elif 'event_type' in event:
-            if event_type == "BILLING.SUBSCRIPTION.CREATED":
+            if event_type == "BILLING.SUBSCRIPTION.ACTIVATED":
                 handle_paypal_subscription_activated(event, cur)
                 return True
             elif event_type == "BILLING.SUBSCRIPTION.CANCELLED":

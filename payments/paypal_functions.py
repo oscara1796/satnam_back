@@ -134,24 +134,31 @@ def remove_scheduled_deletion(subscription_id):
 
 def cancel_paypal_subscription(subscription_id):
     """Send a request to PayPal to cancel a subscription."""
-    access_token = get_paypal_access_token()  # Ensure this function is properly implemented
-    headers = {
-        'Authorization': f'Bearer {access_token}',
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-    }
-    data = '{ "reason": "Not satisfied with the service" }'
-    response = requests.post(f'https://api-m.sandbox.paypal.com/v1/billing/subscriptions/{subscription_id}/cancel', headers=headers, data=data)
+    try:
+        access_token = get_paypal_access_token()  # Ensure this function is properly implemented
+        headers = {
+            'Authorization': f'Bearer {access_token}',
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+        }
+        data = '{ "reason": "Not satisfied with the service" }'
+        response = requests.post(
+            f'https://api-m.sandbox.paypal.com/v1/billing/subscriptions/{subscription_id}/cancel',
+            headers=headers,
+            data=data
+        )
 
-    if response.status_code in [200, 204]:
-
-        user = CustomUser.objects.get(paypal_subscription_id=subscription_id)
-        user.active = False
-        user.paypal_subscription_id = None
-        user.save()
-        self.stdout.write(self.style.SUCCESS(f'Successfully cancelled PayPal subscription {subscription_id}'))
-    else:
-        self.stdout.write(self.style.ERROR(f'Failed to cancel subscription {subscription_id}: {response.text}'))
+        if response.status_code in [200, 204]:
+            user = CustomUser.objects.get(paypal_subscription_id=subscription_id)
+            user.active = False
+            user.paypal_subscription_id = None
+            user.save()
+            logger.info(f'Successfully cancelled PayPal subscription {subscription_id}')
+        else:
+            logger.error(f'Failed to cancel subscription {subscription_id}: {response.text}')
+    
+    except Exception as e:
+        logger.error(f'An error occurred while cancelling subscription {subscription_id}: {str(e)}')
 
 
 def verify_paypal_webhook_signature(request):
