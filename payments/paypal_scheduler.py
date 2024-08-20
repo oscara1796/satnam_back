@@ -1,8 +1,9 @@
 # scheduler.py
 from apscheduler.schedulers.background import BackgroundScheduler
-from django_apscheduler.jobstores import DjangoJobStore
 from django_apscheduler.models import DjangoJobExecution
 from datetime import timedelta
+from django.conf import settings
+import logging
 
 class SchedulerSingleton:
     _instance = None
@@ -15,7 +16,9 @@ class SchedulerSingleton:
 
     def __init__(self):
         self.scheduler = BackgroundScheduler()
-        self.scheduler.add_jobstore(DjangoJobStore(), "default")
+        
+        # Load the configuration from settings
+        self.scheduler.configure(settings.SCHEDULER_CONFIG)
 
         # Adding a cleanup job, assuming `max_age` should be provided
         self.scheduler.add_job(
@@ -30,3 +33,6 @@ class SchedulerSingleton:
 
     def start(self):
         self.scheduler.start()
+        logger = logging.getLogger('apscheduler')
+        logger.info("Scheduler started with configuration: %s", settings.SCHEDULER_CONFIG)
+

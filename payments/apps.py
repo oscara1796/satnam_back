@@ -13,6 +13,7 @@ class PaymentsConfig(AppConfig):
 
         # Configure the logger for this module
         logger = logging.getLogger("payments")
+        logging.getLogger('apscheduler').setLevel(logging.DEBUG)
 
         # Log the startup message
         logger.info("Payments application has started. Setting up RedisWorker to process payments.")

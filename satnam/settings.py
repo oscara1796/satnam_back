@@ -307,7 +307,36 @@ paypalrestsdk.configure({
 })
 
 
+
+
 TESTING = True
+
+#SCHEDULER logic 
+
+# SCHEDULER_CONFIG = {
+#     "apscheduler.jobstores.default": {
+#         "class": "django_apscheduler.jobstores:DjangoJobStore"
+#     },
+#     'apscheduler.executors.default': {
+#         "type": "threadpool",
+#         "max_workers": 10
+#     },
+#     'apscheduler.executors.processpool': {
+#         "type": "processpool",
+#         "max_workers": 5
+#     },
+#     'apscheduler.job_defaults': {
+#         "coalesce": False,
+#         "max_instances": 3
+#     },
+#     'apscheduler.timezone': 'UTC',
+# }
+
+
+# CELERY CONFIG
+CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
+CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/0"
+
 
 # logging logic 
 log_directory = os.path.join(BASE_DIR, 'logs')
