@@ -4,11 +4,7 @@ import json
 import os
 from dotenv import load_dotenv
 
-from apscheduler.schedulers.background import BackgroundScheduler
-from django_apscheduler.jobstores import DjangoJobStore
-from apscheduler.jobstores.base import JobLookupError
-from django_apscheduler.models import DjangoJobExecution
-from payments.paypal_scheduler import SchedulerSingleton
+# from payments.paypal_scheduler import SchedulerSingleton
 from datetime import datetime
 import pytz
 
@@ -103,33 +99,35 @@ def get_all_paypal_products():
 
 def schedule_subscription_deletion(subscription_id, billing_cycle_end):
     """Schedule the deletion of the PayPal subscription using django-apscheduler."""
-    scheduler = SchedulerSingleton.get_instance()
+    # scheduler = SchedulerSingleton.get_instance()
 
-    # Convert the billing cycle end time to a datetime object
-    end_time = datetime.strptime(billing_cycle_end, '%Y-%m-%dT%H:%M:%SZ')
-    end_time = pytz.UTC.localize(end_time)  # Ensure timezone awareness
+    # # Convert the billing cycle end time to a datetime object
+    # end_time = datetime.strptime(billing_cycle_end, '%Y-%m-%dT%H:%M:%SZ')
+    # end_time = pytz.UTC.localize(end_time)  # Ensure timezone awareness
 
-    # Schedule the job
-    scheduler.add_job(
-        func=cancel_paypal_subscription,  # This should be the function that deletes the subscription
-        trigger='date',
-        run_date=end_time,
-        args=[subscription_id],
-        id=f'delete_subscription_{subscription_id}',
-        replace_existing=True,
-    )
-    logger.info(f"Deletion of PayPal subscription {subscription_id} scheduled for {end_time.isoformat()}")
+    # # Schedule the job
+    # scheduler.add_job(
+    #     func=cancel_paypal_subscription,  # This should be the function that deletes the subscription
+    #     trigger='date',
+    #     run_date=end_time,
+    #     args=[subscription_id],
+    #     id=f'delete_subscription_{subscription_id}',
+    #     replace_existing=True,
+    # )
+    # logger.info(f"Deletion of PayPal subscription {subscription_id} scheduled for {end_time.isoformat()}")
+    pass
 
 
 def remove_scheduled_deletion(subscription_id):
-    """Remove scheduled deletion task for a subscription."""
-    scheduler = SchedulerSingleton.get_instance()
-    job_id = f'delete_subscription_{subscription_id}'
-    try:
-        scheduler.remove_job(job_id)
-        logger.info(f"Removed scheduled deletion for subscription {subscription_id}")
-    except JobLookupError:
-        logger.info(f"No scheduled deletion found for subscription {subscription_id}")
+    # """Remove scheduled deletion task for a subscription."""
+    # scheduler = SchedulerSingleton.get_instance()
+    # job_id = f'delete_subscription_{subscription_id}'
+    # try:
+    #     scheduler.remove_job(job_id)
+    #     logger.info(f"Removed scheduled deletion for subscription {subscription_id}")
+    # except JobLookupError:
+    #     logger.info(f"No scheduled deletion found for subscription {subscription_id}")
+    pass
 
 
 def cancel_paypal_subscription(subscription_id):

@@ -9,11 +9,9 @@ class PaymentsConfig(AppConfig):
     def ready(self):
         from payments.workers import RedisWorker, on_django_shutdown
         import atexit
-        from payments.paypal_scheduler import SchedulerSingleton
-
+        
         # Configure the logger for this module
         logger = logging.getLogger("payments")
-        logging.getLogger('apscheduler').setLevel(logging.DEBUG)
 
         # Log the startup message
         logger.info("Payments application has started. Setting up RedisWorker to process payments.")
@@ -28,11 +26,4 @@ class PaymentsConfig(AppConfig):
         # Log the message indicating that workers are ready
         logger.info("RedisWorker has been started and is now processing payments.")
         
-        # Connect post_migrate signal to start scheduler
-        post_migrate.connect(self.start_scheduler, sender=self)
-
-    def start_scheduler(self, **kwargs):
-        from payments.paypal_scheduler import SchedulerSingleton
-        SchedulerSingleton.get_instance().start()
-        logger = logging.getLogger("payments")
-        logger.info("Payments application has started. PayPal scheduler is now running.")
+       

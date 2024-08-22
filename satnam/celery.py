@@ -9,7 +9,7 @@ from django.conf import settings
 
 # this code copied from manage.py
 # set the default Django settings module for the 'celery' app.
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'django_celery_example.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'satnam.settings')
 
 # you can change the name here
 app = Celery("satnam_celery_app")

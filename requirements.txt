@@ -1,5 +1,4 @@
 amqp==5.2.0
-APScheduler==3.10.4
 asgiref==3.7.2
 async-timeout==4.0.3
 attrs==23.1.0
@@ -27,7 +26,7 @@ constantly==15.1.0
 cryptography==41.0.1
 daphne==4.0.0
 dj-database-url==2.1.0
-Django==4.1.3
+Django
 django-anymail==10.2
 django-cors-headers==3.13.0
 django-ranged-response==0.2.0
