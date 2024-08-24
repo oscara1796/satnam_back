@@ -132,7 +132,7 @@ def get_customer_email(customer_id, cur):
         cur.execute("SELECT email FROM core_customuser WHERE stripe_customer_id = %s", (customer_id,))
         user = cur.fetchone()
         if user:
-            return user['email']
+            return user[0]  # Access the first item in the tuple
         else:
             logger.error(f"Error retrieving email for customer {customer_id}: User does not exist")
             return None

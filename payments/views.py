@@ -24,6 +24,7 @@ from stripe.error import StripeError
 
 from core.models import CustomUser
 from core.models import TrialDays
+from .tasks import process_payment_event
 
 from .models import StripeEvent, SubscriptionPlan
 from .serializers import PaymentMethodSerializer, SubscriptionPlanSerializer
@@ -880,14 +881,18 @@ class StripeWebhookView(APIView):
             logger.error(f"Invalid payload received: {str(e)}")
             return JsonResponse({"error": str(e)}, status=400)
 
-        redis_conn = redis.Redis.from_url(settings.REDIS_URL)
+        # redis_conn = redis.Redis.from_url(settings.REDIS_URL)
 
-        try:
-            redis_conn.rpush('task_queue', json.dumps(payload_data))
-            logger.info(f"Event {event.id} added to Redis queue")
-        except Exception as e:
-            logger.error(f"Error adding event to Redis queue: {e}", exc_info=True)
-            return JsonResponse({"error": str(e)}, status=500)
+        # try:
+        #     redis_conn.rpush('task_queue', json.dumps(payload_data))
+        #     logger.info(f"Event {event.id} added to Redis queue")
+        # except Exception as e:
+        #     logger.error(f"Error adding event to Redis queue: {e}", exc_info=True)
+        #     return JsonResponse({"error": str(e)}, status=500)
+
+        # Send the event to be processed by Celery
+        process_payment_event.delay(payload_data)
+        logger.info(f"Event {event.id} sent to Celery")
 
         return Response(status=200)
 
