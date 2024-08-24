@@ -3,4 +3,4 @@
 set -o errexit
 set -o nounset
 
-celery -A satnam worker -l INFO
+python manage.py celery_worker
