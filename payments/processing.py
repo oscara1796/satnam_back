@@ -172,7 +172,7 @@ def handle_paypal_subscription_cancelled(event, cur):
         logger.info(f"Subscription cancelled email sent for subscription {subscription['id']} to {customer_email}")
 
     try:
-        cur.execute("SELECT * FROM core_customuser WHERE paypal_customer_id = %s FOR UPDATE", (subscription['id'],))
+        cur.execute("SELECT * FROM core_customuser WHERE paypal_subscription_id = %s FOR UPDATE", (subscription['id'],))
         user = cur.fetchone()
         if user:
             user_id = user['id']

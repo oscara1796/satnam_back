@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 # from payments.paypal_scheduler import SchedulerSingleton
 from datetime import datetime
 import pytz
+from celery.result import AsyncResult
 
 import logging
 
@@ -15,6 +16,7 @@ from core.models import CustomUser
 import paypalrestsdk
 from paypalrestsdk.notifications import WebhookEvent
 from django.conf import settings
+
 
 
 
@@ -98,65 +100,35 @@ def get_all_paypal_products():
 
 
 def schedule_subscription_deletion(subscription_id, billing_cycle_end):
-    """Schedule the deletion of the PayPal subscription using django-apscheduler."""
-    # scheduler = SchedulerSingleton.get_instance()
+    """Schedule the deletion of the PayPal subscription using Celery."""
+    # Convert the billing cycle end time to a datetime object
+    from payments.tasks import cancel_paypal_subscription_task
+    end_time = datetime.strptime(billing_cycle_end, '%Y-%m-%dT%H:%M:%SZ')
+    end_time = pytz.UTC.localize(end_time)  # Ensure timezone awareness
 
-    # # Convert the billing cycle end time to a datetime object
-    # end_time = datetime.strptime(billing_cycle_end, '%Y-%m-%dT%H:%M:%SZ')
-    # end_time = pytz.UTC.localize(end_time)  # Ensure timezone awareness
+    # Schedule the Celery task
+    task = cancel_paypal_subscription_task.apply_async(
+        eta=end_time,  # Schedule for the billing cycle end time
+        args=[subscription_id],
+        task_id=f'delete_subscription_{subscription_id}'  # Assign a custom task ID
+    )
 
-    # # Schedule the job
-    # scheduler.add_job(
-    #     func=cancel_paypal_subscription,  # This should be the function that deletes the subscription
-    #     trigger='date',
-    #     run_date=end_time,
-    #     args=[subscription_id],
-    #     id=f'delete_subscription_{subscription_id}',
-    #     replace_existing=True,
-    # )
-    # logger.info(f"Deletion of PayPal subscription {subscription_id} scheduled for {end_time.isoformat()}")
-    pass
+    logger.info(f"Deletion of PayPal subscription {subscription_id} scheduled for {end_time.isoformat()} with task ID {task.id}")
 
 
 def remove_scheduled_deletion(subscription_id):
-    # """Remove scheduled deletion task for a subscription."""
-    # scheduler = SchedulerSingleton.get_instance()
-    # job_id = f'delete_subscription_{subscription_id}'
-    # try:
-    #     scheduler.remove_job(job_id)
-    #     logger.info(f"Removed scheduled deletion for subscription {subscription_id}")
-    # except JobLookupError:
-    #     logger.info(f"No scheduled deletion found for subscription {subscription_id}")
-    pass
+    """Remove scheduled deletion task for a subscription."""
+    task_id = f'delete_subscription_{subscription_id}'
+    result = AsyncResult(task_id)
+
+    if result.state == 'PENDING':
+        result.revoke()  # Revoke the task before it is executed
+        logger.info(f"Removed scheduled deletion for subscription {subscription_id}")
+    else:
+        logger.info(f"Task for subscription {subscription_id} is already in state {result.state} and cannot be revoked")
 
 
-def cancel_paypal_subscription(subscription_id):
-    """Send a request to PayPal to cancel a subscription."""
-    try:
-        access_token = get_paypal_access_token()  # Ensure this function is properly implemented
-        headers = {
-            'Authorization': f'Bearer {access_token}',
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-        }
-        data = '{ "reason": "Not satisfied with the service" }'
-        response = requests.post(
-            f'https://api-m.sandbox.paypal.com/v1/billing/subscriptions/{subscription_id}/cancel',
-            headers=headers,
-            data=data
-        )
 
-        if response.status_code in [200, 204]:
-            user = CustomUser.objects.get(paypal_subscription_id=subscription_id)
-            user.active = False
-            user.paypal_subscription_id = None
-            user.save()
-            logger.info(f'Successfully cancelled PayPal subscription {subscription_id}')
-        else:
-            logger.error(f'Failed to cancel subscription {subscription_id}: {response.text}')
-    
-    except Exception as e:
-        logger.error(f'An error occurred while cancelling subscription {subscription_id}: {str(e)}')
 
 
 def verify_paypal_webhook_signature(request):
