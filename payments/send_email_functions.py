@@ -94,8 +94,11 @@ def send_invoice_email(customer_email, invoice):
 
     return send_email(subject, message, from_email, recipient_list)
 
+
 def send_trial_start_email(customer_email, subscription):
-    readable_date = datetime.fromtimestamp(subscription.trial_end, timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+    readable_date = datetime.fromtimestamp(
+        subscription.trial_end, timezone.utc
+    ).strftime("%Y-%m-%d %H:%M:%S")
     subject = "Bienvenido a tu período de prueba! Sat Nam Yoga Estudio"
     logo_url = f"https://satnam-bucket.s3.us-east-2.amazonaws.com/logo.png"
     message = f"""
@@ -264,8 +267,11 @@ def send_payment_failed_email(customer_email, invoice):
     """
     return send_email(subject, message, "satnamyogajal@gmail.com", [customer_email])
 
+
 def send_subscription_deleted_email(customer_email):
-    subject = "Vamos a extrañarte! Subscripción ha sido eliminada (Sat Nam Yoga Estudio)"
+    subject = (
+        "Vamos a extrañarte! Subscripción ha sido eliminada (Sat Nam Yoga Estudio)"
+    )
     logo_url = f"https://satnam-bucket.s3.us-east-2.amazonaws.com/logo.png"
     message = f"""
         <!DOCTYPE html>
@@ -351,7 +357,9 @@ def send_subscription_deleted_email(customer_email):
 def send_trial_will_end_email(customer_email, subscription):
     subject = "Tu período de prueba  Sat Nam Yoga está por terminar"
     logo_url = f"https://satnam-bucket.s3.us-east-2.amazonaws.com/logo.png"
-    readable_date = datetime.fromtimestamp(subscription.trial_end, timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+    readable_date = datetime.fromtimestamp(
+        subscription.trial_end, timezone.utc
+    ).strftime("%Y-%m-%d %H:%M:%S")
     message = f"""
         <!DOCTYPE html>
         <html>
@@ -520,6 +528,7 @@ def send_paypal_subscription_activated_email(customer_email, subscription):
 
     return send_email(subject, message, from_email, recipient_list)
 
+
 def send_paypal_subscription_cancelled_email(customer_email, subscription):
     subject = "Tu suscripción de PayPal de Sat Nam Yoga  ha sido cancelada"
     logo_url = f"https://satnam-bucket.s3.us-east-2.amazonaws.com/logo.png"
@@ -606,6 +615,7 @@ def send_paypal_subscription_cancelled_email(customer_email, subscription):
     recipient_list = [customer_email]
 
     return send_email(subject, message, from_email, recipient_list)
+
 
 def send_paypal_subscription_expired_email(customer_email, subscription):
     subject = "Tu suscripción Sat Nam Yoga de PayPal ha expirado"
@@ -694,6 +704,7 @@ def send_paypal_subscription_expired_email(customer_email, subscription):
 
     return send_email(subject, message, from_email, recipient_list)
 
+
 def send_paypal_subscription_suspended_email(customer_email, subscription):
     subject = "Tu suscripción de Sat Nam Yoga con  PayPal ha sido suspendida"
     logo_url = f"https://satnam-bucket.s3.us-east-2.amazonaws.com/logo.png"
@@ -780,6 +791,7 @@ def send_paypal_subscription_suspended_email(customer_email, subscription):
     recipient_list = [customer_email]
 
     return send_email(subject, message, from_email, recipient_list)
+
 
 def send_paypal_subscription_reactivated_email(customer_email, subscription):
     subject = "Tu suscripción de SatNam con PayPal ha sido reactivada"
@@ -871,9 +883,19 @@ def send_paypal_subscription_reactivated_email(customer_email, subscription):
 
 def send_email(subject, message, from_email, recipient_list):
     try:
-        send_mail(subject, message, from_email, recipient_list, fail_silently=False, html_message=message)
+        send_mail(
+            subject,
+            message,
+            from_email,
+            recipient_list,
+            fail_silently=False,
+            html_message=message,
+        )
         logger.info(f"Email sent to {recipient_list} with subject '{subject}'")
         return True
     except Exception as e:
-        logger.error(f"Failed to send email to {recipient_list} with subject '{subject}': {e}", exc_info=True)
+        logger.error(
+            f"Failed to send email to {recipient_list} with subject '{subject}': {e}",
+            exc_info=True,
+        )
         return False

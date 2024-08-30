@@ -4,7 +4,8 @@ import boto3
 import os
 import logging
 
-logger = logging.getLogger('django')
+logger = logging.getLogger("django")
+
 
 class Video(models.Model):
     title = models.CharField(max_length=255)
@@ -29,16 +30,19 @@ class Video(models.Model):
             else:
                 # Delete image from S3
                 s3 = boto3.client(
-                    's3',
+                    "s3",
                     aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-                    aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
+                    aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
                 )
                 try:
-                    s3.delete_object(Bucket=settings.AWS_STORAGE_BUCKET_NAME, Key=self.image.name)
+                    s3.delete_object(
+                        Bucket=settings.AWS_STORAGE_BUCKET_NAME, Key=self.image.name
+                    )
                 except Exception as e:
                     logger.error(f"Error deleting image from S3: {e}")
 
         super(Video, self).delete(*args, **kwargs)
+
 
 class Category(models.Model):
     title = models.CharField(max_length=255)
@@ -52,7 +56,9 @@ class Category(models.Model):
         # Retrieve and delete all related videos by querying the Video model
         videos = Video.objects.filter(categories__id=self.id)
         for video in videos:
-            logger.info(f"Deleting video '{video.title}' due to category deletion (ID: {self.id})")
+            logger.info(
+                f"Deleting video '{video.title}' due to category deletion (ID: {self.id})"
+            )
             video.delete()
 
         # Delete the category

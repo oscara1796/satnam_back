@@ -16,7 +16,7 @@
 
 #     def __init__(self):
 #         self.scheduler = BackgroundScheduler()
-        
+
 #         # Load the configuration from settings
 #         self.scheduler.configure(settings.SCHEDULER_CONFIG)
 
@@ -35,4 +35,3 @@
 #         self.scheduler.start()
 #         logger = logging.getLogger('apscheduler')
 #         logger.info("Scheduler started with configuration: %s", settings.SCHEDULER_CONFIG)
-

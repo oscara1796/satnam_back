@@ -102,7 +102,9 @@ if DEBUG:
     DATABASES = {
         "default": {
             "ENGINE": os.environ.get("SQL_ENGINE", "django.db.backends.sqlite3"),
-            "NAME": os.environ.get("SQL_DATABASE", os.path.join(BASE_DIR, "db.sqlite3")),
+            "NAME": os.environ.get(
+                "SQL_DATABASE", os.path.join(BASE_DIR, "db.sqlite3")
+            ),
             "USER": os.environ.get("SQL_USER", "user"),
             "PASSWORD": os.environ.get("SQL_PASSWORD", "password"),
             "HOST": os.environ.get("SQL_HOST", "localhost"),
@@ -111,19 +113,21 @@ if DEBUG:
     }
 else:
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
         }
     }
 
-    DATABASE_URL = os.environ.get('DATABASE_URL')
-    db_from_env = dj_database_url.config(default=DATABASE_URL, conn_max_age=500, ssl_require=True)
-    DATABASES['default'].update(db_from_env)
+    DATABASE_URL = os.environ.get("DATABASE_URL")
+    db_from_env = dj_database_url.config(
+        default=DATABASE_URL, conn_max_age=500, ssl_require=True
+    )
+    DATABASES["default"].update(db_from_env)
 
-#REDIS CONFIG
+# REDIS CONFIG
 
-REDIS_URL = os.getenv('REDIS_URL', 'redis://redis:6379')
+REDIS_URL = os.getenv("REDIS_URL", "redis://redis:6379")
 
 # Set up a Redis connection pool
 REDIS_POOL = redis.ConnectionPool.from_url(REDIS_URL)
@@ -239,7 +243,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3001",
     "https://satnam-client-4754c00a2e7d.herokuapp.com",
     "http://www.satnamyogaestudio.com.mx",
-    "https://www.satnamyogaestudio.com.mx"
+    "https://www.satnamyogaestudio.com.mx",
 ]
 
 CORS_ORIGIN_ALLOW_ALL = False
@@ -249,7 +253,7 @@ SESSION_ENGINE = "django.contrib.sessions.backends.db"
 SESSION_COOKIE_NAME = "user_session"
 SESSION_COOKIE_SECURE = True
 SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SAMESITE = 'None'
+SESSION_COOKIE_SAMESITE = "None"
 
 
 CSRF_TRUSTED_ORIGINS = ["https://satnam-api-38ccd2c6f742.herokuapp.com"]
@@ -260,7 +264,7 @@ CSRF_COOKIE_HTTPONLY = True
 
 # EMAIL WCONFIG
 
-EMAIL_BACKEND = 'django_ses.SESBackend'
+EMAIL_BACKEND = "django_ses.SESBackend"
 
 # EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 # EMAIL_HOST = "smtp.mailgun.org"
@@ -273,44 +277,44 @@ EMAIL_HOST_USER = "satnamyogajal@gmail.com"
 
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
-AWS_SES_REGION_NAME = 'us-east-2' 
-AWS_SES_REGION_ENDPOINT = 'email.us-east-2.amazonaws.com' 
+AWS_SES_REGION_NAME = "us-east-2"
+AWS_SES_REGION_ENDPOINT = "email.us-east-2.amazonaws.com"
 
-# AMAZON BUCKET 
+# AMAZON BUCKET
 
-AWS_STORAGE_BUCKET_NAME = 'satnam-bucket'
+AWS_STORAGE_BUCKET_NAME = "satnam-bucket"
 
 # if not DEBUG:
 DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
-AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.us-east-2.amazonaws.com'
+AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.us-east-2.amazonaws.com"
 AWS_S3_OBJECT_PARAMETERS = {
-    'CacheControl': 'max-age=86400',
+    "CacheControl": "max-age=86400",
 }
-STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/static/'
-MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
+STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/static/"
+MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/media/"
 # else:
 #     MEDIA_URL = '/media/'
 #     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-#PAYPAL CONFIG
+# PAYPAL CONFIG
 
-PAYPAL_CLIENT_ID = os.environ.get('PAYPAL_CLIENT_ID')
-PAYPAL_CLIENT_SECRET = os.environ.get('PAYPAL_CLIENT_SECRET')
-PAYPAL_WEBHOOK_ID = os.environ.get('PAYPAL_WEBHOOK_ID')
+PAYPAL_CLIENT_ID = os.environ.get("PAYPAL_CLIENT_ID")
+PAYPAL_CLIENT_SECRET = os.environ.get("PAYPAL_CLIENT_SECRET")
+PAYPAL_WEBHOOK_ID = os.environ.get("PAYPAL_WEBHOOK_ID")
 
 # Configure PayPal SDK
-paypalrestsdk.configure({
-    "mode": "sandbox",  # Change to "live" for production
-    "client_id": PAYPAL_CLIENT_ID,
-    "client_secret": PAYPAL_CLIENT_SECRET
-})
-
-
+paypalrestsdk.configure(
+    {
+        "mode": "sandbox",  # Change to "live" for production
+        "client_id": PAYPAL_CLIENT_ID,
+        "client_secret": PAYPAL_CLIENT_SECRET,
+    }
+)
 
 
 TESTING = True
 
-#SCHEDULER logic 
+# SCHEDULER logic
 
 # SCHEDULER_CONFIG = {
 #     "apscheduler.jobstores.default": {
@@ -337,8 +341,8 @@ CELERY_BROKER_URL = os.environ.get("CELERY_BROKER", "redis://127.0.0.1:6379/0")
 CELERY_RESULT_BACKEND = os.environ.get("CELERY_BACKEND", "redis://127.0.0.1:6379/0")
 
 
-# logging logic 
-log_directory = os.path.join(BASE_DIR, 'logs')
+# logging logic
+log_directory = os.path.join(BASE_DIR, "logs")
 if not os.path.exists(log_directory):
     os.makedirs(log_directory)
 LOGGING = {
@@ -349,9 +353,9 @@ LOGGING = {
             "level": "INFO",
             "class": "logging.handlers.RotatingFileHandler",
             "filename": os.path.join(BASE_DIR, "logs", "django_errors.log"),
-            'maxBytes': 1024 * 1024 * 5,
-            'backupCount': 5,
-            'formatter': 'verbose'
+            "maxBytes": 1024 * 1024 * 5,
+            "backupCount": 5,
+            "formatter": "verbose",
         },
         "console": {
             "level": "INFO",
@@ -380,12 +384,10 @@ LOGGING = {
             "propagate": False,
         },
     },
-    'formatters': {
-        'verbose': {
-            'format': '{levelname} {asctime} {module} {message}',
-            'style': '{',
+    "formatters": {
+        "verbose": {
+            "format": "{levelname} {asctime} {module} {message}",
+            "style": "{",
         },
     },
 }
-
-

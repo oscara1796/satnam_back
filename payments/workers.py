@@ -17,6 +17,7 @@ stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
 
 logger = logging.getLogger("django")
 
+
 class RedisWorker:
 
     def __init__(self):
@@ -33,8 +34,10 @@ class RedisWorker:
         self.processing_events = set()
         self.monitor_thread = None
         self.MAX_RETRIES = 3
-        logger.info("RedisWorker initialized with settings: "
-                    f"thread_count={self.thread_count}, max_threads={self.max_threads}, min_threads={self.min_threads}")
+        logger.info(
+            "RedisWorker initialized with settings: "
+            f"thread_count={self.thread_count}, max_threads={self.max_threads}, min_threads={self.min_threads}"
+        )
 
     def start_workers(self):
         for _ in range(self.thread_count):
@@ -50,16 +53,16 @@ class RedisWorker:
         try:
             if settings.DEBUG:
                 conn = psycopg2.connect(
-                    dbname=settings.DATABASES['default']['NAME'],
-                    user=settings.DATABASES['default']['USER'],
-                    password=settings.DATABASES['default']['PASSWORD'],
-                    host=settings.DATABASES['default']['HOST'],
-                    port=settings.DATABASES['default']['PORT']
+                    dbname=settings.DATABASES["default"]["NAME"],
+                    user=settings.DATABASES["default"]["USER"],
+                    password=settings.DATABASES["default"]["PASSWORD"],
+                    host=settings.DATABASES["default"]["HOST"],
+                    port=settings.DATABASES["default"]["PORT"],
                 )
             else:
-                database_url = os.environ.get('DATABASE_URL')
+                database_url = os.environ.get("DATABASE_URL")
                 conn = psycopg2.connect(database_url)
-            
+
             conn.autocommit = True
             cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
             self.thread_connections[thread_name] = conn
@@ -67,28 +70,42 @@ class RedisWorker:
             while not self.shutdown_event.is_set():
                 event = None
                 try:
-                    message = self.redis_client.blpop('task_queue', timeout=1)
+                    message = self.redis_client.blpop("task_queue", timeout=1)
                     if message:
                         _, data = message
                         task_data = json.loads(data)
                         event = {}
-                        type_of_event ="stripe"
-                        if 'type' in task_data:  # Stripe event structure
-                            event = stripe.Event.construct_from(task_data, stripe.api_key)
+                        type_of_event = "stripe"
+                        if "type" in task_data:  # Stripe event structure
+                            event = stripe.Event.construct_from(
+                                task_data, stripe.api_key
+                            )
                         else:  # Assume it's a PayPal event structure
                             event = task_data
                             type_of_event = "paypal"
-                        
-                        event_type = event.get('type', event.get('event_type', 'Unknown event type'))
-                        event_id = event.id if type_of_event == "stripe" else event["id"]
-                        logger.info(f"Payment {type_of_event} event {event_type} received with ID {event_id}")
+
+                        event_type = event.get(
+                            "type", event.get("event_type", "Unknown event type")
+                        )
+                        event_id = (
+                            event.id if type_of_event == "stripe" else event["id"]
+                        )
+                        logger.info(
+                            f"Payment {type_of_event} event {event_type} received with ID {event_id}"
+                        )
 
                         process_it = False
 
                         with self.event_lock:
-                            cur.execute("SELECT EXISTS (SELECT 1 FROM payments_stripeevent WHERE stripe_event_id = %s AND status = 'processed')", (event_id,))
+                            cur.execute(
+                                "SELECT EXISTS (SELECT 1 FROM payments_stripeevent WHERE stripe_event_id = %s AND status = 'processed')",
+                                (event_id,),
+                            )
                             existing_event = cur.fetchone()[0]
-                            if not existing_event and event_id not in self.processing_events:
+                            if (
+                                not existing_event
+                                and event_id not in self.processing_events
+                            ):
                                 self.processing_events.add(event_id)
                                 process_it = True
 
@@ -104,15 +121,24 @@ class RedisWorker:
                                             VALUES (%s, %s, %s)
                                             ON CONFLICT (stripe_event_id) DO UPDATE SET status = EXCLUDED.status
                                             """,
-                                            (event_id, datetime.now(timezone.utc), 'processed')
+                                            (
+                                                event_id,
+                                                datetime.now(timezone.utc),
+                                                "processed",
+                                            ),
                                         )
                                         cur.execute("COMMIT;")
-                                        logger.info(f"Event {event_id} processed successfully")
+                                        logger.info(
+                                            f"Event {event_id} processed successfully"
+                                        )
                                     break
                                 except Exception as e:
                                     retries += 1
                                     cur.execute("ROLLBACK;")
-                                    logger.error(f"Error processing Stripe webhook for event {event_id}: {e}. Retry {retries}/{self.MAX_RETRIES}", exc_info=True)
+                                    logger.error(
+                                        f"Error processing Stripe webhook for event {event_id}: {e}. Retry {retries}/{self.MAX_RETRIES}",
+                                        exc_info=True,
+                                    )
                                     if retries == self.MAX_RETRIES:
                                         cur.execute(
                                             """
@@ -120,12 +146,18 @@ class RedisWorker:
                                             VALUES (%s, %s, %s)
                                             ON CONFLICT (stripe_event_id) DO UPDATE SET status = EXCLUDED.status
                                             """,
-                                            (event_id, datetime.now(timezone.utc), 'failed')
+                                            (
+                                                event_id,
+                                                datetime.now(timezone.utc),
+                                                "failed",
+                                            ),
                                         )
                             with self.event_lock:
                                 self.processing_events.remove(event_id)
                         else:
-                            logger.info(f"{thread_name} skipped event {event_id} (already being processed or already processed)")
+                            logger.info(
+                                f"{thread_name} skipped event {event_id} (already being processed or already processed)"
+                            )
                     else:
                         time.sleep(1)
                 except redis.exceptions.TimeoutError:
@@ -134,8 +166,10 @@ class RedisWorker:
                 except Exception as e:
                     logger.error(f"Error processing event: {e}", exc_info=True)
                     if event is not None:
-                        event_id = event.id if type_of_event == "stripe" else event["id"]
-                        
+                        event_id = (
+                            event.id if type_of_event == "stripe" else event["id"]
+                        )
+
                         with self.event_lock:
                             if event_id in self.processing_events:
                                 self.processing_events.remove(event_id)
@@ -167,7 +201,7 @@ class RedisWorker:
             self.shutdown_event.clear()  # Clear the shutdown event for other threads
 
     def scale_threads(self):
-        queue_size = self.redis_client.llen('task_queue')
+        queue_size = self.redis_client.llen("task_queue")
         with self.lock:
             current_threads = len(self.threads)
         if queue_size > 50 and current_threads < self.max_threads:
@@ -183,7 +217,9 @@ class RedisWorker:
             threading.Event().wait(30)  # Check every 30 seconds
 
     def start_monitoring(self):
-        self.monitor_thread = threading.Thread(target=self.monitor_and_scale, name="MonitorThread")
+        self.monitor_thread = threading.Thread(
+            target=self.monitor_and_scale, name="MonitorThread"
+        )
         self.monitor_thread.daemon = True
         self.monitor_thread.start()
         logger.info("Started monitoring thread for scaling workers")
@@ -198,6 +234,7 @@ class RedisWorker:
         if self.monitor_thread:
             self.monitor_thread.join()
             logger.info("Stopped monitoring thread")
+
 
 def on_django_shutdown(worker):
     worker.stop_workers()

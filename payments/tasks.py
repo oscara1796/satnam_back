@@ -14,13 +14,16 @@ from payments.paypal_functions import get_paypal_access_token
 
 logger = logging.getLogger("django")
 
-@shared_task(bind=True, max_retries=5, default_retry_delay=60)  # Retry up to 5 times with a 60-second delay
+
+@shared_task(
+    bind=True, max_retries=5, default_retry_delay=60
+)  # Retry up to 5 times with a 60-second delay
 def process_payment_event(self, event_data):
     stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
 
-    type_of_event ="stripe"
+    type_of_event = "stripe"
     event = None
-    if 'type' in event_data:  # Stripe event structure
+    if "type" in event_data:  # Stripe event structure
         event = stripe.Event.construct_from(task_data, stripe.api_key)
     else:  # Assume it's a PayPal event structure
         event = event_data
@@ -30,27 +33,32 @@ def process_payment_event(self, event_data):
     cur = None
     try:
         conn = psycopg2.connect(
-            dbname=settings.DATABASES['default']['NAME'],
-            user=settings.DATABASES['default']['USER'],
-            password=settings.DATABASES['default']['PASSWORD'],
-            host=settings.DATABASES['default']['HOST'],
-            port=settings.DATABASES['default']['PORT']
+            dbname=settings.DATABASES["default"]["NAME"],
+            user=settings.DATABASES["default"]["USER"],
+            password=settings.DATABASES["default"]["PASSWORD"],
+            host=settings.DATABASES["default"]["HOST"],
+            port=settings.DATABASES["default"]["PORT"],
         )
         conn.autocommit = True
-        cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)  
+        cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
         # Attempt to process the event
         process_event(event, cur)
 
     except Exception as e:
-        logger.error(f"Error processing event {event.get('id', 'unknown id')}: {e}", exc_info=True)
-        
+        logger.error(
+            f"Error processing event {event.get('id', 'unknown id')}: {e}",
+            exc_info=True,
+        )
+
         # Retry the task if it fails
         try:
             self.retry(exc=e)
         except self.MaxRetriesExceededError:
-            logger.error(f"Max retries exceeded for event {event.get('id', 'unknown id')}")
-    
+            logger.error(
+                f"Max retries exceeded for event {event.get('id', 'unknown id')}"
+            )
+
     finally:
         if cur:
             cur.close()
@@ -62,17 +70,19 @@ def process_payment_event(self, event_data):
 def cancel_paypal_subscription_task(self, subscription_id):
     """Send a request to PayPal to cancel a subscription."""
     try:
-        access_token = get_paypal_access_token()  # Ensure this function is properly implemented
+        access_token = (
+            get_paypal_access_token()
+        )  # Ensure this function is properly implemented
         headers = {
-            'Authorization': f'Bearer {access_token}',
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json",
+            "Accept": "application/json",
         }
         data = '{ "reason": "Not satisfied with the service" }'
         response = requests.post(
-            f'https://api-m.sandbox.paypal.com/v1/billing/subscriptions/{subscription_id}/cancel',
+            f"https://api-m.sandbox.paypal.com/v1/billing/subscriptions/{subscription_id}/cancel",
             headers=headers,
-            data=data
+            data=data,
         )
 
         if response.status_code in [200, 204]:
@@ -80,23 +90,33 @@ def cancel_paypal_subscription_task(self, subscription_id):
             user.active = False
             user.paypal_subscription_id = None
             user.save()
-            logger.info(f'Successfully cancelled PayPal subscription {subscription_id}')
+            logger.info(f"Successfully cancelled PayPal subscription {subscription_id}")
         else:
-            logger.error(f'Failed to cancel subscription {subscription_id}: {response.text}')
+            logger.error(
+                f"Failed to cancel subscription {subscription_id}: {response.text}"
+            )
             # Retry the task if the cancellation fails
-            self.retry(exc=Exception(f"Failed to cancel subscription {subscription_id}: {response.text}"))
+            self.retry(
+                exc=Exception(
+                    f"Failed to cancel subscription {subscription_id}: {response.text}"
+                )
+            )
 
     except requests.exceptions.RequestException as e:
         # Retry the task in case of a network-related error
-        logger.error(f'Network error occurred while cancelling subscription {subscription_id}: {str(e)}')
+        logger.error(
+            f"Network error occurred while cancelling subscription {subscription_id}: {str(e)}"
+        )
         try:
             self.retry(exc=e)
         except MaxRetriesExceededError:
-            logger.error(f'Max retries exceeded for subscription {subscription_id}')
+            logger.error(f"Max retries exceeded for subscription {subscription_id}")
 
     except Exception as e:
-        logger.error(f'An error occurred while cancelling subscription {subscription_id}: {str(e)}')
+        logger.error(
+            f"An error occurred while cancelling subscription {subscription_id}: {str(e)}"
+        )
         try:
             self.retry(exc=e)
         except MaxRetriesExceededError:
-            logger.error(f'Max retries exceeded for subscription {subscription_id}')
+            logger.error(f"Max retries exceeded for subscription {subscription_id}")

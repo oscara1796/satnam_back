@@ -3,9 +3,10 @@ from django.conf import settings
 import os
 import boto3
 import logging
+
 # Create your models here.
 
-logger = logging.getLogger('django')
+logger = logging.getLogger("django")
 
 
 class StripeEvent(models.Model):
@@ -13,8 +14,6 @@ class StripeEvent(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     processed_at = models.DateTimeField(null=True, blank=True)
     status = models.CharField(max_length=20)
-
-
 
 
 class SubscriptionPlan(models.Model):
@@ -31,20 +30,21 @@ class SubscriptionPlan(models.Model):
 
     def __str__(self):
         return self.name
-    
+
     def delete(self, *args, **kwargs):
         # Delete associated image file
         if self.image:
             # Delete image from S3
             s3 = boto3.client(
-                's3',
+                "s3",
                 aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-                aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
+                aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
             )
             try:
-                s3.delete_object(Bucket=settings.AWS_STORAGE_BUCKET_NAME, Key=self.image.name)
+                s3.delete_object(
+                    Bucket=settings.AWS_STORAGE_BUCKET_NAME, Key=self.image.name
+                )
             except Exception as e:
                 logger.error(f"Error deleting image from S3: {e}")
 
         super(SubscriptionPlan, self).delete(*args, **kwargs)
-

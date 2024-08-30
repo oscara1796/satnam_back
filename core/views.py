@@ -58,18 +58,29 @@ class SignUpView(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if not serializer.is_valid():
-            logger.warning("User registration failed due to invalid data.", extra={"request_data": request.data, "errors": serializer.errors})
+            logger.warning(
+                "User registration failed due to invalid data.",
+                extra={"request_data": request.data, "errors": serializer.errors},
+            )
             errors = {"message": serializer.errors}
             return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             self.perform_create(serializer)
             headers = self.get_success_headers(serializer.data)
-            logger.info("New user registered successfully.", extra={"user_id": serializer.data.get("id", "Unknown")})
-            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-        except Exception as e:
+            logger.info(
+                "New user registered successfully.",
+                extra={"user_id": serializer.data.get("id", "Unknown")},
+            )
+            return Response(
+                serializer.data, status=status.HTTP_201_CREATED, headers=headers
+            )
+        except Exception:
             logger.error("Unexpected error during user registration", exc_info=True)
-            return Response({"message": "An unexpected error occurred during user registration."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {"message": "An unexpected error occurred during user registration."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
 
 class LogInView(TokenObtainPairView):
@@ -149,8 +160,13 @@ class PasswordResetRequestView(APIView):
                 status=status.HTTP_200_OK,
             )
         except get_user_model().DoesNotExist:
-            logger.info("Intento de restablecimiento de contraseña para usuario inexistente")
-            return Response({"message": "No se encontró ningún usuario con el ID proporcionado."}, status=status.HTTP_404_NOT_FOUND)
+            logger.info(
+                "Intento de restablecimiento de contraseña para usuario inexistente"
+            )
+            return Response(
+                {"message": "No se encontró ningún usuario con el ID proporcionado."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
 
 class PasswordResetConfirmView(APIView):
@@ -173,15 +189,31 @@ class PasswordResetConfirmView(APIView):
                 )
         except ValueError:
             logger.warning("Intento de decodificación de UID inválido", exc_info=True)
-            return Response({"message": "ID de usuario no válido. Por favor, revise su solicitud y vuelva a intentarlo."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {
+                    "message": "ID de usuario no válido. Por favor, revise su solicitud y vuelva a intentarlo."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         except get_user_model().DoesNotExist:
-            logger.info("Intento de restablecimiento de contraseña para usuario inexistente")
-            return Response({"message": "No se encontró ningún usuario con el ID proporcionado."}, status=status.HTTP_404_NOT_FOUND)
-        except Exception as e:
-            logger.error("Error inesperado durante el restablecimiento de contraseña", exc_info=True)
-            return Response({"message": "Ocurrió un error inesperado. Por favor, intente de nuevo más tarde."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-            
+            logger.info(
+                "Intento de restablecimiento de contraseña para usuario inexistente"
+            )
+            return Response(
+                {"message": "No se encontró ningún usuario con el ID proporcionado."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        except Exception:
+            logger.error(
+                "Error inesperado durante el restablecimiento de contraseña",
+                exc_info=True,
+            )
+            return Response(
+                {
+                    "message": "Ocurrió un error inesperado. Por favor, intente de nuevo más tarde."
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
 
 class UserDetailView(APIView):
@@ -202,11 +234,11 @@ class UserDetailView(APIView):
             errors = {"message": serializer.errors}
             logger.error(f"Update user failed: {errors}")
             return Response(errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
     def patch(self, request, pk):
         user = get_user_model().objects.get(id=pk)
-        
-        serializer = UserSerializer(user, data=request.data, partial=True) 
+
+        serializer = UserSerializer(user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -225,7 +257,9 @@ class UserDetailView(APIView):
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Exception as e:
             logger.error(f"Error deleting user: {str(e)}", exc_info=True)
-            return Response(data={"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                data={"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 class IsStaffOrReadOnly(permissions.BasePermission):
@@ -254,7 +288,9 @@ class TrialDaysDetail(APIView):
                 serializer = TrialDaysSerializer(trial_day)
                 return Response(serializer.data)
             except Http404:
-                return Response({"error": "TrialDay not found"}, status=status.HTTP_404_NOT_FOUND)
+                return Response(
+                    {"error": "TrialDay not found"}, status=status.HTTP_404_NOT_FOUND
+                )
         else:
             trial_days = TrialDays.objects.all()
             serializer = TrialDaysSerializer(trial_days, many=True)
@@ -268,7 +304,9 @@ class TrialDaysDetail(APIView):
             logger.info("Created a new trial day.")
 
             # Update trial days in all existing subscription plans
-            self.update_subscription_plans_with_trial_days(serializer.validated_data['days'])
+            self.update_subscription_plans_with_trial_days(
+                serializer.validated_data["days"]
+            )
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
@@ -283,11 +321,15 @@ class TrialDaysDetail(APIView):
             logger.info(f"Updated trial day with pk={pk}.")
 
             # Update trial days in all existing subscription plans
-            self.update_subscription_plans_with_trial_days(serializer.validated_data['days'])
+            self.update_subscription_plans_with_trial_days(
+                serializer.validated_data["days"]
+            )
 
             return Response(serializer.data)
         else:
-            logger.warning(f"Failed to update trial day with pk={pk}: {serializer.errors}")
+            logger.warning(
+                f"Failed to update trial day with pk={pk}: {serializer.errors}"
+            )
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk, format=None):
@@ -301,9 +343,14 @@ class TrialDaysDetail(APIView):
 
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Exception as e:
-            logger.error(f"Failed to delete trial day with pk={pk}: {str(e)}", exc_info=True)
-            return Response({"error": "An error occurred while deleting the trial day."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
+            logger.error(
+                f"Failed to delete trial day with pk={pk}: {str(e)}", exc_info=True
+            )
+            return Response(
+                {"error": "An error occurred while deleting the trial day."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
     def update_subscription_plans_with_trial_days(self, days):
         subscription_plans = SubscriptionPlan.objects.all()
         subscription_plan_api_view = SubscriptionPlanAPIView()

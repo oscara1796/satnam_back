@@ -30,8 +30,13 @@ from .models import StripeEvent, SubscriptionPlan
 from .serializers import PaymentMethodSerializer, SubscriptionPlanSerializer
 
 
-
-from payments.paypal_functions import get_paypal_access_token, get_paypal_subscription, schedule_subscription_deletion, remove_scheduled_deletion, verify_paypal_webhook_signature
+from payments.paypal_functions import (
+    get_paypal_access_token,
+    get_paypal_subscription,
+    schedule_subscription_deletion,
+    remove_scheduled_deletion,
+    verify_paypal_webhook_signature,
+)
 
 stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
 # Create your views here.
@@ -41,6 +46,7 @@ FRONTEND_SUBSCRIPTION_CANCEL_URL = settings.SUBSCRIPTION_FAILED_URL
 webhook_secret = settings.STRIPE_WEBHOOK_SECRET
 
 logger = logging.getLogger("django")
+
 
 class IsStaffOrReadOnly(permissions.BasePermission):
     def has_permission(self, request, view):
@@ -73,7 +79,6 @@ class SubscriptionPlanAPIView(APIView):
 
     def post(self, request):
 
-        
         serializer = SubscriptionPlanSerializer(data=request.data)
         if serializer.is_valid():
             validated_data = serializer.validated_data
@@ -81,89 +86,94 @@ class SubscriptionPlanAPIView(APIView):
             try:
                 # Create Stripe Product with corrected metadata and marketing_features
                 stripe_product = stripe.Product.create(
-                    name=validated_data['name'],
-                    description=validated_data['description'],
-                    metadata={k: str(v) for k, v in validated_data.get('metadata', '{}').items()},
-                    marketing_features=validated_data.get('features', '[]')
+                    name=validated_data["name"],
+                    description=validated_data["description"],
+                    metadata={
+                        k: str(v)
+                        for k, v in validated_data.get("metadata", "{}").items()
+                    },
+                    marketing_features=validated_data.get("features", "[]"),
                 )
 
                 # Create Stripe Price with correct price handling
                 stripe_price = stripe.Price.create(
                     product=stripe_product.id,
-                    unit_amount=int(validated_data['price'] * 100),
-                    currency='mxn',
-                    recurring={"interval": validated_data['frequency_type']}
+                    unit_amount=int(validated_data["price"] * 100),
+                    currency="mxn",
+                    recurring={"interval": validated_data["frequency_type"]},
                 )
 
             except stripe.error.StripeError as e:
-                return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                return Response(
+                    {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
 
             # Create PayPal Plan
             access_token = get_paypal_access_token()
             paypal_url = "https://api-m.sandbox.paypal.com/v1/billing/plans"
             headers = {
                 "Content-Type": "application/json",
-                "Authorization": f"Bearer {access_token}"
+                "Authorization": f"Bearer {access_token}",
             }
             trial_days = self.get_trial_days()
             billing_cycles = []
 
             if trial_days > 0:
-                billing_cycles.append({
+                billing_cycles.append(
+                    {
+                        "frequency": {"interval_unit": "DAY", "interval_count": 1},
+                        "tenure_type": "TRIAL",
+                        "sequence": 1,
+                        "total_cycles": trial_days,
+                        "pricing_scheme": {
+                            "fixed_price": {"value": "0", "currency_code": "MXN"}
+                        },
+                    }
+                )
+
+            billing_cycles.append(
+                {
                     "frequency": {
-                        "interval_unit": "DAY",
-                        "interval_count": 1
+                        "interval_unit": validated_data["frequency_type"].upper(),
+                        "interval_count": 1,
                     },
-                    "tenure_type": "TRIAL",
-                    "sequence": 1,
-                    "total_cycles": trial_days,
+                    "tenure_type": "REGULAR",
+                    "sequence": 2 if trial_days > 0 else 1,
+                    "total_cycles": 0,
                     "pricing_scheme": {
                         "fixed_price": {
-                            "value": "0",
-                            "currency_code": "MXN"
+                            "value": str(validated_data["price"]),
+                            "currency_code": "MXN",
                         }
-                    }
-                })
-
-            billing_cycles.append({
-                "frequency": {
-                    "interval_unit": validated_data['frequency_type'].upper(),
-                    "interval_count": 1
-                },
-                "tenure_type": "REGULAR",
-                "sequence": 2 if trial_days > 0 else 1,
-                "total_cycles": 0,
-                "pricing_scheme": {
-                    "fixed_price": {
-                        "value": str(validated_data['price']),
-                        "currency_code": "MXN"
-                    }
+                    },
                 }
-            })
+            )
 
             paypal_payload = {
                 "product_id": os.environ.get("PAYPAL_PRODUCT_ID"),
-                "name": validated_data['name'],
-                "description": validated_data['description'],
+                "name": validated_data["name"],
+                "description": validated_data["description"],
                 "status": "ACTIVE",
                 "billing_cycles": billing_cycles,
                 "payment_preferences": {
                     "auto_bill_outstanding": True,
                     "setup_fee_failure_action": "CONTINUE",
-                    "payment_failure_threshold": 3
-                }
+                    "payment_failure_threshold": 3,
+                },
             }
-            paypal_response = requests.post(paypal_url, headers=headers, json=paypal_payload)
+            paypal_response = requests.post(
+                paypal_url, headers=headers, json=paypal_payload
+            )
             paypal_plan = paypal_response.json()
 
             # Save to database
             plan = serializer.save(
                 stripe_product_id=stripe_product.id,
                 stripe_price_id=stripe_price.id,
-                paypal_plan_id=paypal_plan['id'] if paypal_response.status_code == 201 else None
+                paypal_plan_id=(
+                    paypal_plan["id"] if paypal_response.status_code == 201 else None
+                ),
             )
-
-            
 
             stripe.Product.modify(
                 stripe_product.id,
@@ -182,7 +192,11 @@ class SubscriptionPlanAPIView(APIView):
             validated_data = serializer.validated_data
 
             # Detect changes
-            changes = {field: validated_data[field] for field in validated_data if validated_data[field] != getattr(plan, field)}
+            changes = {
+                field: validated_data[field]
+                for field in validated_data
+                if validated_data[field] != getattr(plan, field)
+            }
             # Apply changes from serializer to the plan instance
             modified_plan = serializer.save()
             try:
@@ -191,30 +205,45 @@ class SubscriptionPlanAPIView(APIView):
                     self.deactivate_paypal_plan(plan.paypal_plan_id)
 
                 # Formulate the new PayPal plan data
-                paypal_payload = self.formulate_paypal_payload(plan, validated_data, changes)
+                paypal_payload = self.formulate_paypal_payload(
+                    plan, validated_data, changes
+                )
 
                 # Create a new PayPal plan with the merged details
                 new_paypal_plan = self.create_paypal_plan(paypal_payload)
-                plan.paypal_plan_id = new_paypal_plan['id']
+                plan.paypal_plan_id = new_paypal_plan["id"]
 
                 # Update Stripe Product if relevant fields are modified
-                if any(field in changes for field in ['name', 'description', 'image', 'metadata', 'features']):
+                if any(
+                    field in changes
+                    for field in [
+                        "name",
+                        "description",
+                        "image",
+                        "metadata",
+                        "features",
+                    ]
+                ):
                     stripe_update_params = {
-                        "name": validated_data.get('name', plan.name),
-                        "description": validated_data.get('description', plan.description),
-                        "metadata": validated_data.get('metadata', plan.metadata),
+                        "name": validated_data.get("name", plan.name),
+                        "description": validated_data.get(
+                            "description", plan.description
+                        ),
+                        "metadata": validated_data.get("metadata", plan.metadata),
                         "images": [modified_plan.image.url],
-                        "marketing_features": validated_data.get('features', [])
+                        "marketing_features": validated_data.get("features", []),
                     }
-                    stripe.Product.modify(plan.stripe_product_id, **stripe_update_params)
+                    stripe.Product.modify(
+                        plan.stripe_product_id, **stripe_update_params
+                    )
 
                 # Update or create a new Stripe price
-                if 'price' in changes or 'frequency_type' in changes:
+                if "price" in changes or "frequency_type" in changes:
                     stripe_price = stripe.Price.create(
                         product=plan.stripe_product_id,
-                        unit_amount=int(validated_data['price'] * 100),
-                        currency='mxn',
-                        recurring={"interval": validated_data['frequency_type']}
+                        unit_amount=int(validated_data["price"] * 100),
+                        currency="mxn",
+                        recurring={"interval": validated_data["frequency_type"]},
                     )
                     plan.stripe_price_id = stripe_price.id
 
@@ -233,52 +262,54 @@ class SubscriptionPlanAPIView(APIView):
         billing_cycles = []
 
         if trial_days > 0:
-            billing_cycles.append({
+            billing_cycles.append(
+                {
+                    "frequency": {"interval_unit": "DAY", "interval_count": 1},
+                    "tenure_type": "TRIAL",
+                    "sequence": 1,
+                    "total_cycles": trial_days,
+                    "pricing_scheme": {
+                        "fixed_price": {"value": "0", "currency_code": "MXN"}
+                    },
+                }
+            )
+
+        billing_cycles.append(
+            {
                 "frequency": {
-                    "interval_unit": "DAY",
-                    "interval_count": 1
+                    "interval_unit": validated_data.get(
+                        "frequency_type", plan.frequency_type
+                    ).upper(),
+                    "interval_count": 1,
                 },
-                "tenure_type": "TRIAL",
-                "sequence": 1,
-                "total_cycles": trial_days,
+                "tenure_type": "REGULAR",
+                "sequence": 2 if trial_days > 0 else 1,
+                "total_cycles": 0,
                 "pricing_scheme": {
                     "fixed_price": {
-                        "value": "0",
-                        "currency_code": "MXN"
+                        "value": str(validated_data.get("price", plan.price)),
+                        "currency_code": "MXN",
                     }
-                }
-            })
-
-        billing_cycles.append({
-            "frequency": {
-                "interval_unit": validated_data.get('frequency_type', plan.frequency_type).upper(),
-                "interval_count": 1
-            },
-            "tenure_type": "REGULAR",
-            "sequence": 2 if trial_days > 0 else 1,
-            "total_cycles": 0,
-            "pricing_scheme": {
-                "fixed_price": {
-                    "value": str(validated_data.get('price', plan.price)),
-                    "currency_code": "MXN"
-                }
+                },
             }
-        })
+        )
 
         paypal_payload = {
-            "product_id": os.environ.get("PAYPAL_PRODUCT_ID", plan.metadata.get('paypal_product_id')),
-            "name": validated_data.get('name', plan.name),
-            "description": validated_data.get('description', plan.description),
+            "product_id": os.environ.get(
+                "PAYPAL_PRODUCT_ID", plan.metadata.get("paypal_product_id")
+            ),
+            "name": validated_data.get("name", plan.name),
+            "description": validated_data.get("description", plan.description),
             "status": "ACTIVE",
             "billing_cycles": billing_cycles,
             "payment_preferences": {
                 "auto_bill_outstanding": True,
                 "setup_fee_failure_action": "CONTINUE",
-                "payment_failure_threshold": 3
-            }
+                "payment_failure_threshold": 3,
+            },
         }
         return paypal_payload
-    
+
     def update_trial_days(self, pk, trial_days):
         """Update the trial days of a subscription plan."""
         plan = SubscriptionPlan.objects.get(pk=pk)
@@ -292,37 +323,35 @@ class SubscriptionPlanAPIView(APIView):
             billing_cycles = []
 
             if trial_days > 0:
-                billing_cycles.append({
+                billing_cycles.append(
+                    {
+                        "frequency": {"interval_unit": "DAY", "interval_count": 1},
+                        "tenure_type": "TRIAL",
+                        "sequence": 1,
+                        "total_cycles": trial_days,
+                        "pricing_scheme": {
+                            "fixed_price": {"value": "0", "currency_code": "MXN"}
+                        },
+                    }
+                )
+
+            billing_cycles.append(
+                {
                     "frequency": {
-                        "interval_unit": "DAY",
-                        "interval_count": 1
+                        "interval_unit": plan.frequency_type.upper(),
+                        "interval_count": 1,
                     },
-                    "tenure_type": "TRIAL",
-                    "sequence": 1,
-                    "total_cycles": trial_days,
+                    "tenure_type": "REGULAR",
+                    "sequence": 2 if trial_days > 0 else 1,
+                    "total_cycles": 0,
                     "pricing_scheme": {
                         "fixed_price": {
-                            "value": "0",
-                            "currency_code": "MXN"
+                            "value": str(plan.price),
+                            "currency_code": "MXN",
                         }
-                    }
-                })
-
-            billing_cycles.append({
-                "frequency": {
-                    "interval_unit": plan.frequency_type.upper(),
-                    "interval_count": 1
-                },
-                "tenure_type": "REGULAR",
-                "sequence": 2 if trial_days > 0 else 1,
-                "total_cycles": 0,
-                "pricing_scheme": {
-                    "fixed_price": {
-                        "value": str(plan.price),
-                        "currency_code": "MXN"
-                    }
+                    },
                 }
-            })
+            )
 
             paypal_payload = {
                 "product_id": os.environ.get("PAYPAL_PRODUCT_ID"),
@@ -333,11 +362,11 @@ class SubscriptionPlanAPIView(APIView):
                 "payment_preferences": {
                     "auto_bill_outstanding": True,
                     "setup_fee_failure_action": "CONTINUE",
-                    "payment_failure_threshold": 3
-                }
+                    "payment_failure_threshold": 3,
+                },
             }
             new_paypal_plan = self.create_paypal_plan(paypal_payload)
-            plan.paypal_plan_id = new_paypal_plan['id']
+            plan.paypal_plan_id = new_paypal_plan["id"]
             plan.save()
 
             return Response({"status": "success"}, status=status.HTTP_200_OK)
@@ -349,26 +378,32 @@ class SubscriptionPlanAPIView(APIView):
         access_token = get_paypal_access_token()
         headers = {
             "Content-Type": "application/json",
-            "Authorization": f"Bearer {access_token}"
+            "Authorization": f"Bearer {access_token}",
         }
         paypal_url = "https://api-m.sandbox.paypal.com/v1/billing/plans"
         response = requests.post(paypal_url, headers=headers, json=data)
         if response.status_code == 201:
             return response.json()
         else:
-            raise Exception(f"Failed to create new PayPal plan: {response.status_code}, {response.text}")
+            raise Exception(
+                f"Failed to create new PayPal plan: {response.status_code}, {response.text}"
+            )
 
     def deactivate_paypal_plan(self, plan_id):
         """Send a request to PayPal to deactivate a billing plan."""
         access_token = get_paypal_access_token()  # Retrieve a valid access token
         headers = {
             "Authorization": f"Bearer {access_token}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
-        paypal_url = f'https://api-m.sandbox.paypal.com/v1/billing/plans/{plan_id}/deactivate'
+        paypal_url = (
+            f"https://api-m.sandbox.paypal.com/v1/billing/plans/{plan_id}/deactivate"
+        )
         response = requests.post(paypal_url, headers=headers)
         if response.status_code not in (200, 204):
-            raise Exception(f"Failed to deactivate PayPal plan {plan_id}: {response.text}")
+            raise Exception(
+                f"Failed to deactivate PayPal plan {plan_id}: {response.text}"
+            )
 
     def delete(self, request, pk):
         plan = SubscriptionPlan.objects.get(pk=pk)
@@ -381,7 +416,7 @@ class SubscriptionPlanAPIView(APIView):
         paypal_url = f"https://api-m.sandbox.paypal.com/v1/billing/plans/{plan.paypal_plan_id}/deactivate"
         headers = {
             "Content-Type": "application/json",
-            "Authorization": f"Bearer {access_token}"
+            "Authorization": f"Bearer {access_token}",
         }
         requests.post(paypal_url, headers=headers)
 
@@ -392,21 +427,23 @@ class SubscriptionPlanAPIView(APIView):
         return self.put(request, pk)
 
 
-    
 class PaypalSubscriptionView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, subscription_id=None):
         """Retrieve details for a single PayPal subscription."""
         if subscription_id is None:
-            return Response({"error": "No subscription ID provided"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "No subscription ID provided"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         access_token = get_paypal_access_token()
         url = f"https://api-m.sandbox.paypal.com/v1/billing/subscriptions/{subscription_id}"
         headers = {
-            'Authorization': f'Bearer {access_token}',
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json",
+            "Accept": "application/json",
         }
 
         response = requests.get(url, headers=headers)
@@ -418,42 +455,57 @@ class PaypalSubscriptionView(APIView):
     def post(self, request):
         """Create a subscription and save the subscription ID to a user."""
         data = request.data
-        user_id = data.get('user_id')
-        subscription_id = data.get('subscriptionID')
+        user_id = data.get("user_id")
+        subscription_id = data.get("subscriptionID")
 
         try:
             user = CustomUser.objects.get(pk=user_id)
             user.paypal_subscription_id = subscription_id
             user.active = True
             user.save()
-            return Response({"message": "Subscription saved successfully."}, status=status.HTTP_201_CREATED)
+            return Response(
+                {"message": "Subscription saved successfully."},
+                status=status.HTTP_201_CREATED,
+            )
         except CustomUser.DoesNotExist:
-            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "User not found."}, status=status.HTTP_404_NOT_FOUND
+            )
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-
 
     def patch(self, request, pk):
         """Partially update a user's PayPal subscription."""
         try:
             user = CustomUser.objects.get(pk=pk)
-            
-            
+
             # Reactivate the PayPal subscription if provided and differs
             if user.paypal_subscription_id:
-                paypal_subscription = get_paypal_subscription(user.paypal_subscription_id)
+                paypal_subscription = get_paypal_subscription(
+                    user.paypal_subscription_id
+                )
                 if paypal_subscription["status"] == "SUSPENDED":
                     self.activate_paypal_subscription(user.paypal_subscription_id)
                     remove_scheduled_deletion(user.paypal_subscription_id)
                 else:
-                    return Response({"error": "susbcription not suspended "}, status=status.HTTP_409_CONFLICT)
-                return Response({"message": "Subscription updated and reactivated successfully."}, status=status.HTTP_200_OK)
+                    return Response(
+                        {"error": "susbcription not suspended "},
+                        status=status.HTTP_409_CONFLICT,
+                    )
+                return Response(
+                    {"message": "Subscription updated and reactivated successfully."},
+                    status=status.HTTP_200_OK,
+                )
             else:
-                return Response({"error": "No paypal subscription found."}, status=status.HTTP_404_NOT_FOUND)
-                
+                return Response(
+                    {"error": "No paypal subscription found."},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
         except CustomUser.DoesNotExist:
-            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "User not found."}, status=status.HTTP_404_NOT_FOUND
+            )
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -461,36 +513,53 @@ class PaypalSubscriptionView(APIView):
         try:
             user = CustomUser.objects.get(pk=pk)
             if user.paypal_subscription_id:
-                last_billing_date = self.deactivate_paypal_subscription(user.paypal_subscription_id)
+                last_billing_date = self.deactivate_paypal_subscription(
+                    user.paypal_subscription_id
+                )
                 if last_billing_date:
 
-                    #time used for testing 
-                    formatted_time = (datetime.now(timezone.utc) + timedelta(minutes=3)).strftime('%Y-%m-%dT%H:%M:%SZ')
+                    # time used for testing
+                    formatted_time = (
+                        datetime.now(timezone.utc) + timedelta(minutes=3)
+                    ).strftime("%Y-%m-%dT%H:%M:%SZ")
                     print(formatted_time)
-                    schedule_subscription_deletion(user.paypal_subscription_id, formatted_time) 
+                    schedule_subscription_deletion(
+                        user.paypal_subscription_id, formatted_time
+                    )
                     # here ends the testing
 
                     # real method with the next_billing_time
-                    #schedule_subscription_deletion(user.paypal_subscription_id, last_billing_date)
-                    
-                    logger.info(f"tried  to schedule   paypal subscription  deletion of {user.paypal_subscription_id}")
+                    # schedule_subscription_deletion(user.paypal_subscription_id, last_billing_date)
 
-            logger.info(f"Deactivated  paypal subscription {user.paypal_subscription_id}")
-            return Response({"message": "Subscription deactivated and deletion scheduled."}, status=status.HTTP_204_NO_CONTENT)
+                    logger.info(
+                        f"tried  to schedule   paypal subscription  deletion of {user.paypal_subscription_id}"
+                    )
+
+            logger.info(
+                f"Deactivated  paypal subscription {user.paypal_subscription_id}"
+            )
+            return Response(
+                {"message": "Subscription deactivated and deletion scheduled."},
+                status=status.HTTP_204_NO_CONTENT,
+            )
         except CustomUser.DoesNotExist:
-            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "User not found."}, status=status.HTTP_404_NOT_FOUND
+            )
         except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
     def deactivate_paypal_subscription(self, subscription_id):
         """Deactivate a PayPal subscription."""
         access_token = get_paypal_access_token()
         url = f"https://api-m.sandbox.paypal.com/v1/billing/subscriptions/{subscription_id}/suspend"
         headers = {
-            'Authorization': f'Bearer {access_token}',
-            'Content-Type': 'application/json'
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json",
         }
-        last_billing_date = self.get_last_billing_date(subscription_id) 
+        last_billing_date = self.get_last_billing_date(subscription_id)
         user = get_user_model().objects.get(paypal_subscription_id=subscription_id)
         next_billing_time = parse_datetime(last_billing_date)
 
@@ -502,42 +571,47 @@ class PaypalSubscriptionView(APIView):
 
         response = requests.post(url, headers=headers)
         if response.status_code in (200, 204):
-             # Assuming you still need it after cancellation
+            # Assuming you still need it after cancellation
             return last_billing_date
         else:
-            raise Exception(f"Failed to deactivate PayPal subscription {subscription_id}: {response.text}")
-    
+            raise Exception(
+                f"Failed to deactivate PayPal subscription {subscription_id}: {response.text}"
+            )
+
     def activate_paypal_subscription(self, subscription_id):
         """Reactivate a PayPal subscription."""
         access_token = get_paypal_access_token()
         url = f"https://api-m.sandbox.paypal.com/v1/billing/subscriptions/{subscription_id}/activate"
         headers = {
-            'Authorization': f'Bearer {access_token}',
-            'Content-Type': 'application/json'
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json",
         }
         response = requests.post(url, headers=headers)
         if response.status_code not in (200, 204):
-            raise Exception(f"Failed to activate PayPal subscription {subscription_id}: {response.text}")
+            raise Exception(
+                f"Failed to activate PayPal subscription {subscription_id}: {response.text}"
+            )
         return response.status_code == 204
-    
+
     def get_last_billing_date(self, subscription_id):
         """Retrieve the last billing date from a PayPal subscription."""
         access_token = get_paypal_access_token()
         url = f"https://api-m.sandbox.paypal.com/v1/billing/subscriptions/{subscription_id}"
         headers = {
-            'Authorization': f'Bearer {access_token}',
-            'Content-Type': 'application/json'
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json",
         }
         response = requests.get(url, headers=headers)
         if response.status_code == 200:
             subscription_details = response.json()
-            return subscription_details.get('billing_info', {}).get('next_billing_time')  # Adjust depending on actual response structure
+            return subscription_details.get("billing_info", {}).get(
+                "next_billing_time"
+            )  # Adjust depending on actual response structure
         else:
             raise Exception(f"Failed to retrieve subscription details: {response.text}")
 
 
 class PricesListView(APIView):
-    
 
     def get(self, request):
         # extract pagination parameters from query params
@@ -562,10 +636,9 @@ class PricesListView(APIView):
         except Exception as e:
             # Log the error and return a 500 Internal Server Error response
             logger.error("Failed to retrieve product prices", exc_info=True)
-            return Response({"errors": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-
+            return Response(
+                {"errors": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 class PaymentMethodView(APIView):
@@ -634,7 +707,9 @@ class PaymentMethodView(APIView):
                 {"payment_method_id": payment_method.id}, status=status.HTTP_201_CREATED
             )
         except StripeError as e:
-            logger.error(f"Failed to create or attach payment method: {e}", exc_info=True)
+            logger.error(
+                f"Failed to create or attach payment method: {e}", exc_info=True
+            )
             return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request, pk):
@@ -651,7 +726,10 @@ class PaymentMethodView(APIView):
                 {"success": "Default payment method updated"}, status=status.HTTP_200_OK
             )
         except StripeError as e:
-            logger.error(f"Failed to update default payment method for user {user.id}: {e}", exc_info=True)
+            logger.error(
+                f"Failed to update default payment method for user {user.id}: {e}",
+                exc_info=True,
+            )
             return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk):
@@ -682,64 +760,95 @@ class PaymentDetailView(APIView):
         try:
             user = get_user_model().objects.get(id=pk)
             response = {}
-            
-            if hasattr(user, 'stripe_subscription_id') and user.stripe_subscription_id:
+
+            if hasattr(user, "stripe_subscription_id") and user.stripe_subscription_id:
                 # Retrieve the customer's Stripe subscription
                 subscription = stripe.Subscription.retrieve(user.stripe_subscription_id)
                 product = stripe.Product.retrieve(subscription.plan.product)
-                
-                response.update({
-                    "subscription_id": subscription.id,
-                    "status": subscription.status,
-                    "current_period_end": subscription.current_period_end,
-                    "product_price": subscription.plan.amount,
-                    "product_name": product.name,
-                    "cancel_at_period_end": subscription.cancel_at_period_end,
-                    "subscription_type": "stripe"
-                })
+
+                response.update(
+                    {
+                        "subscription_id": subscription.id,
+                        "status": subscription.status,
+                        "current_period_end": subscription.current_period_end,
+                        "product_price": subscription.plan.amount,
+                        "product_name": product.name,
+                        "cancel_at_period_end": subscription.cancel_at_period_end,
+                        "subscription_type": "stripe",
+                    }
+                )
 
                 if subscription.status == "trialing":
-                    response.update({
-                        "trial_start": subscription.trial_start,
-                        "trial_end": subscription.trial_end
-                    })
-                
+                    response.update(
+                        {
+                            "trial_start": subscription.trial_start,
+                            "trial_end": subscription.trial_end,
+                        }
+                    )
+
                 logger.info(f"Stripe subscription details retrieved for user {user.id}")
 
-            elif hasattr(user, 'paypal_subscription_id') and user.paypal_subscription_id:
+            elif (
+                hasattr(user, "paypal_subscription_id") and user.paypal_subscription_id
+            ):
                 # Retrieve the customer's PayPal subscription
-                paypal_subscription = get_paypal_subscription(user.paypal_subscription_id)
-                plan = SubscriptionPlan.objects.get(paypal_plan_id=paypal_subscription["plan_id"])
+                paypal_subscription = get_paypal_subscription(
+                    user.paypal_subscription_id
+                )
+                plan = SubscriptionPlan.objects.get(
+                    paypal_plan_id=paypal_subscription["plan_id"]
+                )
                 cancel_at_period_end = False
                 if paypal_subscription["status"] == "SUSPENDED":
                     cancel_at_period_end = True
 
-                next_billing_time = paypal_subscription.get("billing_info", {}).get("next_billing_time", user.paypal_next_billing_time)
-                last_payment_amount = paypal_subscription.get("billing_info", {}).get("last_payment", {}).get("amount", {}).get("value", "")
+                next_billing_time = paypal_subscription.get("billing_info", {}).get(
+                    "next_billing_time", user.paypal_next_billing_time
+                )
+                last_payment_amount = (
+                    paypal_subscription.get("billing_info", {})
+                    .get("last_payment", {})
+                    .get("amount", {})
+                    .get("value", "")
+                )
 
-                response.update({
-                    "subscription_id": paypal_subscription["id"],
-                    "status": paypal_subscription["status"],
-                    "current_period_end": next_billing_time,
-                    "product_price": last_payment_amount,
-                    "product_name": plan.name,
-                    "cancel_at_period_end": cancel_at_period_end,
-                    "subscription_type": "paypal"
-                })
-                
+                response.update(
+                    {
+                        "subscription_id": paypal_subscription["id"],
+                        "status": paypal_subscription["status"],
+                        "current_period_end": next_billing_time,
+                        "product_price": last_payment_amount,
+                        "product_name": plan.name,
+                        "cancel_at_period_end": cancel_at_period_end,
+                        "subscription_type": "paypal",
+                    }
+                )
+
                 logger.info(f"PayPal subscription details retrieved for user {user.id}")
 
             if not response:
-                return Response({"message": "No subscription information available."}, status=status.HTTP_404_NOT_FOUND)
+                return Response(
+                    {"message": "No subscription information available."},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
 
             return Response(response, status=status.HTTP_200_OK)
 
         except get_user_model().DoesNotExist:
             logger.error(f"User with ID {pk} not found.")
-            return Response({"message": "User not found."}, status=status.HTTP_404_NOT_FOUND)
-        except Exception as e:  # This catches any other exceptions including Stripe and PayPal specific ones
-            logger.error(f"Error while retrieving subscription for user {user.id}: {e}", exc_info=True)
-            return Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {"message": "User not found."}, status=status.HTTP_404_NOT_FOUND
+            )
+        except (
+            Exception
+        ) as e:  # This catches any other exceptions including Stripe and PayPal specific ones
+            logger.error(
+                f"Error while retrieving subscription for user {user.id}: {e}",
+                exc_info=True,
+            )
+            return Response(
+                {"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
     def post(self, request, pk):
         try:
@@ -782,7 +891,6 @@ class PaymentDetailView(APIView):
             user.active = subscription.status in ("active", "trialing")
             user.save()
 
-
             logger.info(f"New subscription created for user {user.id}")
             response = {
                 "stripe_customer_id": user.stripe_customer_id,
@@ -796,10 +904,15 @@ class PaymentDetailView(APIView):
 
             return Response(response, status=status.HTTP_201_CREATED)
         except stripe.error.StripeError as e:
-            logger.error(f"Stripe error while creating subscription for user {user.id}: {e}", exc_info=True)
+            logger.error(
+                f"Stripe error while creating subscription for user {user.id}: {e}",
+                exc_info=True,
+            )
             return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            logger.error(f"Unexpected error while creating subscription: {e}", exc_info=True)
+            logger.error(
+                f"Unexpected error while creating subscription: {e}", exc_info=True
+            )
             return Response(
                 {"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
@@ -810,7 +923,9 @@ class PaymentDetailView(APIView):
             subscription_id = user.stripe_subscription_id
 
             if not subscription_id:
-                logger.warning(f"Attempt to cancel non-existent subscription for user {user.id}")
+                logger.warning(
+                    f"Attempt to cancel non-existent subscription for user {user.id}"
+                )
                 return Response(
                     {"error": "Missing subscription_id in request data"},
                     status=status.HTTP_400_BAD_REQUEST,
@@ -828,7 +943,10 @@ class PaymentDetailView(APIView):
                 {"error": "User not found"}, status=status.HTTP_404_NOT_FOUND
             )
         except StripeError as e:
-            logger.error(f"Stripe error while cancelling subscription for user {user.id}: {e}", exc_info=True)
+            logger.error(
+                f"Stripe error while cancelling subscription for user {user.id}: {e}",
+                exc_info=True,
+            )
             return Response(
                 {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
@@ -839,7 +957,9 @@ class PaymentDetailView(APIView):
             subscription_id = user.stripe_subscription_id
 
             if not subscription_id:
-                logger.warning(f"No subscription_id provided for update for user {user.id}")
+                logger.warning(
+                    f"No subscription_id provided for update for user {user.id}"
+                )
                 return Response(
                     {"error": "Missing subscription_id"},
                     status=status.HTTP_400_BAD_REQUEST,
@@ -862,7 +982,10 @@ class PaymentDetailView(APIView):
                 {"error": "User not found"}, status=status.HTTP_404_NOT_FOUND
             )
         except StripeError as e:
-            logger.error(f"Stripe error while updating subscription for user {user.id}: {e}", exc_info=True)
+            logger.error(
+                f"Stripe error while updating subscription for user {user.id}: {e}",
+                exc_info=True,
+            )
             return Response(
                 {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
@@ -893,12 +1016,13 @@ class StripeWebhookView(APIView):
 def paypal_webhook(request):
     try:
         # Load the JSON data sent from PayPal
-        event = json.loads(request.body.decode('utf-8'))
+        event = json.loads(request.body.decode("utf-8"))
 
         if verify_paypal_webhook_signature(request):
-            logger.info(f"Verified PayPal event: {event['event_type']}, ID: {event.get('id', 'No ID')}")
+            logger.info(
+                f"Verified PayPal event: {event['event_type']}, ID: {event.get('id', 'No ID')}"
+            )
 
-  
             process_payment_event.delay(event)
 
             return HttpResponse(status=200)

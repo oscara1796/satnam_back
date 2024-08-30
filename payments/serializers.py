@@ -3,7 +3,6 @@ from .models import SubscriptionPlan
 import json
 
 
-
 class PaymentMethodSerializer(serializers.Serializer):
     number = serializers.CharField(max_length=16)
     exp_month = serializers.IntegerField(min_value=1, max_value=12)
@@ -20,18 +19,23 @@ class StripePriceSerializer(serializers.Serializer):
             raise serializers.ValidationError("Invalid Stripe price ID")
 
         return value
-    
+
+
 class SubscriptionPlanSerializer(serializers.ModelSerializer):
     class Meta:
         model = SubscriptionPlan
-        fields = '__all__'
-    
+        fields = "__all__"
+
     def validate_features(self, value):
         # Just an example: Ensure that each item is a dictionary with a 'name' key
-        if isinstance(value, list) and all(isinstance(item, dict) and 'name' in item for item in value):
+        if isinstance(value, list) and all(
+            isinstance(item, dict) and "name" in item for item in value
+        ):
             return value
         else:
-            raise serializers.ValidationError("Features must be a list of dictionaries with a 'name' key.")
+            raise serializers.ValidationError(
+                "Features must be a list of dictionaries with a 'name' key."
+            )
 
     def validate_metadata(self, value):
         # Check if metadata is a dictionary (simple validation example)
@@ -39,4 +43,3 @@ class SubscriptionPlanSerializer(serializers.ModelSerializer):
             return value
         else:
             raise serializers.ValidationError("Metadata must be a valid JSON object.")
-
