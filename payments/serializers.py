@@ -1,6 +1,6 @@
 from rest_framework import serializers
+
 from .models import SubscriptionPlan
-import json
 
 
 class PaymentMethodSerializer(serializers.Serializer):

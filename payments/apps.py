@@ -1,6 +1,4 @@
 from django.apps import AppConfig
-import logging
-from django.db.models.signals import post_migrate
 
 
 class PaymentsConfig(AppConfig):

@@ -1,14 +1,8 @@
 from django.urls import path
 
-from .views import (
-    PaymentDetailView,
-    PaymentMethodView,
-    PricesListView,
-    StripeWebhookView,
-    SubscriptionPlanAPIView,
-    PaypalSubscriptionView,
-    paypal_webhook,
-)
+from .views import (PaymentDetailView, PaymentMethodView,
+                    PaypalSubscriptionView, PricesListView, StripeWebhookView,
+                    SubscriptionPlanAPIView, paypal_webhook)
 
 urlpatterns = [
     path("stripe/webhook/", StripeWebhookView.as_view(), name="stripe-webhook"),

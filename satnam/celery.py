@@ -4,9 +4,9 @@ https://docs.celeryq.dev/en/stable/django/first-steps-with-django.html
 
 import os
 
-from celery import Celery
-
 from django.conf import settings
+
+from celery import Celery
 
 # this code copied from manage.py
 # set the default Django settings module for the 'celery' app.

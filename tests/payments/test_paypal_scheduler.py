@@ -1,9 +1,11 @@
-from datetime import datetime, timedelta
-from payments.paypal_scheduler import SchedulerSingleton
-from django_apscheduler.models import DjangoJob, DjangoJobExecution
-from django.test import TestCase
 import logging
 import time
+from datetime import datetime, timedelta
+
+from django.test import TestCase
+from django_apscheduler.models import DjangoJob, DjangoJobExecution
+
+from payments.paypal_scheduler import SchedulerSingleton
 
 logger = logging.getLogger("payments")
 
@@ -16,7 +18,7 @@ class TestSchedulerJob(TestCase):
         )  # Schedule to run in 10 seconds
 
         # Schedule the job
-        job = scheduler.add_job(
+        scheduler.add_job(
             func=print,
             trigger="date",
             run_date=run_time,

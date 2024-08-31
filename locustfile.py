@@ -1,9 +1,9 @@
-from locust import HttpUser, TaskSet, task, between
-import json
-import stripe
+import os
 import uuid
 
+import stripe
 from dotenv import load_dotenv
+from locust import HttpUser, TaskSet, between, task
 
 load_dotenv(".env.dev")
 stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")

@@ -1,42 +1,32 @@
 import json
-from django.http import HttpResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST
 import logging
+import os
 from datetime import datetime, timedelta, timezone
 
-import stripe
-import redis
-import os
+import pytz
 import requests
+import stripe
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.http import HttpResponse, JsonResponse
 from django.utils.dateparse import parse_datetime
-import pytz
-from django.core.mail import send_mail
-from django.db import transaction
-from django.http import JsonResponse
-from django.shortcuts import redirect
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 from rest_framework import permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from stripe.error import StripeError
 
-from core.models import CustomUser
-from core.models import TrialDays
-from .tasks import process_payment_event
+from core.models import CustomUser, TrialDays
+from payments.paypal_functions import (get_paypal_access_token,
+                                       get_paypal_subscription,
+                                       remove_scheduled_deletion,
+                                       schedule_subscription_deletion,
+                                       verify_paypal_webhook_signature)
 
-from .models import StripeEvent, SubscriptionPlan
+from .models import SubscriptionPlan
 from .serializers import PaymentMethodSerializer, SubscriptionPlanSerializer
-
-
-from payments.paypal_functions import (
-    get_paypal_access_token,
-    get_paypal_subscription,
-    schedule_subscription_deletion,
-    remove_scheduled_deletion,
-    verify_paypal_webhook_signature,
-)
+from .tasks import process_payment_event
 
 stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
 # Create your views here.
@@ -72,6 +62,7 @@ class SubscriptionPlanAPIView(APIView):
     def get(self, request, pk=None):
         if pk:
             plan = SubscriptionPlan.objects.get(pk=pk)
+            logger.info(f"A specific plan was retrieved {plan}")
         else:
             plans = SubscriptionPlan.objects.all()
         serializer = SubscriptionPlanSerializer(plans, many=not pk)
@@ -184,7 +175,6 @@ class SubscriptionPlanAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request, pk):
-        print(request.data)
         plan = SubscriptionPlan.objects.get(pk=pk)
         serializer = SubscriptionPlanSerializer(plan, data=request.data, partial=True)
 
@@ -647,7 +637,6 @@ class PaymentMethodView(APIView):
     def get(self, request, pk):
         try:
             user = get_user_model().objects.get(id=pk)
-            print(user.stripe_customer_id)
             customer = stripe.Customer.retrieve(user.stripe_customer_id)
 
             # Retrieve the default payment method

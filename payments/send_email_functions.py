@@ -1,13 +1,14 @@
-from django.core.mail import send_mail
 import logging
+from datetime import datetime, timezone
 
+from django.core.mail import send_mail
 
 logger = logging.getLogger("django")
 
 
 def send_invoice_email(customer_email, invoice):
     subject = "Pago Sat Nam Yoga Notificación"
-    logo_url = f"https://satnam-bucket.s3.us-east-2.amazonaws.com/logo.png"
+    logo_url = "https://satnam-bucket.s3.us-east-2.amazonaws.com/logo.png"
     message = f"""
         <!DOCTYPE html>
         <html>
@@ -100,7 +101,7 @@ def send_trial_start_email(customer_email, subscription):
         subscription.trial_end, timezone.utc
     ).strftime("%Y-%m-%d %H:%M:%S")
     subject = "Bienvenido a tu período de prueba! Sat Nam Yoga Estudio"
-    logo_url = f"https://satnam-bucket.s3.us-east-2.amazonaws.com/logo.png"
+    logo_url = "https://satnam-bucket.s3.us-east-2.amazonaws.com/logo.png"
     message = f"""
         <!DOCTYPE html>
         <html>
@@ -185,7 +186,7 @@ def send_trial_start_email(customer_email, subscription):
 
 def send_payment_failed_email(customer_email, invoice):
     subject = "Notificación de Pago Fallido (Sat Nam yoga Estudio)"
-    logo_url = f"https://satnam-bucket.s3.us-east-2.amazonaws.com/logo.png"
+    logo_url = "https://satnam-bucket.s3.us-east-2.amazonaws.com/logo.png"
     message = f"""
         <!DOCTYPE html>
         <html>
@@ -272,7 +273,7 @@ def send_subscription_deleted_email(customer_email):
     subject = (
         "Vamos a extrañarte! Subscripción ha sido eliminada (Sat Nam Yoga Estudio)"
     )
-    logo_url = f"https://satnam-bucket.s3.us-east-2.amazonaws.com/logo.png"
+    logo_url = "https://satnam-bucket.s3.us-east-2.amazonaws.com/logo.png"
     message = f"""
         <!DOCTYPE html>
         <html>
@@ -356,7 +357,7 @@ def send_subscription_deleted_email(customer_email):
 
 def send_trial_will_end_email(customer_email, subscription):
     subject = "Tu período de prueba  Sat Nam Yoga está por terminar"
-    logo_url = f"https://satnam-bucket.s3.us-east-2.amazonaws.com/logo.png"
+    logo_url = "https://satnam-bucket.s3.us-east-2.amazonaws.com/logo.png"
     readable_date = datetime.fromtimestamp(
         subscription.trial_end, timezone.utc
     ).strftime("%Y-%m-%d %H:%M:%S")
@@ -443,7 +444,7 @@ def send_trial_will_end_email(customer_email, subscription):
 
 def send_paypal_subscription_activated_email(customer_email, subscription):
     subject = "Tu suscripción de Sat Nam Yoga con  PayPal ha sido activada"
-    logo_url = f"https://satnam-bucket.s3.us-east-2.amazonaws.com/logo.png"
+    logo_url = "https://satnam-bucket.s3.us-east-2.amazonaws.com/logo.png"
     message = f"""
         <!DOCTYPE html>
         <html>
@@ -531,7 +532,7 @@ def send_paypal_subscription_activated_email(customer_email, subscription):
 
 def send_paypal_subscription_cancelled_email(customer_email, subscription):
     subject = "Tu suscripción de PayPal de Sat Nam Yoga  ha sido cancelada"
-    logo_url = f"https://satnam-bucket.s3.us-east-2.amazonaws.com/logo.png"
+    logo_url = "https://satnam-bucket.s3.us-east-2.amazonaws.com/logo.png"
     message = f"""
         <!DOCTYPE html>
         <html>
@@ -619,7 +620,7 @@ def send_paypal_subscription_cancelled_email(customer_email, subscription):
 
 def send_paypal_subscription_expired_email(customer_email, subscription):
     subject = "Tu suscripción Sat Nam Yoga de PayPal ha expirado"
-    logo_url = f"https://satnam-bucket.s3.us-east-2.amazonaws.com/logo.png"
+    logo_url = "https://satnam-bucket.s3.us-east-2.amazonaws.com/logo.png"
     message = f"""
         <!DOCTYPE html>
         <html>
@@ -707,7 +708,7 @@ def send_paypal_subscription_expired_email(customer_email, subscription):
 
 def send_paypal_subscription_suspended_email(customer_email, subscription):
     subject = "Tu suscripción de Sat Nam Yoga con  PayPal ha sido suspendida"
-    logo_url = f"https://satnam-bucket.s3.us-east-2.amazonaws.com/logo.png"
+    logo_url = "https://satnam-bucket.s3.us-east-2.amazonaws.com/logo.png"
     message = f"""
         <!DOCTYPE html>
         <html>
@@ -795,7 +796,7 @@ def send_paypal_subscription_suspended_email(customer_email, subscription):
 
 def send_paypal_subscription_reactivated_email(customer_email, subscription):
     subject = "Tu suscripción de SatNam con PayPal ha sido reactivada"
-    logo_url = f"https://satnam-bucket.s3.us-east-2.amazonaws.com/logo.png"
+    logo_url = "https://satnam-bucket.s3.us-east-2.amazonaws.com/logo.png"
     message = f"""
         <!DOCTYPE html>
         <html>

@@ -1,9 +1,18 @@
-from datetime import datetime, timezone
 import logging
-from django.contrib.auth import get_user_model
+
 import psycopg2
-from .send_email_functions import *
-from django.conf import settings
+from django.contrib.auth import get_user_model
+
+from .send_email_functions import (send_invoice_email,
+                                   send_payment_failed_email,
+                                   send_paypal_subscription_activated_email,
+                                   send_paypal_subscription_cancelled_email,
+                                   send_paypal_subscription_expired_email,
+                                   send_paypal_subscription_reactivated_email,
+                                   send_paypal_subscription_suspended_email,
+                                   send_subscription_deleted_email,
+                                   send_trial_start_email,
+                                   send_trial_will_end_email)
 
 logger = logging.getLogger("django")
 

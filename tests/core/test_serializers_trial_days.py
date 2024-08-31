@@ -1,16 +1,17 @@
+import json
+import os
+
+import requests
+import stripe
 from django.contrib.auth import get_user_model
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
+
+from core.models import TrialDays  # Replace with your actual import
 from payments.models import SubscriptionPlan
 from payments.paypal_functions import get_paypal_access_token
-import json
-import os
-import requests
-from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test.utils import override_settings
-import stripe
-from core.models import TrialDays  # Replace with your actual import
 
 PASSWORD = "pAssw0rd!"
 

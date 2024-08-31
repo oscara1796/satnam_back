@@ -1,16 +1,17 @@
-from celery import shared_task
 import logging
-import stripe
-from .send_email_functions import *
-from django.conf import settings
-from datetime import datetime, timezone
+import os
+
 import psycopg2
 import psycopg2.extras
-from payments.processing import process_event
-import os
 import requests
+import stripe
+from celery.exceptions import MaxRetriesExceededError
+from django.conf import settings
+
+from celery import shared_task
 from core.models import CustomUser
 from payments.paypal_functions import get_paypal_access_token
+from payments.processing import process_event
 
 logger = logging.getLogger("django")
 
@@ -21,13 +22,11 @@ logger = logging.getLogger("django")
 def process_payment_event(self, event_data):
     stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
 
-    type_of_event = "stripe"
     event = None
     if "type" in event_data:  # Stripe event structure
-        event = stripe.Event.construct_from(task_data, stripe.api_key)
+        event = stripe.Event.construct_from(event_data, stripe.api_key)
     else:  # Assume it's a PayPal event structure
         event = event_data
-        type_of_event = "paypal"
 
     conn = None
     cur = None

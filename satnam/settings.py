@@ -12,10 +12,11 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 
 import datetime
 import os
-import redis
 from pathlib import Path
-import paypalrestsdk
+
 import dj_database_url
+import paypalrestsdk
+import redis
 from django.core.management.utils import get_random_secret_key
 from dotenv import load_dotenv
 

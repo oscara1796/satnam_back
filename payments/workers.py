@@ -1,17 +1,18 @@
-import threading
-import redis
 import json
-import uuid
-import time
-import psycopg2
-import psycopg2.extras
-from datetime import datetime, timezone
-from django.conf import settings
-from payments.processing import process_event
-import stripe
 import logging
 import os
+import threading
+import time
+import uuid
+from datetime import datetime, timezone
 
+import psycopg2
+import psycopg2.extras
+import redis
+import stripe
+from django.conf import settings
+
+from payments.processing import process_event
 
 stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
 

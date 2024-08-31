@@ -1,20 +1,20 @@
-import threading
-import logging
 import json
-import redis
+import logging
 import time
+from queue import Queue
+from unittest.mock import MagicMock, patch
+
+import redis
 import stripe
-from unittest.mock import patch, MagicMock
-from rest_framework.test import APIClient
+from django.conf import settings
+from django.db import close_old_connections, connections
 from django.test import TransactionTestCase, override_settings
 from django.urls import reverse
-from django.conf import settings
-from django.db import connections, close_old_connections
-from payments.workers import RedisWorker
-from payments.models import StripeEvent
-from queue import Queue, Empty
-import stripe
 from dotenv import dotenv_values
+from rest_framework.test import APIClient
+
+from payments.models import StripeEvent
+from payments.workers import RedisWorker
 
 env_vars = dotenv_values(".env.dev")
 stripe.api_key = env_vars["STRIPE_SECRET_KEY"]
@@ -328,7 +328,7 @@ class RedisWorkerTestCase(TransactionTestCase):
             stripe_event = StripeEvent.objects.get(stripe_event_id="evt_123")
             self.assertEqual(stripe_event.status, "processed")
         except StripeEvent.DoesNotExist:
-            self.fail(f"StripeEvent with ID evt_123 does not exist in the database")
+            self.fail("StripeEvent with ID evt_123 does not exist in the database")
 
     @override_settings(DEBUG=True)
     @patch("redis.Redis.from_url")

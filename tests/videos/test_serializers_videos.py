@@ -356,7 +356,7 @@ class VideoPaginationTest(APITestCase):
         # Remove the uploaded image file
         try:
             os.remove(f"media/{video.image.name}")
-        except:
+        except Exception:
             print("videos is not in local media")
 
     def test_create_video(self):
@@ -441,7 +441,7 @@ class VideoPaginationTest(APITestCase):
         # Remove the uploaded image file
         try:
             os.remove(f"media/{video.image.name}")
-        except:
+        except Exception:
             print("videos is not in local media")
 
         # Delete all videos in the database
@@ -506,7 +506,7 @@ class VideoPaginationTest(APITestCase):
         # Remove the uploaded image file
         try:
             os.remove(f"media/{video.image.name}")
-        except:
+        except Exception:
             print("videos is not in local media")
 
         # Call the function to create random videos again
@@ -812,7 +812,7 @@ class CategoryAPITestCase(APITestCase):
 
         try:
             os.remove(f"media/{video.image.name}")
-        except:
+        except Exception:
             print("videos is not in local media")
 
 

@@ -1,8 +1,9 @@
-import stripe
 import logging
+import os
+
+import stripe
 from django.conf import settings
 from django.contrib.auth import get_user_model
-
 # Create your views here.
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
@@ -11,21 +12,20 @@ from django.utils.decorators import method_decorator
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django_ratelimit.decorators import ratelimit
+from dotenv import load_dotenv
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework_simplejwt.views import (TokenObtainPairView,
+                                            TokenRefreshView)
 
+from payments.models import SubscriptionPlan
+from payments.views import SubscriptionPlanAPIView
 from satnam.settings import EMAIL_HOST_USER
 
 from .models import TrialDays
-from payments.models import SubscriptionPlan
-from payments.views import SubscriptionPlanAPIView
 from .serializers import LogInSerializer, TrialDaysSerializer, UserSerializer
-
-from dotenv import load_dotenv
-import os
 
 load_dotenv(".env.dev")
 stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")

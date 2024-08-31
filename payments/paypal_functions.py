@@ -1,22 +1,15 @@
-import requests
-from requests.auth import HTTPBasicAuth
-import json
+import logging
 import os
-from dotenv import load_dotenv
-
 # from payments.paypal_scheduler import SchedulerSingleton
 from datetime import datetime
-import pytz
-from celery.result import AsyncResult
-
-import logging
-
-from core.models import CustomUser
 
 import paypalrestsdk
-from paypalrestsdk.notifications import WebhookEvent
+import pytz
+import requests
+from celery.result import AsyncResult
 from django.conf import settings
-
+from dotenv import load_dotenv
+from requests.auth import HTTPBasicAuth
 
 # This assumes you've configured the PayPal SDK as shown in settings.py
 paypalrestsdk.configure(

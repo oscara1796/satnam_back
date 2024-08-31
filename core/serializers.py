@@ -1,12 +1,12 @@
+import os
+
 import stripe
 from django.contrib.auth import get_user_model
+from dotenv import load_dotenv
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from .models import TrialDays
-
-from dotenv import load_dotenv
-import os
 
 load_dotenv(".env.dev")
 stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")

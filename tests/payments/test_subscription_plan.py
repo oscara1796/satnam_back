@@ -1,17 +1,18 @@
-from django.urls import reverse
+import json
+import os
+
+import requests
+import stripe
 from django.contrib.auth import get_user_model
-from rest_framework.test import APITestCase
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.urls import reverse
+from dotenv import load_dotenv
 from rest_framework import status
+from rest_framework.test import APITestCase
+
+from core.models import TrialDays
 from payments.models import SubscriptionPlan
 from payments.paypal_functions import get_paypal_access_token
-import stripe
-import json
-from dotenv import load_dotenv
-import os
-import requests
-from core.models import TrialDays
-from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test.utils import override_settings
 
 load_dotenv(".env.dev")
 stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")

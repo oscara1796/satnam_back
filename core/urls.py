@@ -1,14 +1,8 @@
 from django.urls import path
 
-from .views import (
-    CustomTokenRefreshView,
-    LogInView,
-    PasswordResetConfirmView,
-    PasswordResetRequestView,
-    SignUpView,
-    TrialDaysDetail,
-    UserDetailView,
-)
+from .views import (CustomTokenRefreshView, LogInView,
+                    PasswordResetConfirmView, PasswordResetRequestView,
+                    SignUpView, TrialDaysDetail, UserDetailView)
 
 urlpatterns = [
     path("api/sign_up/", SignUpView.as_view(), name="sign_up"),
