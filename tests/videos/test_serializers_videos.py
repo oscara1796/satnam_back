@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from django.utils import timezone
+import pytz
 from faker import Faker
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -158,21 +159,21 @@ class VideoPaginationTest(APITestCase):
         # Convert actual value to datetime object in UTC
         actual_date = timezone.datetime.strptime(
             response.data["date_of_creation"], "%Y-%m-%dT%H:%M:%S.%f%z"
-        ).astimezone(timezone.utc)
+        ).astimezone(pytz.UTC)
 
         # Ensure expected value is also in UTC
-        expected_date = video.date_of_creation.astimezone(timezone.utc)
+        expected_date = video.date_of_creation.astimezone(pytz.UTC)
 
         # Now compare the two datetime objects directly
-        self.assertEqual(actual_date, expected_date)
+        self.assertEqual(actual_date, expected_date)    
 
         # Convert actual value to datetime object in UTC
         actual_date = timezone.datetime.strptime(
             response.data["date_of_modification"], "%Y-%m-%dT%H:%M:%S.%f%z"
-        ).astimezone(timezone.utc)
+        ).astimezone(pytz.UTC)
 
         # Ensure expected value is also in UTC
-        expected_date = video.date_of_modification.astimezone(timezone.utc)
+        expected_date = video.date_of_modification.astimezone(pytz.UTC)
 
         # Now compare the two datetime objects directly
         self.assertEqual(actual_date, expected_date)
@@ -197,10 +198,10 @@ class VideoPaginationTest(APITestCase):
         # Convert actual value to datetime object in UTC
         actual_date = timezone.datetime.strptime(
             response.data["date_of_creation"], "%Y-%m-%dT%H:%M:%S.%f%z"
-        ).astimezone(timezone.utc)
+        ).astimezone(pytz.UTC)
 
         # Ensure expected value is also in UTC
-        expected_date = video.date_of_creation.astimezone(timezone.utc)
+        expected_date = video.date_of_creation.astimezone(pytz.UTC)
 
         # Now compare the two datetime objects directly
         self.assertEqual(actual_date, expected_date)
@@ -208,10 +209,10 @@ class VideoPaginationTest(APITestCase):
         # Convert actual value to datetime object in UTC
         actual_date = timezone.datetime.strptime(
             response.data["date_of_modification"], "%Y-%m-%dT%H:%M:%S.%f%z"
-        ).astimezone(timezone.utc)
+        ).astimezone(pytz.UTC)
 
         # Ensure expected value is also in UTC
-        expected_date = video.date_of_modification.astimezone(timezone.utc)
+        expected_date = video.date_of_modification.astimezone(pytz.UTC)
 
         # Now compare the two datetime objects directly
         self.assertEqual(actual_date, expected_date)
@@ -236,10 +237,10 @@ class VideoPaginationTest(APITestCase):
         # Convert actual value to datetime object in UTC
         actual_date = timezone.datetime.strptime(
             response.data["date_of_creation"], "%Y-%m-%dT%H:%M:%S.%f%z"
-        ).astimezone(timezone.utc)
+        ).astimezone(pytz.UTC)
 
         # Ensure expected value is also in UTC
-        expected_date = video.date_of_creation.astimezone(timezone.utc)
+        expected_date = video.date_of_creation.astimezone(pytz.UTC)
 
         # Now compare the two datetime objects directly
         self.assertEqual(actual_date, expected_date)
@@ -247,10 +248,10 @@ class VideoPaginationTest(APITestCase):
         # Convert actual value to datetime object in UTC
         actual_date = timezone.datetime.strptime(
             response.data["date_of_modification"], "%Y-%m-%dT%H:%M:%S.%f%z"
-        ).astimezone(timezone.utc)
+        ).astimezone(pytz.UTC)
 
         # Ensure expected value is also in UTC
-        expected_date = video.date_of_modification.astimezone(timezone.utc)
+        expected_date = video.date_of_modification.astimezone(pytz.UTC)
 
         # Now compare the two datetime objects directly
         self.assertEqual(actual_date, expected_date)
@@ -326,10 +327,10 @@ class VideoPaginationTest(APITestCase):
         # Convert actual value to datetime object in UTC
         actual_date = timezone.datetime.strptime(
             response.data["date_of_creation"], "%Y-%m-%dT%H:%M:%S.%f%z"
-        ).astimezone(timezone.utc)
+        ).astimezone(pytz.UTC)
 
         # Ensure expected value is also in UTC
-        expected_date = video.date_of_creation.astimezone(timezone.utc)
+        expected_date = video.date_of_creation.astimezone(pytz.UTC)
 
         # Now compare the two datetime objects directly
         self.assertEqual(actual_date, expected_date)
@@ -337,10 +338,10 @@ class VideoPaginationTest(APITestCase):
         # Convert actual value to datetime object in UTC
         actual_date = timezone.datetime.strptime(
             response.data["date_of_modification"], "%Y-%m-%dT%H:%M:%S.%f%z"
-        ).astimezone(timezone.utc)
+        ).astimezone(pytz.UTC)
 
         # Ensure expected value is also in UTC
-        expected_date = video.date_of_modification.astimezone(timezone.utc)
+        expected_date = video.date_of_modification.astimezone(pytz.UTC)
 
         # Now compare the two datetime objects directly
         self.assertEqual(actual_date, expected_date)
@@ -419,10 +420,10 @@ class VideoPaginationTest(APITestCase):
         # Convert actual value to datetime object in UTC
         actual_date = timezone.datetime.strptime(
             response.data["date_of_creation"], "%Y-%m-%dT%H:%M:%S.%f%z"
-        ).astimezone(timezone.utc)
+        ).astimezone(pytz.UTC)
 
         # Ensure expected value is also in UTC
-        expected_date = video.date_of_creation.astimezone(timezone.utc)
+        expected_date = video.date_of_creation.astimezone(pytz.UTC)
 
         # Now compare the two datetime objects directly
         self.assertEqual(actual_date, expected_date)
@@ -430,10 +431,10 @@ class VideoPaginationTest(APITestCase):
         # Convert actual value to datetime object in UTC
         actual_date = timezone.datetime.strptime(
             response.data["date_of_modification"], "%Y-%m-%dT%H:%M:%S.%f%z"
-        ).astimezone(timezone.utc)
+        ).astimezone(pytz.UTC)
 
         # Ensure expected value is also in UTC
-        expected_date = video.date_of_modification.astimezone(timezone.utc)
+        expected_date = video.date_of_modification.astimezone(pytz.UTC)
 
         # Now compare the two datetime objects directly
         self.assertEqual(actual_date, expected_date)
@@ -485,10 +486,10 @@ class VideoPaginationTest(APITestCase):
         # Convert actual value to datetime object in UTC
         actual_date = timezone.datetime.strptime(
             response.data["date_of_creation"], "%Y-%m-%dT%H:%M:%S.%f%z"
-        ).astimezone(timezone.utc)
+        ).astimezone(pytz.UTC)
 
         # Ensure expected value is also in UTC
-        expected_date = video.date_of_creation.astimezone(timezone.utc)
+        expected_date = video.date_of_creation.astimezone(pytz.UTC)
 
         # Now compare the two datetime objects directly
         self.assertEqual(actual_date, expected_date)
@@ -496,10 +497,10 @@ class VideoPaginationTest(APITestCase):
         # Convert actual value to datetime object in UTC
         actual_date = timezone.datetime.strptime(
             response.data["date_of_modification"], "%Y-%m-%dT%H:%M:%S.%f%z"
-        ).astimezone(timezone.utc)
+        ).astimezone(pytz.UTC)
 
         # Ensure expected value is also in UTC
-        expected_date = video.date_of_modification.astimezone(timezone.utc)
+        expected_date = video.date_of_modification.astimezone(pytz.UTC)
 
         # Now compare the two datetime objects directly
         self.assertEqual(actual_date, expected_date)
@@ -618,10 +619,10 @@ class VideoPaginationTest(APITestCase):
         # Convert actual value to datetime object in UTC
         actual_date = timezone.datetime.strptime(
             response.data["date_of_creation"], "%Y-%m-%dT%H:%M:%S.%f%z"
-        ).astimezone(timezone.utc)
+        ).astimezone(pytz.UTC)
 
         # Ensure expected value is also in UTC
-        expected_date = video.date_of_creation.astimezone(timezone.utc)
+        expected_date = video.date_of_creation.astimezone(pytz.UTC)
 
         # Now compare the two datetime objects directly
         self.assertEqual(actual_date, expected_date)
@@ -629,10 +630,10 @@ class VideoPaginationTest(APITestCase):
         # Convert actual value to datetime object in UTC
         actual_date = timezone.datetime.strptime(
             response.data["date_of_modification"], "%Y-%m-%dT%H:%M:%S.%f%z"
-        ).astimezone(timezone.utc)
+        ).astimezone(pytz.UTC)
 
         # Ensure expected value is also in UTC
-        expected_date = video.date_of_modification.astimezone(timezone.utc)
+        expected_date = video.date_of_modification.astimezone(pytz.UTC)
 
         # Now compare the two datetime objects directly
         self.assertEqual(actual_date, expected_date)

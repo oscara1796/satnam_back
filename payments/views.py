@@ -423,11 +423,13 @@ class PaypalSubscriptionView(APIView):
     def get(self, request, subscription_id=None):
         """Retrieve details for a single PayPal subscription."""
         if subscription_id is None:
+            logger.error("No subscription ID provided.")
             return Response(
                 {"error": "No subscription ID provided"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        logger.info(f"Fetching subscription Paypal details for ID: {subscription_id}")
         access_token = get_paypal_access_token()
         url = f"https://api-m.sandbox.paypal.com/v1/billing/subscriptions/{subscription_id}"
         headers = {
@@ -436,11 +438,17 @@ class PaypalSubscriptionView(APIView):
             "Accept": "application/json",
         }
 
-        response = requests.get(url, headers=headers)
-        if response.status_code == 200:
+        try:
+            response = requests.get(url, headers=headers)
+            response.raise_for_status()  # This will raise an error for HTTP error codes
+            logger.info(f"Successfully retrieved subscription details for ID: {subscription_id}")
             return Response(response.json(), status=status.HTTP_200_OK)
-        else:
+        except requests.exceptions.HTTPError as e:
+            logger.error(f"HTTP error occurred: {e}")
             return Response(response.json(), status=response.status_code)
+        except Exception as e:
+            logger.error(f"An error occurred while fetching subscription details: {e}")
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def post(self, request):
         """Create a subscription and save the subscription ID to a user."""
@@ -448,157 +456,191 @@ class PaypalSubscriptionView(APIView):
         user_id = data.get("user_id")
         subscription_id = data.get("subscriptionID")
 
+        logger.info(f"Attempting to save  Paypal subscription ID: {subscription_id} for user ID: {user_id}")
         try:
             user = CustomUser.objects.get(pk=user_id)
             user.paypal_subscription_id = subscription_id
             user.active = True
             user.save()
+            logger.info(f"Successfully saved  paypal subscription ID: {subscription_id} for user ID: {user_id}")
             return Response(
                 {"message": "Subscription saved successfully."},
                 status=status.HTTP_201_CREATED,
             )
         except CustomUser.DoesNotExist:
+            logger.error(f"User with ID {user_id} not found.")
             return Response(
                 {"error": "User not found."}, status=status.HTTP_404_NOT_FOUND
             )
         except Exception as e:
+            logger.error(f"An error occurred while saving  paypal subscription: {e}")
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     def patch(self, request, pk):
         """Partially update a user's PayPal subscription."""
+        logger.info(f"Received request to partially update subscription for user ID: {pk}")
+        print("HOLA")
         try:
             user = CustomUser.objects.get(pk=pk)
 
-            # Reactivate the PayPal subscription if provided and differs
             if user.paypal_subscription_id:
-                paypal_subscription = get_paypal_subscription(
-                    user.paypal_subscription_id
-                )
+                paypal_subscription = get_paypal_subscription(user.paypal_subscription_id)
+                logger.info(f"Retrieved PayPal subscription for user ID: {pk}")
+                print("OUTSIDE SUSPENDED REVIEW ")
                 if paypal_subscription["status"] == "SUSPENDED":
+                    print("inside SUSPENDED REVIEW ")
+                    logger.info(f"Subscription is suspended, attempting to reactivate for user ID: {pk}")
                     self.activate_paypal_subscription(user.paypal_subscription_id)
                     remove_scheduled_deletion(user.paypal_subscription_id)
-                else:
+                    logger.info(f"Subscription reactivated and scheduled deletion removed for user ID: {pk}")
                     return Response(
-                        {"error": "susbcription not suspended "},
+                        {"message": "Subscription updated and reactivated successfully."},
+                        status=status.HTTP_200_OK,
+                    )
+                else:
+                    logger.warning(f"Subscription for user ID: {pk} is not suspended. Cannot reactivate.")
+                    return Response(
+                        {"error": "Subscription not suspended"},
                         status=status.HTTP_409_CONFLICT,
                     )
-                return Response(
-                    {"message": "Subscription updated and reactivated successfully."},
-                    status=status.HTTP_200_OK,
-                )
             else:
+                logger.error(f"No PayPal subscription found for user ID: {pk}")
                 return Response(
-                    {"error": "No paypal subscription found."},
+                    {"error": "No PayPal subscription found."},
                     status=status.HTTP_404_NOT_FOUND,
                 )
 
         except CustomUser.DoesNotExist:
+            logger.error(f"User with ID {pk} not found.")
             return Response(
                 {"error": "User not found."}, status=status.HTTP_404_NOT_FOUND
             )
         except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            print("ERROR ", e)
+            logger.error(f"An error occurred while updating subscription for user ID: {pk}: {e}")
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def delete(self, request, pk):
+        logger.info(f"Received request to delete subscription for user ID: {pk}")
         try:
             user = CustomUser.objects.get(pk=pk)
-            if user.paypal_subscription_id:
-                last_billing_date = self.deactivate_paypal_subscription(
-                    user.paypal_subscription_id
-                )
-                if last_billing_date:
 
-                    # time used for testing
+            if user.paypal_subscription_id:
+                logger.info(f"Attempting to deactivate PayPal subscription for user ID: {pk}")
+                last_billing_date = self.deactivate_paypal_subscription(user.paypal_subscription_id)
+
+                if last_billing_date:
+                    # Time used for testing
                     formatted_time = (
                         datetime.now(timezone.utc) + timedelta(minutes=3)
                     ).strftime("%Y-%m-%dT%H:%M:%SZ")
-                    print(formatted_time)
-                    schedule_subscription_deletion(
-                        user.paypal_subscription_id, formatted_time
-                    )
-                    # here ends the testing
-
-                    # real method with the next_billing_time
+                    logger.debug(f"Scheduling deletion at: {formatted_time} for testing purposes.")
+                    schedule_subscription_deletion(user.paypal_subscription_id, formatted_time)
+                    # Uncomment for real method with the next_billing_time
                     # schedule_subscription_deletion(user.paypal_subscription_id, last_billing_date)
+                    logger.info(f"Scheduled deletion for PayPal subscription {user.paypal_subscription_id} for user ID: {pk}")
 
-                    logger.info(
-                        f"tried  to schedule   paypal subscription  deletion of {user.paypal_subscription_id}"
-                    )
-
-            logger.info(
-                f"Deactivated  paypal subscription {user.paypal_subscription_id}"
-            )
+            logger.info(f"Successfully deactivated PayPal subscription for user ID: {pk}")
             return Response(
                 {"message": "Subscription deactivated and deletion scheduled."},
                 status=status.HTTP_204_NO_CONTENT,
             )
         except CustomUser.DoesNotExist:
+            logger.error(f"User with ID {pk} not found.")
             return Response(
                 {"error": "User not found."}, status=status.HTTP_404_NOT_FOUND
             )
         except Exception as e:
+            logger.error(f"An error occurred while deactivating subscription for user ID: {pk}: {e}")
             return Response(
                 {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
     def deactivate_paypal_subscription(self, subscription_id):
         """Deactivate a PayPal subscription."""
+        logger.info(f"Attempting to deactivate PayPal subscription ID: {subscription_id}")
         access_token = get_paypal_access_token()
         url = f"https://api-m.sandbox.paypal.com/v1/billing/subscriptions/{subscription_id}/suspend"
         headers = {
             "Authorization": f"Bearer {access_token}",
             "Content-Type": "application/json",
         }
-        last_billing_date = self.get_last_billing_date(subscription_id)
-        user = get_user_model().objects.get(paypal_subscription_id=subscription_id)
-        next_billing_time = parse_datetime(last_billing_date)
 
-        # Ensure the datetime is timezone-aware (UTC)
-        if next_billing_time and not next_billing_time.tzinfo:
-            next_billing_time = pytz.utc.localize(next_billing_time)
-        user.paypal_next_billing_time = next_billing_time
-        user.save()
+        try:
+            last_billing_date = self.get_last_billing_date(subscription_id)
+            user = get_user_model().objects.get(paypal_subscription_id=subscription_id)
+            next_billing_time = parse_datetime(last_billing_date)
 
-        response = requests.post(url, headers=headers)
-        if response.status_code in (200, 204):
-            # Assuming you still need it after cancellation
-            return last_billing_date
-        else:
-            raise Exception(
-                f"Failed to deactivate PayPal subscription {subscription_id}: {response.text}"
-            )
+            # Ensure the datetime is timezone-aware (UTC)
+            if next_billing_time and not next_billing_time.tzinfo:
+                next_billing_time = pytz.utc.localize(next_billing_time)
+            
+            user.paypal_next_billing_time = next_billing_time
+            user.save()
+
+            logger.info(f"User {user.id} next  paypal billing time updated to {next_billing_time}")
+
+            response = requests.post(url, headers=headers)
+            if response.status_code in (200, 204):
+                logger.info(f"Successfully deactivated PayPal subscription ID: {subscription_id}")
+                return last_billing_date
+            else:
+                logger.error(f"Failed to deactivate PayPal subscription ID: {subscription_id} - {response.text}")
+                raise Exception(
+                    f"Failed to deactivate PayPal subscription {subscription_id}: {response.text}"
+                )
+        except Exception as e:
+            logger.error(f"An error occurred during PayPal subscription deactivation: {e}")
+            raise
 
     def activate_paypal_subscription(self, subscription_id):
         """Reactivate a PayPal subscription."""
+        logger.info(f"Attempting to reactivate PayPal subscription ID: {subscription_id}")
         access_token = get_paypal_access_token()
         url = f"https://api-m.sandbox.paypal.com/v1/billing/subscriptions/{subscription_id}/activate"
         headers = {
             "Authorization": f"Bearer {access_token}",
             "Content-Type": "application/json",
         }
-        response = requests.post(url, headers=headers)
-        if response.status_code not in (200, 204):
-            raise Exception(
-                f"Failed to activate PayPal subscription {subscription_id}: {response.text}"
-            )
-        return response.status_code == 204
+
+        try:
+            response = requests.post(url, headers=headers)
+            if response.status_code not in (200, 204):
+                logger.error(f"Failed to reactivate PayPal subscription ID: {subscription_id} - {response.text}")
+                raise Exception(
+                    f"Failed to activate PayPal subscription {subscription_id}: {response.text}"
+                )
+            logger.info(f"Successfully reactivated PayPal subscription ID: {subscription_id}")
+            return response.status_code == 204
+        except Exception as e:
+            logger.error(f"An error occurred during PayPal subscription reactivation: {e}")
+            raise
 
     def get_last_billing_date(self, subscription_id):
         """Retrieve the last billing date from a PayPal subscription."""
+        logger.info(f"Fetching last billing date for PayPal subscription ID: {subscription_id}")
         access_token = get_paypal_access_token()
         url = f"https://api-m.sandbox.paypal.com/v1/billing/subscriptions/{subscription_id}"
         headers = {
             "Authorization": f"Bearer {access_token}",
             "Content-Type": "application/json",
         }
-        response = requests.get(url, headers=headers)
-        if response.status_code == 200:
-            subscription_details = response.json()
-            return subscription_details.get("billing_info", {}).get(
-                "next_billing_time"
-            )  # Adjust depending on actual response structure
-        else:
-            raise Exception(f"Failed to retrieve subscription details: {response.text}")
+
+        try:
+            response = requests.get(url, headers=headers)
+            if response.status_code == 200:
+                subscription_details = response.json()
+                last_billing_date = subscription_details.get("billing_info", {}).get(
+                    "next_billing_time"
+                )  # Adjust depending on actual response structure
+                logger.info(f"Retrieved last billing date for PayPal subscription ID: {subscription_id}: {last_billing_date}")
+                return last_billing_date
+            else:
+                logger.error(f"Failed to retrieve subscription details for ID: {subscription_id} - {response.text}")
+                raise Exception(f"Failed to retrieve subscription details: {response.text}")
+        except Exception as e:
+            logger.error(f"An error occurred while retrieving last billing date for PayPal subscription ID: {subscription_id}: {e}")
+            raise
 
 
 class PricesListView(APIView):

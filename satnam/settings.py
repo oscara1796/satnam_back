@@ -34,6 +34,9 @@ SECRET_KEY = os.environ.get("SECRET_KEY", default=get_random_secret_key())
 
 DEBUG = int(os.environ.get("DEBUG", default=0))
 
+
+TESTING = True
+
 # SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG = True
 
@@ -313,28 +316,11 @@ paypalrestsdk.configure(
 )
 
 
-TESTING = True
 
-# SCHEDULER logic
 
-# SCHEDULER_CONFIG = {
-#     "apscheduler.jobstores.default": {
-#         "class": "django_apscheduler.jobstores:DjangoJobStore"
-#     },
-#     'apscheduler.executors.default': {
-#         "type": "threadpool",
-#         "max_workers": 10
-#     },
-#     'apscheduler.executors.processpool': {
-#         "type": "processpool",
-#         "max_workers": 5
-#     },
-#     'apscheduler.job_defaults': {
-#         "coalesce": False,
-#         "max_instances": 3
-#     },
-#     'apscheduler.timezone': 'UTC',
-# }
+if TESTING:
+    CELERY_TASK_ALWAYS_EAGER = True
+    CELERY_TASK_EAGER_PROPAGATES = True
 
 
 # CELERY CONFIG
