@@ -329,7 +329,7 @@ CELERY_RESULT_BACKEND = os.environ.get("CELERY_BACKEND", REDIS_URL)
 
 CELERY_BROKER_TRANSPORT_OPTIONS = {
     'ssl': {
-        'ssl_cert_reqs': 'CERT_REQUIRED',  # or 'CERT_OPTIONAL' or 'CERT_NONE'
+        'ssl_cert_reqs': 'CERT_NONE',  # or 'CERT_OPTIONAL' or 'CERT_NONE'
         # Add more SSL options if necessary:
         # 'ssl_ca_certs': '/path/to/ca-certificates.crt',
         # 'ssl_certfile': '/path/to/ssl-cert.pem',
