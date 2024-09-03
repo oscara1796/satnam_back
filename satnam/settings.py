@@ -327,6 +327,8 @@ if TESTING:
 CELERY_BROKER_URL = os.environ.get("CELERY_BROKER", REDIS_URL)
 CELERY_RESULT_BACKEND = os.environ.get("CELERY_BACKEND", REDIS_URL)
 
+CELERY_WORKER_CONCURRENCY = 2
+
 CELERY_BROKER_TRANSPORT_OPTIONS = {
     'ssl': {
         'ssl_cert_reqs': 'CERT_NONE',  # Disables SSL certificate verification
