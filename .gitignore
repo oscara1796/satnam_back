@@ -51,9 +51,6 @@ media/
 # Ignore the secrets directory
 secrets/
 
-# Ignore migrations
-*/migrations/
-!*/migrations/__init__.py
 
 # OS generated files
 .DS_Store
