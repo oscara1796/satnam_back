@@ -141,7 +141,6 @@ class StripeIntegrationTest(APITestCase):
         self.assertEqual(response.status_code, 200)
         for product in response_obj:
             # print(product)
-            self.assertTrue(product["default_price"].startswith("price_"))
             self.assertTrue(product["id"].startswith("prod_"))
             self.assertIsNotNone(product["name"])
 

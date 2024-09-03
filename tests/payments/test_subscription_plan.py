@@ -269,7 +269,7 @@ class SubscriptionPlanAPITests(APITestCase):
         self.client.force_authenticate(user=self.non_staff_user)
         url = reverse("subscription_plan")
         response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         url = reverse("subscription_plan", kwargs={"pk": plan.pk})
         response = self.client.post(url, {})

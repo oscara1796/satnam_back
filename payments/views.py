@@ -479,16 +479,13 @@ class PaypalSubscriptionView(APIView):
     def patch(self, request, pk):
         """Partially update a user's PayPal subscription."""
         logger.info(f"Received request to partially update subscription for user ID: {pk}")
-        print("HOLA")
         try:
             user = CustomUser.objects.get(pk=pk)
 
             if user.paypal_subscription_id:
                 paypal_subscription = get_paypal_subscription(user.paypal_subscription_id)
                 logger.info(f"Retrieved PayPal subscription for user ID: {pk}")
-                print("OUTSIDE SUSPENDED REVIEW ")
                 if paypal_subscription["status"] == "SUSPENDED":
-                    print("inside SUSPENDED REVIEW ")
                     logger.info(f"Subscription is suspended, attempting to reactivate for user ID: {pk}")
                     self.activate_paypal_subscription(user.paypal_subscription_id)
                     remove_scheduled_deletion(user.paypal_subscription_id)
@@ -528,13 +525,14 @@ class PaypalSubscriptionView(APIView):
             if user.paypal_subscription_id:
                 logger.info(f"Attempting to deactivate PayPal subscription for user ID: {pk}")
                 last_billing_date = self.deactivate_paypal_subscription(user.paypal_subscription_id)
-
+                print("GETTING BILLING TIME")
                 if last_billing_date:
                     # Time used for testing
                     formatted_time = (
                         datetime.now(timezone.utc) + timedelta(minutes=3)
                     ).strftime("%Y-%m-%dT%H:%M:%SZ")
                     logger.debug(f"Scheduling deletion at: {formatted_time} for testing purposes.")
+                    print("scheduling deletion")
                     schedule_subscription_deletion(user.paypal_subscription_id, formatted_time)
                     # Uncomment for real method with the next_billing_time
                     # schedule_subscription_deletion(user.paypal_subscription_id, last_billing_date)
@@ -1048,6 +1046,8 @@ def paypal_webhook(request):
     try:
         # Load the JSON data sent from PayPal
         event = json.loads(request.body.decode("utf-8"))
+
+    
 
         if verify_paypal_webhook_signature(request):
             logger.info(

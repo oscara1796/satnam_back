@@ -4,6 +4,7 @@ from rest_framework.test import APIClient, APITestCase
 from django.contrib.auth import get_user_model
 from payments.paypal_functions import get_paypal_access_token
 from unittest.mock import patch, Mock,  MagicMock
+from datetime import datetime
 
 
 class PaypalSubscriptionViewTestCase(APITestCase):
@@ -409,12 +410,44 @@ class PaypalSubscriptionViewTestCase(APITestCase):
             }
         )
 
+
+    @patch('payments.tasks.cancel_paypal_subscription_task.apply_async')
+    @patch('requests.post')
+    @patch('payments.views.PaypalSubscriptionView.get_last_billing_date')
+    @patch('payments.views.get_paypal_access_token')
+    def test_delete_subscription_success(self, mock_get_paypal_access_token, mock_get_last_billing_date, mock_requests_post, mock_apply_async):
+        # Mocking the access token retrieval to return a fake token
+        mock_get_paypal_access_token.return_value = "fake-access-token"
+
+        # Mocking the requests.post to simulate a successful suspension
+        mock_requests_post.return_value = MagicMock(status_code=204)
+
+        # Mocking the get_last_billing_date method to return a sample date
+        mock_get_last_billing_date.return_value = "2023-12-31T23:59:59Z"
+
         
 
-       
+        url = reverse('subscription_plan_paypal', args=[self.user.id])
+        # Correct URL for DELETE method
+        response = self.client.delete(url)
 
-    # def test_delete_subscription_success(self):
-    #     url = reverse('subscription_plan_paypal_delete', args=[self.user.id])
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        
+        # Check that the PayPal suspension was attempted
+        mock_requests_post.assert_called_once_with(
+            'https://api-m.sandbox.paypal.com/v1/billing/subscriptions/I-F5J97PWEY3FA/suspend',
+            headers={
+                'Authorization': 'Bearer fake-access-token',
+                'Content-Type': 'application/json',
+            }
+        )
 
-    #     response = self.client.delete(url)
-    #     self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        # Capture the actual datetime used in the apply_async call
+        called_args, called_kwargs = mock_apply_async.call_args
+
+        # Check that the Celery task was scheduled correctly
+        self.assertEqual(called_kwargs['args'], [self.user.paypal_subscription_id])
+        self.assertEqual(called_kwargs['task_id'], f"delete_subscription_{self.user.paypal_subscription_id}")
+        self.assertIsInstance(called_kwargs['eta'], datetime)
+
+
