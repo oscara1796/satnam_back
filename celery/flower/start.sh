@@ -14,5 +14,5 @@ done
 >&2 echo 'Celery workers is available'
 
 celery -A satnam  \
-    --broker="${CELERY_BROKER}" \
+    --broker="${REDIS_URL}" \
     flower
