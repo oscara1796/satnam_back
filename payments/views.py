@@ -680,7 +680,12 @@ class PaymentMethodView(APIView):
             customer = stripe.Customer.retrieve(user.stripe_customer_id)
 
             # Retrieve the default payment method
-            default_payment_method_id = customer.invoice_settings.default_payment_method
+            default_payment_method_id = None
+
+            # Check if invoice_settings is present in the customer object
+            if hasattr(customer, 'invoice_settings') and customer.invoice_settings:
+                default_payment_method_id = customer.invoice_settings.default_payment_method
+
             default_payment_method = (
                 stripe.PaymentMethod.retrieve(default_payment_method_id)
                 if default_payment_method_id
