@@ -35,7 +35,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY", default=get_random_secret_key())
 DEBUG = int(os.environ.get("DEBUG", default=0))
 
 
-TESTING = True
+TESTING = False
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG = True

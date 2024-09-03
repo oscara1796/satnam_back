@@ -1,8 +1,17 @@
 setup:
   addons:
-    - plan: heroku-postgresql
+    - plan: heroku-postgresql:hobby-dev
+    - plan: heroku-redis:hobby-dev
+
 build:
   docker:
-    web: satnam_prod_dockerfile
+    web: Dockerfile_satnam_prod  # Uses the main Dockerfile for the Django web process
+    worker: Dockerfile-celery  # For Celery worker
+    beat: Dockerfile-beat  # For Celery beat
+    flower: Dockerfile-flower  # For Flower
+
 run:
   web: gunicorn satnam.wsgi:application --bind 0.0.0.0:$PORT
+  worker: /start-celeryworker
+  beat: /start-celerybeat
+  flower: /start-flower
