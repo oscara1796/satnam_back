@@ -32,6 +32,9 @@ load_dotenv(".env.dev")
 
 SECRET_KEY = os.environ.get("SECRET_KEY", default=get_random_secret_key())
 
+
+PASSWORD_RESET_URL = "https://www.satnamyogaestudio.com.mx"
+
 DEBUG = int(os.environ.get("DEBUG", default=0))
 
 

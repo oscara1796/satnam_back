@@ -23,6 +23,7 @@ from rest_framework_simplejwt.views import (TokenObtainPairView,
 from payments.models import SubscriptionPlan
 from payments.views import SubscriptionPlanAPIView
 from satnam.settings import EMAIL_HOST_USER
+from django.core.mail import EmailMultiAlternatives
 
 from .models import TrialDays
 from .serializers import LogInSerializer, TrialDaysSerializer, UserSerializer
@@ -143,28 +144,61 @@ class PasswordResetRequestView(APIView):
             # Generate a one-time use token and UID
             token = default_token_generator.make_token(user)
             uid = urlsafe_base64_encode(force_bytes(user.pk))
-            reset_link = f"http://192.168.100.162:3001/#/reset-password/{uid}/{token}"
 
-            # Send email to user with password reset link
-            send_mail(
-                "[Sat Nam Yoga] Solicitud de restablecimiento de contraseña",
-                f"Por favor vaya al siguiente enlace para restablecer su contraseña: {reset_link}",
-                EMAIL_HOST_USER,
-                [email],
-                fail_silently=False,
+            # Get the base URL from environment variables (defined in settings.py)
+            base_url = getattr(settings, 'PASSWORD_RESET_URL', 'http://localhost:3001')  # Fallback to localhost for dev
+            reset_link = f"{base_url}/#/reset-password/{uid}/{token}"
+
+            # HTML Email content
+            html_content = f"""
+            <html>
+            <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
+                <div style="max-width: 600px; margin: 0 auto; background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);">
+                    <h2 style="color: #333; text-align: center;">Solicitud de restablecimiento de contraseña</h2>
+                    <p style="font-size: 16px; color: #555;">
+                        Hola {user.first_name},<br><br>
+                        Has solicitado restablecer tu contraseña. Haz clic en el botón a continuación para continuar:
+                    </p>
+                    <div style="text-align: center;">
+                        <a href="{reset_link}" style="display: inline-block; background-color: #4CAF50; color: white; padding: 10px 20px; font-size: 16px; text-decoration: none; border-radius: 5px;">
+                            Restablecer contraseña
+                        </a>
+                    </div>
+                    <p style="font-size: 16px; color: #555; margin-top: 20px;">
+                        Si no solicitaste este restablecimiento, puedes ignorar este correo electrónico. Este enlace solo es válido por un tiempo limitado.
+                    </p>
+                    <p style="font-size: 14px; color: #999; text-align: center;">
+                        © 2024 Sat Nam Yoga
+                    </p>
+                </div>
+            </body>
+            </html>
+            """
+
+            # Send email to user with password reset link using EmailMultiAlternatives for HTML content
+            subject = "[Sat Nam Yoga] Solicitud de restablecimiento de contraseña"
+            from_email = settings.EMAIL_HOST_USER
+            msg = EmailMultiAlternatives(
+                subject,
+                "Por favor vaya al siguiente enlace para restablecer su contraseña.",
+                from_email,
+                [email]
             )
+            msg.attach_alternative(html_content, "text/html")
+            msg.send()
+
             return Response(
                 {
                     "message": "Si existe una cuenta con el correo electrónico, se ha enviado un enlace para restablecer la contraseña"
                 },
                 status=status.HTTP_200_OK,
             )
-        except get_user_model().DoesNotExist:
+        except user_model.DoesNotExist:
             logger.info(
                 "Intento de restablecimiento de contraseña para usuario inexistente"
             )
             return Response(
-                {"message": "No se encontró ningún usuario con el ID proporcionado."},
+                {"message": "No se encontró ningún usuario con el correo proporcionado."},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
