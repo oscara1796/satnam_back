@@ -160,7 +160,7 @@ class PasswordResetRequestView(APIView):
                         Has solicitado restablecer tu contraseña. Haz clic en el botón a continuación para continuar:
                     </p>
                     <div style="text-align: center;">
-                        <a href="{reset_link}" style="display: inline-block; background-color: #4CAF50; color: white; padding: 10px 20px; font-size: 16px; text-decoration: none; border-radius: 5px;">
+                        <a href="{reset_link}" style="display: inline-block; background-color: #1864ab; color: white; padding: 10px 20px; font-size: 16px; text-decoration: none; border-radius: 5px;">
                             Restablecer contraseña
                         </a>
                     </div>
