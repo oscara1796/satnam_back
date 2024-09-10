@@ -1052,7 +1052,6 @@ def paypal_webhook(request):
         # Load the JSON data sent from PayPal
         event = json.loads(request.body.decode("utf-8"))
 
-        print(event)
     
 
         if verify_paypal_webhook_signature(request):
