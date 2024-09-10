@@ -6,7 +6,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 # Create your views here.
 from django.contrib.auth.tokens import default_token_generator
-from django.core.mail import send_mail
+from django.core.mail import EmailMultiAlternatives, send_mail
 from django.http import Http404
 from django.utils.decorators import method_decorator
 from django.utils.encoding import force_bytes
@@ -23,7 +23,6 @@ from rest_framework_simplejwt.views import (TokenObtainPairView,
 from payments.models import SubscriptionPlan
 from payments.views import SubscriptionPlanAPIView
 from satnam.settings import EMAIL_HOST_USER
-from django.core.mail import EmailMultiAlternatives
 
 from .models import TrialDays
 from .serializers import LogInSerializer, TrialDaysSerializer, UserSerializer

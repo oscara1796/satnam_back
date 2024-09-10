@@ -1,7 +1,9 @@
 import logging
 
 import psycopg2
+from django.conf import settings
 from django.contrib.auth import get_user_model
+from psycopg2 import Error as Psycopg2Error
 
 from .send_email_functions import (send_invoice_email,
                                    send_payment_failed_email,
@@ -65,6 +67,12 @@ def process_event(event, cur):
                 return True
             elif event_type == "BILLING.SUBSCRIPTION.RE-ACTIVATED":
                 handle_paypal_subscription_reactivated(event, cur)
+                return True
+            elif event_type == "PAYMENT.SALE.COMPLETED":
+                handle_paypal_payment_sale_success(event, cur)
+                return True
+            elif event_type == "BILLING.SUBSCRIPTION.PAYMENT.FAILED":
+                handle_paypal_payment_sale_failed(event, cur)
                 return True
             else:
                 logger.info(f"Unhandled PayPal event type: {event_type}")
@@ -253,13 +261,61 @@ def handle_paypal_subscription_expired(event, cur):
 
 
 def handle_paypal_subscription_suspended(event, cur):
+    from .tasks import cancel_paypal_subscription_task
     subscription = event["resource"]
-    customer_email = get_customer_email_with_paypal_sub_id(event)
-    if customer_email:
-        send_paypal_subscription_suspended_email(customer_email, subscription)
-        logger.info(
-            f"Subscription suspended email sent for subscription {subscription['id']} to {customer_email}"
+    paypal_subscription_id = subscription['id']
+
+    try:
+        # Fetch the user with the given PayPal subscription ID
+        cur.execute(
+            "SELECT * FROM core_customuser WHERE paypal_subscription_id = %s FOR UPDATE",
+            (paypal_subscription_id,),
         )
+        user = cur.fetchone()
+
+        if not user:
+            raise ValueError(f"User with PayPal subscription ID {paypal_subscription_id} not found")
+
+        user_id = user['id']
+        failed_payments_count = user['paypal_failed_payments_count']
+
+        # Check if failed payments count has reached the threshold
+        if failed_payments_count >= settings.PAYPAL_FAILED_SUBSCRIPTION_PAYMENT_THRESHOLD:
+            try:
+                # Schedule the task to cancel the PayPal subscription
+                cancel_paypal_subscription_task.delay(paypal_subscription_id)
+                logger.info(
+                    f"Subscription cancellation task queued for subscription {paypal_subscription_id} "
+                    f"due to {failed_payments_count} failed payments."
+                )
+            except Exception as task_error:
+                logger.error(f"Failed to schedule subscription cancellation task: {task_error}")
+                raise
+
+        else:
+            logger.info(f"User {user_id} has not yet reached the failed payments threshold.")
+
+        # Fetch customer email and send the suspension email
+        try:
+            customer_email = get_customer_email_with_paypal_sub_id(event)
+            if customer_email:
+                send_paypal_subscription_suspended_email(customer_email, subscription)
+                logger.info(
+                    f"Subscription suspended email sent for subscription {paypal_subscription_id} to {customer_email}"
+                )
+            else:
+                raise ValueError(f"Customer email not found for subscription {paypal_subscription_id}")
+
+        except Exception as email_error:
+            logger.error(f"Failed to send suspension email for subscription {paypal_subscription_id}: {email_error}")
+            raise
+
+    except Psycopg2Error as db_error:
+        logger.error(f"Database error while processing subscription suspension: {db_error}")
+    except ValueError as value_error:
+        logger.error(f"Value error: {value_error}")
+    except Exception as general_error:
+        logger.error(f"An unexpected error occurred: {general_error}")
 
 
 def handle_paypal_subscription_reactivated(event, cur):
@@ -270,3 +326,72 @@ def handle_paypal_subscription_reactivated(event, cur):
         logger.info(
             f"Subscription re-activated email sent for subscription {subscription['id']} to {customer_email}"
         )
+
+
+def handle_paypal_payment_sale_success(event, cur):
+    paypal_subscription_id = event['resource']['billing_agreement_id']
+    try:
+        # Fetch the user based on paypal_subscription_id with a lock for updates
+        cur.execute(
+            "SELECT * FROM core_customuser WHERE paypal_subscription_id = %s FOR UPDATE",
+            (paypal_subscription_id,),
+        )
+        user = cur.fetchone()
+
+        if user:
+            user_id = user['id']
+            failed_payments_count = user['paypal_failed_payments_count'] 
+            if failed_payments_count > 0:
+                failed_payments_count -= 1
+                # Update the failed payments count
+                cur.execute(
+                    """
+                    UPDATE core_customuser
+                    SET paypal_failed_payments_count = %s
+                    WHERE id = %s
+                    """,
+                    (failed_payments_count, user_id),
+                )
+
+                logger.info(f"{user_id} made a succesfull payment  and had failed payments. New count: {failed_payments_count}")
+            else:
+                logger.info(f"{user_id} made a succesfull payment and has no failed retries")
+        else:
+            logger.error(f"User with PayPal subscription ID {paypal_subscription_id} not found")
+    except psycopg2.Error as e:
+        logger.error(f"Database error while processing payment failure: {e}")
+
+
+def handle_paypal_payment_sale_failed(event, cur):
+    paypal_subscription_id = event['resource']['id']
+    try:
+        # Fetch the user based on paypal_subscription_id with a lock for updates
+        cur.execute(
+            "SELECT * FROM core_customuser WHERE paypal_subscription_id = %s FOR UPDATE",
+            (paypal_subscription_id,),
+        )
+        user = cur.fetchone()
+
+        if user:
+            user_id = user['id']
+            failed_payments_count = user['paypal_failed_payments_count'] 
+
+            # Increment the failed payments count
+            failed_payments_count += 1
+
+            # Update the failed payments count in the database
+            cur.execute(
+                """
+                UPDATE core_customuser
+                SET paypal_failed_payments_count = %s
+                WHERE id = %s
+                """,
+                (failed_payments_count, user_id),
+            )
+
+            logger.info(f"{user_id} had a failed payment. New failed payments count: {failed_payments_count}")
+        else:
+            logger.error(f"User with PayPal subscription ID {paypal_subscription_id} not found")
+    except psycopg2.Error as e:
+        logger.error(f"Database error while processing payment failure: {e}")
+

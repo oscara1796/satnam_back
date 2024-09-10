@@ -1,10 +1,12 @@
+from datetime import datetime
+from unittest.mock import MagicMock, Mock, patch
+
+from django.contrib.auth import get_user_model
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
-from django.contrib.auth import get_user_model
+
 from payments.paypal_functions import get_paypal_access_token
-from unittest.mock import patch, Mock,  MagicMock
-from datetime import datetime
 
 
 class PaypalSubscriptionViewTestCase(APITestCase):

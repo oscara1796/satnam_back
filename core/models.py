@@ -13,6 +13,7 @@ class CustomUser(AbstractUser):
     paypal_subscription_id = models.CharField(max_length=150, null=True)
     paypal_next_billing_time = models.DateTimeField(null=True, blank=True)
     active = models.BooleanField(default=False)
+    paypal_failed_payments_count = models.IntegerField(default=0) 
 
     def __str__(self):
         return self.username

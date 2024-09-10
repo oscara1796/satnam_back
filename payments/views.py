@@ -148,8 +148,8 @@ class SubscriptionPlanAPIView(APIView):
                 "billing_cycles": billing_cycles,
                 "payment_preferences": {
                     "auto_bill_outstanding": True,
-                    "setup_fee_failure_action": "CONTINUE",
-                    "payment_failure_threshold": 3,
+                    "setup_fee_failure_action": "CANCEL",
+                    "payment_failure_threshold": settings.PAYPAL_FAILED_SUBSCRIPTION_PAYMENT_THRESHOLD,
                 },
             }
             paypal_response = requests.post(
@@ -294,8 +294,8 @@ class SubscriptionPlanAPIView(APIView):
             "billing_cycles": billing_cycles,
             "payment_preferences": {
                 "auto_bill_outstanding": True,
-                "setup_fee_failure_action": "CONTINUE",
-                "payment_failure_threshold": 3,
+                "setup_fee_failure_action": "CANCEL",
+                "payment_failure_threshold": settings.PAYPAL_FAILED_SUBSCRIPTION_PAYMENT_THRESHOLD,
             },
         }
         return paypal_payload
@@ -351,8 +351,8 @@ class SubscriptionPlanAPIView(APIView):
                 "billing_cycles": billing_cycles,
                 "payment_preferences": {
                     "auto_bill_outstanding": True,
-                    "setup_fee_failure_action": "CONTINUE",
-                    "payment_failure_threshold": 3,
+                    "setup_fee_failure_action": "CANCEL",
+                    "payment_failure_threshold": settings.PAYPAL_FAILED_SUBSCRIPTION_PAYMENT_THRESHOLD,
                 },
             }
             new_paypal_plan = self.create_paypal_plan(paypal_payload)
@@ -1052,6 +1052,7 @@ def paypal_webhook(request):
         # Load the JSON data sent from PayPal
         event = json.loads(request.body.decode("utf-8"))
 
+        print(event)
     
 
         if verify_paypal_webhook_signature(request):
