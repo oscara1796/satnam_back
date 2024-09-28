@@ -10,7 +10,7 @@ from django.conf import settings
 
 from celery import shared_task
 from core.models import CustomUser
-from payments.paypal_functions import get_paypal_access_token
+from payments.paypal_functions import get_paypal_access_token, get_paypal_base_url
 from payments.processing import process_event
 
 logger = logging.getLogger("django")
@@ -78,8 +78,9 @@ def cancel_paypal_subscription_task(self, subscription_id):
             "Accept": "application/json",
         }
         data = '{ "reason": "Not satisfied with the service" }'
+        base_url = get_paypal_base_url()
         response = requests.post(
-            f"https://api-m.sandbox.paypal.com/v1/billing/subscriptions/{subscription_id}/cancel",
+            f"{base_url}/v1/billing/subscriptions/{subscription_id}/cancel",
             headers=headers,
             data=data,
         )

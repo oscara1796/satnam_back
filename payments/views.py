@@ -22,7 +22,8 @@ from payments.paypal_functions import (get_paypal_access_token,
                                        get_paypal_subscription,
                                        remove_scheduled_deletion,
                                        schedule_subscription_deletion,
-                                       verify_paypal_webhook_signature)
+                                       verify_paypal_webhook_signature,
+                                       get_paypal_base_url)
 
 from .models import SubscriptionPlan
 from .serializers import PaymentMethodSerializer, SubscriptionPlanSerializer
@@ -36,6 +37,8 @@ FRONTEND_SUBSCRIPTION_CANCEL_URL = settings.SUBSCRIPTION_FAILED_URL
 webhook_secret = settings.STRIPE_WEBHOOK_SECRET
 
 logger = logging.getLogger("django")
+
+BASE_PAYPAL_URL = get_paypal_base_url()
 
 
 class IsStaffOrReadOnly(permissions.BasePermission):
@@ -99,9 +102,10 @@ class SubscriptionPlanAPIView(APIView):
                     {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
                 )
 
+            
             # Create PayPal Plan
             access_token = get_paypal_access_token()
-            paypal_url = "https://api-m.sandbox.paypal.com/v1/billing/plans"
+            paypal_url = f"{BASE_PAYPAL_URL}/v1/billing/plans"
             headers = {
                 "Content-Type": "application/json",
                 "Authorization": f"Bearer {access_token}",
@@ -370,7 +374,8 @@ class SubscriptionPlanAPIView(APIView):
             "Content-Type": "application/json",
             "Authorization": f"Bearer {access_token}",
         }
-        paypal_url = "https://api-m.sandbox.paypal.com/v1/billing/plans"
+        
+        paypal_url = f"{BASE_PAYPAL_URL}/v1/billing/plans"
         response = requests.post(paypal_url, headers=headers, json=data)
         if response.status_code == 201:
             return response.json()
@@ -386,8 +391,9 @@ class SubscriptionPlanAPIView(APIView):
             "Authorization": f"Bearer {access_token}",
             "Content-Type": "application/json",
         }
+        
         paypal_url = (
-            f"https://api-m.sandbox.paypal.com/v1/billing/plans/{plan_id}/deactivate"
+            f"{BASE_PAYPAL_URL}/v1/billing/plans/{plan_id}/deactivate"
         )
         response = requests.post(paypal_url, headers=headers)
         if response.status_code not in (200, 204):
@@ -402,8 +408,9 @@ class SubscriptionPlanAPIView(APIView):
         stripe.Product.modify(plan.stripe_product_id, active=False)
 
         # Deactivate PayPal Plan
+        
         access_token = get_paypal_access_token()
-        paypal_url = f"https://api-m.sandbox.paypal.com/v1/billing/plans/{plan.paypal_plan_id}/deactivate"
+        paypal_url = f"{BASE_PAYPAL_URL}/v1/billing/plans/{plan.paypal_plan_id}/deactivate"
         headers = {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {access_token}",
@@ -430,8 +437,9 @@ class PaypalSubscriptionView(APIView):
             )
 
         logger.info(f"Fetching subscription Paypal details for ID: {subscription_id}")
+        
         access_token = get_paypal_access_token()
-        url = f"https://api-m.sandbox.paypal.com/v1/billing/subscriptions/{subscription_id}"
+        url = f"{BASE_PAYPAL_URL}/v1/billing/subscriptions/{subscription_id}"
         headers = {
             "Authorization": f"Bearer {access_token}",
             "Content-Type": "application/json",
@@ -557,8 +565,9 @@ class PaypalSubscriptionView(APIView):
     def deactivate_paypal_subscription(self, subscription_id):
         """Deactivate a PayPal subscription."""
         logger.info(f"Attempting to deactivate PayPal subscription ID: {subscription_id}")
+        
         access_token = get_paypal_access_token()
-        url = f"https://api-m.sandbox.paypal.com/v1/billing/subscriptions/{subscription_id}/suspend"
+        url = f"{BASE_PAYPAL_URL}/v1/billing/subscriptions/{subscription_id}/suspend"
         headers = {
             "Authorization": f"Bearer {access_token}",
             "Content-Type": "application/json",
@@ -595,7 +604,7 @@ class PaypalSubscriptionView(APIView):
         """Reactivate a PayPal subscription."""
         logger.info(f"Attempting to reactivate PayPal subscription ID: {subscription_id}")
         access_token = get_paypal_access_token()
-        url = f"https://api-m.sandbox.paypal.com/v1/billing/subscriptions/{subscription_id}/activate"
+        url = f"{BASE_PAYPAL_URL}/v1/billing/subscriptions/{subscription_id}/activate"
         headers = {
             "Authorization": f"Bearer {access_token}",
             "Content-Type": "application/json",
@@ -618,7 +627,7 @@ class PaypalSubscriptionView(APIView):
         """Retrieve the last billing date from a PayPal subscription."""
         logger.info(f"Fetching last billing date for PayPal subscription ID: {subscription_id}")
         access_token = get_paypal_access_token()
-        url = f"https://api-m.sandbox.paypal.com/v1/billing/subscriptions/{subscription_id}"
+        url = f"{BASE_PAYPAL_URL}/v1/billing/subscriptions/{subscription_id}"
         headers = {
             "Authorization": f"Bearer {access_token}",
             "Content-Type": "application/json",

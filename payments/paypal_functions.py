@@ -26,9 +26,17 @@ logger = logging.getLogger("payments")
 
 load_dotenv("../.env.dev")
 
+def get_paypal_base_url():
+    debug_mode = os.environ.get("DEBUG", "True") == "True"
+    if debug_mode:
+        return "https://api-m.sandbox.paypal.com"
+    else:
+        return "https://api-m.paypal.com"
+
 
 def get_paypal_access_token():
-    url = "https://api-m.sandbox.paypal.com/v1/oauth2/token"
+    base_url = get_paypal_base_url()
+    url = f"{base_url}/v1/oauth2/token"
     headers = {
         "Accept": "application/json",
         "Accept-Language": "en_US",
@@ -62,8 +70,9 @@ def get_paypal_subscription(subscription_id):
         dict: The JSON response from PayPal if successful, or None if an error occurs.
     """
     try:
+        base_url = get_paypal_base_url()
         access_token = get_paypal_access_token()
-        url = f"https://api-m.sandbox.paypal.com/v1/billing/subscriptions/{subscription_id}"
+        url = f"{base_url}/v1/billing/subscriptions/{subscription_id}"
         headers = {
             "Authorization": f"Bearer {access_token}",
             "Content-Type": "application/json",
@@ -84,8 +93,9 @@ def get_paypal_subscription(subscription_id):
 
 def get_all_paypal_products():
     """Retrieve all PayPal products."""
+    base_url = get_paypal_base_url()
     access_token = get_paypal_access_token()
-    url = "https://api-m.sandbox.paypal.com/v1/catalogs/products"
+    url = f"{base_url}/v1/catalogs/products"
     headers = {
         "Authorization": f"Bearer {access_token}",
         "Content-Type": "application/json",
@@ -99,6 +109,42 @@ def get_all_paypal_products():
             f"Failed to retrieve PayPal products: {response.status_code}, {response.text}"
         )
 
+def create_paypal_product(product_data=None):
+    """
+    Create a product on PayPal using the PayPal REST API.
+
+    Args:
+        product_data (dict): A dictionary containing product details as per PayPal API requirements.
+
+    Returns:
+        dict: The JSON response from PayPal if successful.
+
+    Raises:
+        Exception: If the API request fails.
+    """
+
+    product_data = {
+        "name": "Sat Nam yoga service",
+        "description": "Monthly and yearly  subscriptions for video streaming  yoga service",
+        "type": "SERVICE",
+        "category": "SOFTWARE",
+        "image_url": "https://satnam-bucket.s3.us-east-2.amazonaws.com/logo.png",
+        "home_url": "https://www.satnamyogaestudio.com.mx/"
+    }
+    base_url = get_paypal_base_url()
+    access_token = get_paypal_access_token()
+    url = f"{base_url}/v1/catalogs/products"
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json",
+    }
+    response = requests.post(url, headers=headers, json=product_data)
+    if response.status_code == 201:
+        return response.json()
+    else:
+        raise Exception(
+            f"Failed to create PayPal product: {response.status_code}, {response.text}"
+        )
 
 def schedule_subscription_deletion(subscription_id, billing_cycle_end):
     """Schedule the deletion of the PayPal subscription using Celery."""
