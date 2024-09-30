@@ -33,6 +33,7 @@ class IsStaffOrReadOnly(permissions.BasePermission):
 
 
 class VideoList(APIView):
+    permission_classes = [IsStaffOrReadOnly]
 
     def get(self, request):
         try:
@@ -101,6 +102,7 @@ class SearchVideoAPIView(APIView):
 
 
 class VideoDetail(APIView):
+    permission_classes = [IsStaffOrReadOnly]
     
 
     def get(self, request, pk):
