@@ -1,4 +1,5 @@
 import json
+import logging
 
 from rest_framework import permissions, status
 from rest_framework.response import Response
@@ -6,6 +7,8 @@ from rest_framework.views import APIView
 
 from .models import Category, Video
 from .serializers import CategorySerializer, VideoSerializer
+
+logger = logging.getLogger(__name__)
 
 
 def paginate_queryset(queryset, request):
@@ -25,21 +28,24 @@ def paginate_queryset(queryset, request):
 
 class IsStaffOrReadOnly(permissions.BasePermission):
     def has_permission(self, request, view):
-        if (
-            request.method in permissions.SAFE_METHODS
-        ):  # Allow GET, HEAD, OPTIONS requests
+        logger.info(f"Permission Check - Request method: {request.method}")
+        if request.method in permissions.SAFE_METHODS:
+            logger.info("Permission Granted: Safe method.")
             return True
-        return request.user.is_staff
+        is_staff = request.user.is_staff
+        logger.info(f"Permission Granted: Is user staff? {is_staff}")
+        return is_staff
 
 
 class VideoList(APIView):
     permission_classes = [IsStaffOrReadOnly]
 
     def get(self, request):
+        logger.info("VideoList.get called")
         try:
             search_query = request.query_params.get("search", None)
             category_id = request.query_params.get("category", None)
-            print("search_query", search_query)
+            logger.info(f"search_query: {search_query}, category_id: {category_id}")
             queryset = Video.objects.all()
 
             if search_query:
@@ -49,7 +55,7 @@ class VideoList(APIView):
                 queryset = queryset.filter(categories__id=category_id)
 
             paginated_queryset = paginate_queryset(queryset, request)
-            serializer = VideoSerializer(paginated_queryset, many=True)
+            serializer = VideoSerializer(paginated_queryset, many=True, context={'request': request})
 
             return Response(
                 {
@@ -60,6 +66,7 @@ class VideoList(APIView):
             )
 
         except Exception as e:
+            logger.error(f"Error in VideoList GET: {str(e)}")
             return Response(
                 data={"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
@@ -108,10 +115,18 @@ class VideoDetail(APIView):
     def get(self, request, pk):
         try:
             video = Video.objects.get(id=pk)
-            if self.request.user.active or self.request.user.is_staff or video.free:
+            if (
+                (request.user.is_authenticated and request.user.active) 
+                or request.user.is_staff 
+                or video.free
+            ):
                 serializer = VideoSerializer(video)
                 return Response(serializer.data)
             return Response("Unauthorized", status=status.HTTP_401_UNAUTHORIZED)
+        except Video.DoesNotExist:
+            return Response(
+                {"error": "Video not found"}, status=status.HTTP_404_NOT_FOUND
+            )
         except Exception as e:
             return Response(
                 data={"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -236,13 +251,19 @@ class VideoDetail(APIView):
 
 
 class CategoryAPIView(APIView):
-
     permission_classes = [IsStaffOrReadOnly]
 
     def get(self, request):
-        categories = Category.objects.all()
-        serializer = CategorySerializer(categories, many=True)
-        return Response(serializer.data)
+        logger.info("CategoryAPIView.get called")
+        try:
+            categories = Category.objects.all()
+            serializer = CategorySerializer(categories, many=True, context={'request': request})
+            return Response(serializer.data)
+        except Exception as e:
+            logger.error(f"Error in CategoryAPIView GET: {str(e)}")
+            return Response(
+                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
     def post(self, request):
         serializer = CategorySerializer(data=request.data)
