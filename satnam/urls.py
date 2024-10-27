@@ -27,6 +27,7 @@ urlpatterns = [
     path("", include("contact.urls")),
     path("", include("captcha_app.urls")),
     path("", include("scheduler.urls")),
+    path('pose_recognition/', include('pose_recognition.urls')),
 ]
 
 if settings.DEBUG:

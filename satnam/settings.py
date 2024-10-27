@@ -57,6 +57,8 @@ INSTALLED_APPS = [
     "contact",
     "captcha_app",
     "scheduler",
+    "pose_recognition",
+    "channels",
 ]
 
 MIDDLEWARE = [
@@ -89,7 +91,10 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "satnam.wsgi.application"
+#WSGI_APPLICATION = "satnam.wsgi.application"
+
+ASGI_APPLICATION = "satnam.asgi.application"
+
 
 
 # Database
@@ -128,6 +133,15 @@ REDIS_URL = os.getenv("REDIS_URL", "redis://redis:6379")
 
 # Set up a Redis connection pool
 REDIS_POOL = redis.ConnectionPool.from_url(REDIS_URL)
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [REDIS_URL],  # Use the existing REDIS_URL variable here
+        },
+    },
+}
 
 
 # Password validation
