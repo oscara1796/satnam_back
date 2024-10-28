@@ -6,5 +6,6 @@ set -o nounset
 
 python manage.py flush --no-input
 python manage.py migrate 
-python manage.py runserver 0.0.0.0:8000
 
+# Use Daphne to serve ASGI, which supports WebSockets.
+daphne -b 0.0.0.0 -p 8000 satnam.asgi:application

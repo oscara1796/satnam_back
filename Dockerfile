@@ -1,4 +1,4 @@
-FROM tensorflow/tensorflow:2.9.0-gpu 
+FROM python:3.9-slim-buster
 
 
 # set working directory
@@ -18,6 +18,9 @@ RUN apt-get update \
   && apt-get install -y libpq-dev \
   && apt-get install -y git \
   && apt-get install -y git procps \
+  && apt-get install -y libgl1-mesa-glx \
+  && apt-get install -y libglib2.0-0 \
+  && rm -rf /var/lib/apt/lists/* \
   && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
   && apt-get clean  
 

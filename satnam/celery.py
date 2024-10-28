@@ -22,6 +22,10 @@ app.config_from_object("django.conf:settings", namespace="CELERY")
 # discover and load tasks.py from from all registered Django apps
 app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
 
+app.conf.update(
+    task_time_limit=30,      # Hard time limit of 10 seconds
+    worker_concurrency=2, 
+)
 
 @app.task
 def divide(x, y):
