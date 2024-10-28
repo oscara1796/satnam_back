@@ -1,4 +1,4 @@
-FROM python:3.10.8-slim-buster
+FROM tensorflow/tensorflow:2.9.0-gpu 
 
 
 # set working directory

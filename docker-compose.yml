@@ -14,6 +14,13 @@ services:
     depends_on:
       - redis
       - core-db
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu] # Make the GPU available to this service if possible
+    runtime: nvidia # This makes the GPU accessible in this container if it exists on the host
+
   celery_worker:
     build: .
     image: satnam_celery_worker
@@ -25,6 +32,12 @@ services:
     depends_on:
       - redis
       - core-db
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+    runtime: nvidia
 
   celery_beat:
     build: .
@@ -51,6 +64,7 @@ services:
     depends_on:
       - redis
       - core-db
+
   redis:
     image: redis:latest
     container_name: redis
@@ -58,6 +72,7 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
+
   core-db:
     image: postgres:14-alpine
     volumes:
@@ -66,11 +81,11 @@ services:
       - POSTGRES_USER=oscar
       - POSTGRES_PASSWORD=17dejunio
       - POSTGRES_DB=core_dev
- 
+
   satnam-client:
     build:
       context: ../client
-    command:   yarn start
+    command: yarn start
     container_name: satnam-client
     depends_on:
       - core
