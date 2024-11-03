@@ -261,7 +261,6 @@ def handle_paypal_subscription_expired(event, cur):
 
 
 def handle_paypal_subscription_suspended(event, cur):
-    from .tasks import cancel_paypal_subscription_task
     subscription = event["resource"]
     paypal_subscription_id = subscription['id']
 
@@ -340,6 +339,8 @@ def handle_paypal_payment_sale_success(event, cur):
 
 
 def handle_paypal_payment_sale_failed(event, cur):
+    from .tasks import cancel_paypal_subscription_task
+
     paypal_subscription_id = event['resource']['id']
     try:
         # Fetch the user based on paypal_subscription_id with a lock for updates
