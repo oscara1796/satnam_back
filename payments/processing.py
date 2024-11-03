@@ -276,24 +276,6 @@ def handle_paypal_subscription_suspended(event, cur):
         if not user:
             raise ValueError(f"User with PayPal subscription ID {paypal_subscription_id} not found")
 
-        user_id = user['id']
-        failed_payments_count = user['paypal_failed_payments_count']
-
-        # Check if failed payments count has reached the threshold
-        if failed_payments_count >= settings.PAYPAL_FAILED_SUBSCRIPTION_PAYMENT_THRESHOLD:
-            try:
-                # Schedule the task to cancel the PayPal subscription
-                cancel_paypal_subscription_task.delay(paypal_subscription_id)
-                logger.info(
-                    f"Subscription cancellation task queued for subscription {paypal_subscription_id} "
-                    f"due to {failed_payments_count} failed payments."
-                )
-            except Exception as task_error:
-                logger.error(f"Failed to schedule subscription cancellation task: {task_error}")
-                raise
-
-        else:
-            logger.info(f"User {user_id} has not yet reached the failed payments threshold.")
 
         # Fetch customer email and send the suspension email
         try:
@@ -340,22 +322,17 @@ def handle_paypal_payment_sale_success(event, cur):
 
         if user:
             user_id = user['id']
-            failed_payments_count = user['paypal_failed_payments_count'] 
-            if failed_payments_count > 0:
-                failed_payments_count -= 1
-                # Update the failed payments count
-                cur.execute(
-                    """
-                    UPDATE core_customuser
-                    SET paypal_failed_payments_count = %s
-                    WHERE id = %s
-                    """,
-                    (failed_payments_count, user_id),
-                )
+            # Update the failed payments count
+            cur.execute(
+                """
+                UPDATE core_customuser
+                SET paypal_failed_payments_count = %s
+                WHERE id = %s
+                """,
+                (0, user_id),
+            )
 
-                logger.info(f"{user_id} made a succesfull payment  and had failed payments. New count: {failed_payments_count}")
-            else:
-                logger.info(f"{user_id} made a succesfull payment and has no failed retries")
+            logger.info(f"{user_id} made a succesfull payment  and had failed payments. New count was reset to zero: {0}")
         else:
             logger.error(f"User with PayPal subscription ID {paypal_subscription_id} not found")
     except psycopg2.Error as e:
@@ -390,6 +367,12 @@ def handle_paypal_payment_sale_failed(event, cur):
             )
 
             logger.info(f"{user_id} had a failed payment. New failed payments count: {failed_payments_count}")
+            # Check if threshold is reached
+            if failed_payments_count >= settings.PAYPAL_FAILED_SUBSCRIPTION_PAYMENT_THRESHOLD:
+                # Cancel subscription and deactivate user
+                cancel_paypal_subscription_task.delay(paypal_subscription_id)
+                deactivate_user_account(user_id, cur)
+                logger.info(f"Subscription {paypal_subscription_id} cancelled due to failed payments.")
         else:
             logger.error(f"User with PayPal subscription ID {paypal_subscription_id} not found")
     except psycopg2.Error as e:
