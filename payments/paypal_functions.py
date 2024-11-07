@@ -14,7 +14,7 @@ from requests.auth import HTTPBasicAuth
 # This assumes you've configured the PayPal SDK as shown in settings.py
 paypalrestsdk.configure(
     {
-        "mode": "sandbox",  # or "live" based on your environment
+        "mode": "sandbox" if os.environ.get("DEBUG", False) == "1" else "live",
         "client_id": settings.PAYPAL_CLIENT_ID,
         "client_secret": settings.PAYPAL_CLIENT_SECRET,
     }
@@ -26,12 +26,17 @@ logger = logging.getLogger("payments")
 
 load_dotenv("../.env.dev")
 
+
 def get_paypal_base_url():
-    debug_mode = os.environ.get("DEBUG", "True") == "True"
-    if debug_mode:
-        return "https://api-m.sandbox.paypal.com"
-    else:
-        return "https://api-m.paypal.com"
+    # Interpret "DEBUG=1" as True, otherwise fallback to False
+    is_debug_mode = os.environ.get("DEBUG", False) == "1"
+    debug_url = "https://api-m.sandbox.paypal.com"
+    live_url = "https://api-m.paypal.com"
+
+    # Choose the URL based on the debug mode
+    paypal_base_url = debug_url if is_debug_mode else live_url
+
+    return paypal_base_url
 
 
 def get_paypal_access_token():
@@ -42,6 +47,7 @@ def get_paypal_access_token():
         "Accept-Language": "en_US",
     }
     data = {"grant_type": "client_credentials"}
+
     response = requests.post(
         url,
         headers=headers,
@@ -109,6 +115,7 @@ def get_all_paypal_products():
             f"Failed to retrieve PayPal products: {response.status_code}, {response.text}"
         )
 
+
 def create_paypal_product(product_data=None):
     """
     Create a product on PayPal using the PayPal REST API.
@@ -129,7 +136,7 @@ def create_paypal_product(product_data=None):
         "type": "SERVICE",
         "category": "SOFTWARE",
         "image_url": "https://satnam-bucket.s3.us-east-2.amazonaws.com/logo.png",
-        "home_url": "https://www.satnamyogaestudio.com.mx/"
+        "home_url": "https://www.satnamyogaestudio.com.mx/",
     }
     base_url = get_paypal_base_url()
     access_token = get_paypal_access_token()
@@ -145,6 +152,7 @@ def create_paypal_product(product_data=None):
         raise Exception(
             f"Failed to create PayPal product: {response.status_code}, {response.text}"
         )
+
 
 def schedule_subscription_deletion(subscription_id, billing_cycle_end):
     """Schedule the deletion of the PayPal subscription using Celery."""
